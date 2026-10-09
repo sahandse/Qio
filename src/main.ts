@@ -52,7 +52,7 @@ function render() {
   const lastScroll=prev?.scrollTop??scrollTop;
   app.innerHTML = `<div class="app">
   <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span>کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
-  <main><section class="island ${expanded?'open':''}" aria-label="جزیره کیو">
+  <main><section class="island ${expanded?'open':''} mood-${mood}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
     <span class="substatus"><span class="mood-dot"></span>${moodText[mood]}</span>
     <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button><button class="secondary" id="surprise">سلام کیو!</button></div>
@@ -94,6 +94,11 @@ function render() {
      face.style.setProperty('--look-x',x+'px');face.style.setProperty('--look-y',y+'px');
   });
   document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
+  document.querySelector('#mascot')?.addEventListener('click',()=>{
+    if(mood==='happy')mood='thinking';
+    else mood='happy';
+    render();
+  });
 }
 function toggle(){expanded=!expanded;render();if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error)); }}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
