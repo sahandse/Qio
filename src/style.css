@@ -262,3 +262,10 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .qio-mini .compact-live{display:none}
 .light-theme .compact-live,.light-theme .settings-help{background:#dfedf7;color:#28516a;border-color:#bedbe9}
 .light-theme .settings-help p{color:#43647a}
+
+/* Verified-data UI: quiet, explanatory empty states and grouped settings */
+.empty-state{padding:19px 12px;line-height:2;text-align:center;font-size:12px;color:#b8d2e5;background:#1b2e43;border:1px dashed #4b6681;border-radius:13px}
+.settings-section-title{font-size:12px;font-weight:700;color:#93e5fa;padding:12px 2px 6px;border-bottom:1px solid #41617a55;letter-spacing:0}
+.light-theme .settings-section-title{color:#0a7593;border-color:#bdd6e5}
+.light-theme .empty-state{background:#e9f3fa;color:#315269;border-color:#aac7d9}
+.ai-chat button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
