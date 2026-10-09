@@ -18,6 +18,7 @@ jobs:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
+      - run: npm test
       - run: npm run build
       - name: Rust compile check
         run: cargo check --manifest-path src-tauri/Cargo.toml
