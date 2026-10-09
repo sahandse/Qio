@@ -14,10 +14,18 @@ fn set_island_expanded(window: tauri::Window, expanded: bool) -> Result<(), Stri
     }
     Ok(())
 }
+#[tauri::command]
+fn drag_island(window: tauri::Window) -> Result<(), String> {
+    window.start_dragging().map_err(|e| e.to_string())
+}
+#[tauri::command]
+fn quit_qio(app: tauri::AppHandle) {
+    app.exit(0);
+}
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![set_island_expanded])
+        .invoke_handler(tauri::generate_handler![set_island_expanded, drag_island, quit_qio])
         .setup(|app| {
             let window = app.get_webview_window("main").expect("main window missing");
             window.set_always_on_top(true)?;
