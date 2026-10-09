@@ -1,11 +1,13 @@
 import './style.css';
 import { invoke } from '@tauri-apps/api/core';
-type Mood = 'idle' | 'thinking' | 'happy' | 'alert';
+type Mood = 'idle' | 'thinking' | 'working' | 'happy' | 'alert' | 'error' | 'sleep';
 let mood: Mood = 'idle';
+const moodText: Record<Mood,string> = {idle:'منتظر کار بعدی',thinking:'در حال فکر کردن',working:'در حال کار',happy:'آفرین! انجام شد',alert:'نیازمند توجه',error:'مشکلی پیش آمد',sleep:'در حال استراحت'};
+let lastHistory = 0;
 let expanded = false;
 type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;state:string};
 let sources: SourceStatus[] = [];
-async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); render(); } catch(error){ console.warn('Could not read local agent status',error); } }
+async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0));if(newest>lastHistory && lastHistory>0) mood='alert'; lastHistory=newest;render(); } catch(error){ console.warn('Could not read local agent status',error); } }
 
 let reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -25,17 +27,18 @@ function render() {
   <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand">کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
   <main><section class="island ${expanded?'open':''}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
-    <span class="substatus">وضعیت نشست‌ها از فایل‌های محلی خوانده می‌شود</span>
+    <span class="substatus">${moodText[mood]} · تاریخچه محلی (نه وضعیت زنده)</span>
     <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button><button class="secondary" id="surprise">سلام کیو!</button></div>
   </section>
   ${expanded ? `<section class="panel"><div class="heading"><h2>عامل‌های هوش مصنوعی</h2><span class="muted">۴ اتصال آماده پیکربندی</span></div>
   <div class="agents">${agents.map(a=>`<div class="agent"><span class="agent-icon">${a.icon}</span><span class="agent-title">${a.name}</span><span class="agent-status">${sources.find(s=>s.name===a.name)?.last_event_unix ? "تاریخچه شناسایی شد" : sources.find(s=>s.name===a.name)?.detected ? "پوشه موجود است" : "شناسایی نشده"}</span></div>`).join('')}</div>
-  <div class="notice" role="status">شناسایی پوشه و تاریخچه با اتصال زنده متفاوت است؛ تا زمان پیاده‌سازی Hook، تأیید دستورات و رویدادها فعال نیستند.</div>
+  <div class="mood-picker" role="group" aria-label="پیش‌نمایش حالت‌های کاراکتر">${(["idle","thinking","working","happy","alert","error","sleep"] as Mood[]).map(m=>`<button type="button" class="mood-btn ${mood===m?"selected":""}" data-mood="${m}" aria-pressed="${mood===m}">${moodText[m]}</button>`).join("")}</div><div class="notice" role="status">شناسایی پوشه و تاریخچه با اتصال زنده متفاوت است؛ تا زمان پیاده‌سازی Hook، تأیید دستورات و رویدادها فعال نیستند.</div>
   </section>` : ''}
   </main><footer><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
   </div>`;
   document.querySelector('#drag-region')?.addEventListener('pointerdown',e=>{if ((e.target as HTMLElement).closest('button'))return;if ('__TAURI_INTERNALS__' in window) {void invoke('drag_island').catch(console.error);}});
   document.querySelector('#quit')?.addEventListener('click',()=>{if ('__TAURI_INTERNALS__' in window) {void invoke('quit_qio');} else {alert('خروج در نسخه دسکتاپ فعال است.');}});
+  document.querySelectorAll<HTMLButtonElement>('[data-mood]').forEach(button=>button.addEventListener('click',()=>{mood=button.dataset.mood as Mood;render();}));
   document.querySelector('#collapse')?.addEventListener('click',toggle);
   document.querySelector('#toggle')?.addEventListener('click',toggle);
   document.querySelector('#surprise')?.addEventListener('click',()=>{ mood='happy'; render(); });
