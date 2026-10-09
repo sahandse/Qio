@@ -72,3 +72,34 @@ html,body,#app{background:transparent!important;min-width:0;min-height:100%;}bod
 @media(max-width:360px){.guide-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .guide-hero{display:block;width:100%;height:auto;max-height:170px;object-fit:cover;border-radius:13px;margin-top:13px;border:1px solid #385676}
+
+/* UI audit: compact desktop layout, uncluttered navigation and readable Persian */
+:root{font-family:"Vazirmatn","Segoe UI",Tahoma,sans-serif;color-scheme:dark}
+html,body,#app{width:100%;height:100%;overflow:hidden}
+.app{height:100vh;min-height:0;max-height:100vh;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3f5d76 transparent;padding:14px;gap:9px;direction:rtl}
+.app::-webkit-scrollbar{width:5px}.app::-webkit-scrollbar-thumb{background:#3f5d76;border-radius:10px}
+main,.panel{min-width:0}.panel{padding:10px 9px;border-radius:13px;margin-top:0}
+.island{padding:5px 4px 12px}.mascot{height:160px;width:190px}.shell{scale:.87}.status{font-size:15px}
+.substatus{font-size:11px;line-height:1.8;max-width:270px}
+.topbar{min-height:34px}.topbar .brand{font-size:16px}
+.tab-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;background:#111f32;border:1px solid #2b425b;padding:5px;border-radius:13px;position:sticky;top:0;z-index:5}
+.tab{min-width:0;border-radius:9px;padding:10px 3px;background:transparent;color:#94adc4;font-size:11px;font-weight:600}
+.tab.active{background:#73d9ef;color:#10263b;box-shadow:0 3px 12px #55cfff22}
+.tab:hover:not(.active){background:#213a53;color:#e1f4ff}
+.guide-section,.ai-chat,.approvals,.events-panel{margin-top:0}
+.guide-section{border:0;background:transparent;padding:3px}
+.guide-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}
+.guide-card{min-height:106px;padding:11px 5px;transition:transform .15s,border-color .15s}
+.guide-card:hover{transform:translateY(-2px)}
+.guide-card:focus-visible,.tab:focus-visible{outline:2px solid #7de3fa;outline-offset:2px}
+.guide-card>b{font-size:11px;direction:auto;max-width:100%;word-break:break-word}
+.guide-detail{padding:12px 10px}
+.guide-detail-head{min-width:0}.guide-detail-head>div{min-width:0}
+.ai-chat label,.guide-env{min-width:0}
+.ai-chat input,.ai-chat textarea{direction:auto;min-height:38px}
+.ai-chat select{direction:ltr;max-width:100%}
+.ai-chat textarea{resize:vertical}
+footer{flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid #31455a;padding:10px 0 2px;font-size:10px}
+footer .text-button{margin:0;padding:5px 4px;min-height:30px}
+.event-row{min-width:0}.event-row span{overflow-wrap:anywhere}
+@media(prefers-reduced-motion:reduce){.guide-card{transition:none}}
