@@ -68,18 +68,29 @@ fn recent_events_from(root:&Path, agent:&'static str)->Vec<RecentEvent>{
         if line.len()>1_000_000{continue}
         if let Ok(value)=serde_json::from_str::<serde_json::Value>(&line){
             let event_type=value.get("type").and_then(|v|v.as_str()).unwrap_or("");
-            let kind=match event_type {
-                "session_meta" => "session",
-                "assistant" | "response_item" => "activity",
-                "tool_result" => "tool-result",
-                "event_msg" => "activity",
+            let payload=value.get("payload").unwrap_or(&value);
+            let subtype=payload.get("type").and_then(|v|v.as_str()).unwrap_or("");
+            let (kind,label)=match (agent,event_type,subtype) {
+                (_,"session_meta",_) => ("session","نشست شناسایی شد"),
+                ("Codex","response_item","function_call") => ("tool-start","فراخوانی ابزار ثبت شد"),
+                ("Codex","response_item","function_call_output") => ("tool-result","پاسخ ابزار ثبت شد (نتیجه تأیید نشده)"),
+                ("Codex","event_msg","task_started") => ("thinking","وظیفه شروع شد"),
+                ("Codex","event_msg","task_complete") => ("complete","پایان وظیفه ثبت شد (نه تأیید تست)"),
+                ("Codex","response_item",_) => ("activity","فعالیت مدل ثبت شد"),
+                ("Claude Code","assistant",_) => {
+                    let has_tool=payload.pointer("/message/content").and_then(|v|v.as_array())
+                       .is_some_and(|items|items.iter().any(|v|v.get("type").and_then(|x|x.as_str())==Some("tool_use")));
+                    if has_tool {("tool-start","فراخوانی ابزار ثبت شد")}else{("activity","پاسخ مدل ثبت شد")}
+                },
+                ("Claude Code","user",_) => {
+                    let has_result=payload.pointer("/message/content").and_then(|v|v.as_array())
+                       .is_some_and(|items|items.iter().any(|v|v.get("type").and_then(|x|x.as_str())==Some("tool_result")));
+                    if has_result {("tool-result","نتیجه ابزار دریافت شد (تست تأیید نشده)")}else{continue}
+                },
+                (_,"tool_result",_) => ("tool-result","پاسخ ابزار ثبت شد"),
                 _ => continue,
             };
-            ring.push_back(RecentEvent{agent,kind:kind.into(),label:match kind{
-                "session"=>"نشست شناسایی شد",
-                "tool-result"=>"پاسخ ابزار ثبت شد",
-                _=>"فعالیت ثبت شد",
-            }.into(),observed_at:timestamp});
+            ring.push_back(RecentEvent{agent,kind:kind.into(),label:label.into(),observed_at:timestamp});
             if ring.len()>25{ring.pop_front();}
         }
     }
