@@ -208,3 +208,31 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .agent-led.detected{background:#67e7bf;box-shadow:0 0 8px #62e5b977}
 .agent:hover .agent-status{border-color:#79d7fc55}
 .light-theme .agent-status{background:#dcebf5;border-color:#bcd4e3;color:#36516b}
+
+/* Qio delight layer: focused chat, animated permissions and tiny friend */
+.chat-heading{display:flex;align-items:center;gap:10px;padding-bottom:9px;border-bottom:1px solid #77d9ff20}
+.chat-heading>div{display:flex;flex:1;flex-direction:column;gap:4px}
+.chat-avatar{display:grid;place-items:center;flex-shrink:0;width:39px;height:39px;border-radius:14px;background:radial-gradient(circle at 25% 15%,#d3ffff,#82dfff 40%,#246baf);color:#13344f;font-size:24px;box-shadow:0 4px 17px #26bfe944}
+.chat-heading #clear-chat{font-size:10px;color:#b2d1e7;background:#223851;border-radius:10px;padding:8px}
+.send-glow{border-radius:13px!important;background:linear-gradient(130deg,#b0fbff,#65d9f1)!important;box-shadow:0 7px 20px #2bcded39;transition:transform .16s,box-shadow .16s}
+.send-glow:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px #28c9e466}
+.ai-answer{position:relative;border:1px solid #5ac9f833;background:linear-gradient(150deg,#243e5a,#172e48);box-shadow:inset 0 1px #fff2}
+.copy-answer{display:block;margin-top:12px!important;padding:6px 12px!important;font-size:10px!important;border-radius:9px!important;background:#35566f!important;color:#e0f9ff!important}
+.approval-heading{display:flex;align-items:center;gap:8px}
+.approval-heading>span{display:grid;place-items:center;border-radius:12px;width:29px;height:29px;background:#fae4b02c;color:#ffd580;font-size:20px}
+.approval-heading strong{flex:1}
+.approval-heading small{font-size:10px;color:#e9c38b}
+.approval-card{box-shadow:0 6px 17px #07132088}
+.approval-card .approval-actions button:hover{filter:brightness(1.08)}
+.appearance-controls{gap:9px}
+.qio-mini .app{padding:6px;border-radius:36px;background:radial-gradient(circle at 45% 22%,#35597f,#111e31 75%)}
+.qio-mini .topbar,.qio-mini .status,.qio-mini .substatus,.qio-mini .actions,.qio-mini footer{display:none}
+.qio-mini .island{padding:0;gap:0}
+.qio-mini .mascot{height:130px;width:130px;max-width:100%;cursor:pointer}
+.qio-mini .shell{scale:.70}
+.qio-mini .shadow{bottom:0;scale:.7}
+.qio-mini main{display:grid;place-items:center}
+.qio-mini .island:before{width:120px;height:120px}
+.light-theme .chat-heading #clear-chat,.light-theme .copy-answer{background:#d3e7f2!important;color:#234b63!important}
+.light-theme .ai-answer{background:#e0eff8;color:#163249}
+@media(prefers-reduced-motion:reduce){.send-glow{transition:none}}
