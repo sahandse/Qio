@@ -44,17 +44,17 @@ const agents = [
 ];
 function mascot() {
   return `<div id="mascot" class="mascot ${mood}" role="img" aria-label="شخصیت کیو، حالت ${mood}">
-  <div class="shell"><div class="face"><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div>
-  <div class="shadow"></div></div>`;
+  <div class="shell"><span class="ear ear-left"></span><span class="ear ear-right"></span><div class="face"><span class="cheek cheek-left"></span><span class="cheek cheek-right"></span><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div>
+  <span class="mascot-spark spark-one">✦</span><span class="mascot-spark spark-two">✧</span><div class="shadow"></div></div>`;
 }
 function render() {
   const prev=document.querySelector<HTMLElement>('.app');
   const lastScroll=prev?.scrollTop??scrollTop;
   app.innerHTML = `<div class="app">
-  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand">کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
+  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span>کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
   <main><section class="island ${expanded?'open':''}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
-    <span class="substatus">${moodText[mood]} · رویدادهای محلی (دریافت زنده با Hook)</span>
+    <span class="substatus"><span class="mood-dot"></span>${moodText[mood]}</span>
     <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button><button class="secondary" id="surprise">سلام کیو!</button></div>
   </section>
   ${expanded ? `<nav class="tab-bar" aria-label="بخش‌های کیو">${([["chat","گفت‌وگو"],["agents","فعالیت‌ها"],["guide","راهنما"],["settings","تنظیمات"]] as const).map(([id,title])=>`<button class="tab ${panelTab===id?"active":""}" data-tab="${id}" aria-current="${panelTab===id?"page":"false"}">${title}</button>`).join("")}</nav><section class="panel">${panelTab==="agents"?`<div class="heading"><h2>عامل‌های هوش مصنوعی</h2><span class="muted">وضعیت اتصال محلی</span></div>
