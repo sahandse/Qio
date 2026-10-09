@@ -11,8 +11,10 @@ for await (const chunk of process.stdin) {
 let input;
 try {input=JSON.parse(raw)} catch {process.exit(0)}
 if(!input||typeof input!=='object')process.exit(0);
+const alias = new Map([['beforeAgent','UserPromptSubmit'],['afterAgent','Stop'],['before_tool','PreToolUse'],['after_tool','PostToolUse'],['tool.execute.before','PreToolUse'],['tool.execute.after','PostToolUse'],['onToolCall','PreToolUse'],['onToolResult','PostToolUse'],['permission.ask','Notification'],['session.created','SessionStart'],['session.idle','Stop']]);
 const known = new Set(['SessionStart','UserPromptSubmit','PreToolUse','PostToolUse','PostToolUseFailure','Stop','SubagentStart','SubagentStop','Notification']);
-const kind = typeof input.hook_event_name==='string' ? input.hook_event_name : String(input.event??input.type??'');
+const rawKind = typeof input.hook_event_name==='string' ? input.hook_event_name : String(input.event??input.type??'');
+const kind=alias.get(rawKind)??rawKind;
 if(!known.has(kind))process.exit(0);
 const agent=(process.env.QIO_AGENT??'Claude Code').slice(0,40);
 const tool=typeof input.tool_name==='string'?input.tool_name.slice(0,64):'';
