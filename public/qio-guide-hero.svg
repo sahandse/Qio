@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="450" viewBox="0 0 960 450" role="img" aria-label="Qio AI setup illustrated guide">
+<defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#152946"/><stop offset="1" stop-color="#0d182a"/></linearGradient><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8ffff"/><stop offset=".65" stop-color="#bddbfb"/><stop offset="1" stop-color="#7ec7fa"/></linearGradient><radialGradient id="g"><stop stop-color="#7ee8ff" stop-opacity=".7"/><stop offset="1" stop-color="#72dafa" stop-opacity="0"/></radialGradient></defs>
+<rect width="960" height="450" rx="42" fill="url(#b)"/><circle cx="500" cy="235" r="205" fill="url(#g)"/>
+<path d="M110 130h190M650 95h175M700 330h165M80 337h185" stroke="#326383" stroke-width="3" stroke-dasharray="8 14" opacity=".65"/>
+<g fill="#213c5b" stroke="#4e89ae" stroke-width="3"><rect x="76" y="85" width="130" height="80" rx="19"/><rect x="733" y="66" width="150" height="95" rx="22"/><rect x="65" y="280" width="145" height="94" rx="23"/><rect x="745" y="285" width="143" height="87" rx="19"/></g>
+<g fill="#94d9ff"><circle cx="116" cy="119" r="10"/><path d="M143 118h37M144 135h24M772 108h65M771 126h40M105 316h63M106 335h40M775 321h72M776 343h48" stroke="#94d9ff" stroke-linecap="round" stroke-width="8"/></g>
+<ellipse cx="480" cy="383" rx="161" ry="20" fill="#77c9ff" opacity=".14"/>
+<path d="M352 179C354 94 417 80 489 80c81 0 141 27 143 110l-2 100c0 73-53 96-144 96-93 0-138-36-137-104z" fill="url(#s)" stroke="#c4e6ff" stroke-width="6"/>
+<rect x="380" y="137" width="218" height="194" rx="81" fill="#152844"/><ellipse cx="439" cy="231" rx="27" ry="37" fill="#88e6ff"/><ellipse cx="536" cy="231" rx="27" ry="37" fill="#88e6ff"/><ellipse cx="449" cy="219" rx="9" ry="12" fill="#fff" opacity=".9"/><ellipse cx="546" cy="219" rx="9" ry="12" fill="#fff" opacity=".9"/>
+<path d="M481 289q17 15 34 0" fill="none" stroke="#88e6ff" stroke-width="6" stroke-linecap="round"/>
+<g fill="#8adcf9"><circle cx="318" cy="225" r="10"/><circle cx="652" cy="181" r="9"/><circle cx="663" cy="316" r="6"/><circle cx="293" cy="295" r="5"/></g>
+</svg>
