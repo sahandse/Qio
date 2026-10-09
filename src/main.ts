@@ -9,15 +9,12 @@ type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;st
 let sources: SourceStatus[] = [];
 type AgentEvent={agent:string;kind:string;label:string;observed_at:number};
 let events:AgentEvent[]=[];
-type BridgeActivity={title:string;kind:string;at:number|null};
-type BridgeSnapshot={connected:boolean;source:string;activities:BridgeActivity[];message:string};
-let bridge:BridgeSnapshot={connected:false,source:'dotpals-local',activities:[],message:'بررسی نشده'};
 type AIProvider={id:string;name:string;region:string;key_configured:boolean};
 let providers:AIProvider[]=[];
 let providerId='avalai';let modelId='';let promptText='';let aiResponse='';let aiBusy=false;let aiError='';
 let eventError='';
 const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]??''));
-async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); eventError=''; const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0));if(newest>lastHistory && lastHistory>0) mood='alert'; lastHistory=newest;render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); } }
+async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); eventError=''; const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0));if(newest>lastHistory && lastHistory>0) mood='alert'; lastHistory=newest; if (!document.activeElement?.matches('input,textarea,select')) render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); if (!document.activeElement?.matches('input,textarea,select')) render(); } }
 
 async function fetchProviders(){if(!('__TAURI_INTERNALS__' in window))return;try{providers=await invoke<AIProvider[]>('ai_providers');render()}catch(e){console.warn(e)}}
 async function sendChat(){if(aiBusy||!('__TAURI_INTERNALS__' in window))return;aiBusy=true;aiError='';render();try{aiResponse=await invoke<string>('ai_chat',{provider:providerId,model:modelId,message:promptText})}catch(error){aiError=String(error)}finally{aiBusy=false;render()}}
