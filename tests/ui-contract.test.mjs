@@ -18,3 +18,16 @@ test('expanded and mini resize commands are registered',()=>{
   assert.match(ui,/invoke\('set_mini_mode'/);
   assert.match(ui,/invoke\('set_island_expanded'/);
 });
+
+test('visual agent list comes only from detected local sources',()=>{
+ const ui=readFileSync('src/main.ts','utf8');
+ assert.match(ui,/sources\.filter\(s=>s\.detected\)/);
+ assert.doesNotMatch(ui,/const agents = \[/);
+ assert.doesNotMatch(ui,/data-mood=/);
+ assert.match(ui,/latestHook\(\)/);
+});
+test('chat rejects incomplete messages and settings contain real support link',()=>{
+ const ui=readFileSync('src/main.ts','utf8');
+ assert.match(ui,/if\(aiBusy\|\|!modelId\.trim\(\)\|\|!promptText\.trim\(\)/);
+ assert.match(ui,/https:\/\/t\.me\/sahandse/);
+});
