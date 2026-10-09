@@ -187,3 +187,17 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .mood-working .mood-dot,.mood-thinking .mood-dot{background:#86c8ff;box-shadow:0 0 0 5px #86c8ff15}
 .mood-sleep .mood-dot{background:#849ab0;box-shadow:none}
 .island.open .mascot-spark{font-size:12px}
+
+/* Compact 240px companion mode; expanded restores full workspace. */
+.app:not(:has(.tab-bar)){padding:9px 13px;gap:2px}
+.app:not(:has(.tab-bar)) .topbar{min-height:26px}
+.app:not(:has(.tab-bar)) .island{padding:0;gap:1px}
+.app:not(:has(.tab-bar)) .mascot{height:93px;width:140px}
+.app:not(:has(.tab-bar)) .shell{scale:.57}
+.app:not(:has(.tab-bar)) .shadow{bottom:0;scale:.65}
+.app:not(:has(.tab-bar)) .status{font-size:13px;margin:0}
+.app:not(:has(.tab-bar)) .substatus{font-size:10px;line-height:1.3}
+.app:not(:has(.tab-bar)) .actions{margin-top:4px}
+.app:not(:has(.tab-bar)) .actions button{padding:7px 9px;font-size:10px}
+.app:not(:has(.tab-bar)) footer{padding-top:3px;gap:3px;font-size:9px}
+.app:not(:has(.tab-bar)) footer .text-button{min-height:25px;padding:2px 3px}
