@@ -116,6 +116,7 @@ struct ProviderInfo {
 }
 fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
     match id {
+        "hooshgar" => Some(("هوشگر (ایران)","ایرانی","https://api.hooshgar.ir/v1/chat/completions","HOOSHGAR_API_KEY")),
         "avalai" => Some(("اول‌ای‌آی (ایران)","ایرانی","https://api.avalai.ir/v1/chat/completions","AVALAI_API_KEY")),
         "openai" => Some(("OpenAI","بین‌المللی","https://api.openai.com/v1/chat/completions","OPENAI_API_KEY")),
         "openrouter" => Some(("OpenRouter","بین‌المللی","https://openrouter.ai/api/v1/chat/completions","OPENROUTER_API_KEY")),
@@ -129,9 +130,9 @@ fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static st
 }
 #[tauri::command]
 fn ai_providers()->Vec<ProviderInfo>{
-    ["avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
+    ["hooshgar","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
         .iter().filter_map(|id|provider_details(id).map(|(name,region,_,key)|ProviderInfo {
-            id:match *id {"avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
+            id:match *id {"hooshgar"=>"hooshgar","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
             name,region,key_configured:key.is_empty()||env::var(key).is_ok_and(|v|!v.trim().is_empty())
         })).collect()
 }
