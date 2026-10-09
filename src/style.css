@@ -70,3 +70,5 @@ html,body,#app{background:transparent!important;min-width:0;min-height:100%;}bod
 .guide-links button{background:#8be5f2;color:#102c3b;font-weight:700}
 .guide-links a{color:#c9e2ff;background:#253c55}
 @media(max-width:360px){.guide-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.guide-hero{display:block;width:100%;height:auto;max-height:170px;object-fit:cover;border-radius:13px;margin-top:13px;border:1px solid #385676}
