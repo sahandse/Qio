@@ -324,6 +324,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
+      .plugin(tauri_plugin_opener::init())
       .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
