@@ -33,7 +33,7 @@ const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,ch=>( {'&':'&amp;','<':'&lt;',
 async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try {await invoke('qio_heartbeat');pendingApprovals=await invoke<PendingApproval[]>('qio_pending_approvals'); sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); hookEvents=await invoke<AgentEvent[]>('qio_hook_events');testEvidence=await invoke<TestEvidence|null>('latest_test_evidence'); eventError=''; const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0),...hookEvents.map(e=>e.observed_at||0));if(newest>lastHistory && lastHistory>0){mood='alert';chime('alert');if(notificationsEnabled)sendNotification({title:'کیو',body:'فعالیت جدید در نشست هوش مصنوعی ثبت شد'});} lastHistory=newest; if (!document.activeElement?.matches('input,textarea,select')) render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); if (!document.activeElement?.matches('input,textarea,select')) render(); } }
 
 async function fetchProviders(){if(!('__TAURI_INTERNALS__' in window))return;try{providers=await invoke<AIProvider[]>('ai_providers');render()}catch(e){console.warn(e)}}
-function chime(type:'success'|'alert'='success'){if(!soundEnabled)return;try{const AudioCtx=window.AudioContext;const ctx=new AudioCtx();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(type==='success'?660:440,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(type==='success'?880:520,ctx.currentTime+.13);gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.065,ctx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.21);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.22);void ctx.close().catch(()=>{});}catch{}}
+function chime(type:'success'|'alert'='success'){if(!soundEnabled)return;try{const AudioCtx=window.AudioContext;const ctx=new AudioCtx();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(type==='success'?660:440,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(type==='success'?880:520,ctx.currentTime+.13);gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.065,ctx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.21);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.22);osc.onended=()=>{void ctx.close().catch(()=>{})};}catch{}}
 async function sendChat(){if(aiBusy||!('__TAURI_INTERNALS__' in window))return;aiBusy=true;aiError='';render();try{aiResponse=await invoke<string>('ai_chat',{provider:providerId,model:modelId,message:promptText});mood='happy';chime()}catch(error){aiError=String(error)}finally{aiBusy=false;render()}}
 async function decideApproval(id:string,decision:'allow'|'deny'){try{await invoke('qio_decide_approval',{id,decision});pendingApprovals=pendingApprovals.filter(p=>p.id!==id);render()}catch(e){alert('پاسخ درخواست ثبت نشد: '+String(e))}}
 let reducedMotion = localStorage.getItem('qio-reduced-motion') === 'yes' || (localStorage.getItem('qio-reduced-motion')===null && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -101,13 +101,13 @@ function render() {
      face.style.setProperty('--look-x',x+'px');face.style.setProperty('--look-y',y+'px');
   });
   document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
-  document.querySelector('#mascot')?.addEventListener('click',()=>{
+  document.querySelector('#mascot')?.addEventListener('click',()=>{if(miniMode){toggle();return;}
     if(mood==='happy')mood='thinking';
     else mood='happy';
     render();
   });
 }
-function toggle(){expanded=!expanded;render();if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error)); }}
+function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:false}).catch(console.error);}expanded=!expanded;render();if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error)); }}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
 document.documentElement.classList.toggle('reduced',reducedMotion);
 document.documentElement.classList.toggle('light-theme',lightTheme);
