@@ -16,16 +16,19 @@ let input;
 try{input=JSON.parse(raw)}catch{process.exit(0)}
 if(input?.hook_event_name!=='PermissionRequest')process.exit(0);
 const id=randomUUID();
-const dir=join(homedir(),'.qio','approvals');
+const root=join(homedir(),'.qio');
+const dir=join(root,'approvals');
 const pending=join(dir,id+'.request.json');
 const answer=join(dir,id+'.answer.json');
 const display=(value,max)=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,max);
 const tool=display(input.tool_name,100);
 const preview=display(input.tool_input?.command??input.tool_input?.file_path??input.tool_input?.path??'',450);
 try{
+ const heartbeat=Number(await readFile(join(root,'heartbeat'),'utf8'));
+ if(!Number.isFinite(heartbeat) || (Date.now()/1000-heartbeat)>25)process.exit(0);
  await mkdir(dir,{recursive:true,mode:0o700});
- await writeFile(pending,JSON.stringify({id,tool,preview,at:Date.now(),expires_at:Date.now()+45000})+'\n',{mode:0o600,flag:'wx'});
- for(let i=0;i<90;i++){
+ await writeFile(pending,JSON.stringify({id,tool,preview,at:Date.now(),expires_at:Date.now()+20000})+'\n',{mode:0o600,flag:'wx'});
+ for(let i=0;i<40;i++){
    await sleep(500);
    let decision;
    try{decision=JSON.parse(await readFile(answer,'utf8'))}catch{continue}
