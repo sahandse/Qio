@@ -14,12 +14,14 @@
       {
         "label": "main",
         "title": "کیو | Qio",
-        "width": 390,
-        "height": 610,
-        "minWidth": 340,
-        "minHeight": 500,
+        "width": 300,
+        "height": 300,
+        "minWidth": 280,
+        "minHeight": 260,
         "backgroundColor": "#101522",
-        "decorations": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": false,
         "transparent": false,
         "visible": true
       }
