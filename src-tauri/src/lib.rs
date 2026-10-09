@@ -235,6 +235,69 @@ fn latest_test_evidence()->Option<TestEvidence>{
     latest
 }
 
+
+#[derive(Serialize)]
+struct PendingApproval {
+    id: String,
+    tool: String,
+    preview: String,
+    expires_at: u64,
+}
+fn qio_root()->Option<PathBuf>{
+    env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from).map(|h|h.join(".qio"))
+}
+#[tauri::command]
+fn qio_heartbeat() -> Result<(),String> {
+    let root=qio_root().ok_or("پوشه کاربر پیدا نشد")?;
+    fs::create_dir_all(&root).map_err(|e|e.to_string())?;
+    let now=SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_secs();
+    fs::write(root.join("heartbeat"),now.to_string()).map_err(|e|e.to_string())
+}
+#[tauri::command]
+fn qio_pending_approvals()->Vec<PendingApproval>{
+    let Some(root)=qio_root() else{return vec![]};
+    let directory=root.join("approvals");
+    let now=SystemTime::now().duration_since(UNIX_EPOCH).map(|d|d.as_millis() as u64).unwrap_or(0);
+    let Ok(entries)=fs::read_dir(directory) else {return vec![]};
+    let mut result=vec![];
+    for item in entries.flatten().take(60){
+        let path=item.path();
+        if !path.file_name().and_then(|x|x.to_str()).is_some_and(|s|s.ends_with(".request.json")){continue}
+        let Ok(raw)=fs::read_to_string(&path) else{continue};
+        if raw.len()>4096{continue}
+        let Ok(v)=serde_json::from_str::<serde_json::Value>(&raw) else{continue};
+        let id=v.get("id").and_then(|x|x.as_str()).unwrap_or("");
+        if id.len()!=36 || !id.bytes().all(|b|b.is_ascii_hexdigit()||b==b'-'){continue}
+        let expires_at=v.get("expires_at").and_then(|x|x.as_u64()).unwrap_or(0);
+        if expires_at<=now{continue}
+        result.push(PendingApproval{
+            id:id.into(),
+            tool:v.get("tool").and_then(|x|x.as_str()).unwrap_or("").chars().take(100).collect(),
+            preview:v.get("preview").and_then(|x|x.as_str()).unwrap_or("").chars().take(450).collect(),
+            expires_at,
+        });
+    }
+    result
+}
+#[tauri::command]
+fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
+    if id.len()!=36 || !id.bytes().all(|b|b.is_ascii_hexdigit()||b==b'-'){return Err("شناسه نامعتبر است".into())}
+    if decision!="allow" && decision!="deny"{return Err("تصمیم نامعتبر است".into())}
+    let directory=qio_root().ok_or("پوشه کاربر پیدا نشد")?.join("approvals");
+    let request=directory.join(format!("{id}.request.json"));
+    let raw=fs::read_to_string(&request).map_err(|_|"درخواست دیگر معتبر نیست")?;
+    let v:serde_json::Value=serde_json::from_str(&raw).map_err(|_|"درخواست معتبر نیست")?;
+    if v.get("id").and_then(|x|x.as_str())!=Some(id.as_str()){return Err("شناسه درخواست تطبیق ندارد".into())}
+    let expires_at=v.get("expires_at").and_then(|x|x.as_u64()).unwrap_or(0);
+    let now=SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_millis() as u64;
+    if now>=expires_at{return Err("مهلت درخواست تمام شده".into())}
+    let path=directory.join(format!("{id}.answer.json"));
+    let payload=serde_json::json!({"id":id,"decision":decision});
+    let mut file=fs::OpenOptions::new().create_new(true).write(true).open(path).map_err(|_|"این درخواست قبلاً پاسخ داده شده")?;
+    use std::io::Write;
+    file.write_all(payload.to_string().as_bytes()).map_err(|e|e.to_string())
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -255,7 +318,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
