@@ -19,6 +19,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
       - run: npm run build
+      - name: Rust compile check
+        run: cargo check --manifest-path src-tauri/Cargo.toml
       - name: Generate icons
         run: npx tauri icon assets/qio.svg
       - name: Compile desktop application
@@ -30,4 +32,4 @@ jobs:
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/dmg/*.dmg
-          if-no-files-found: warn
+          if-no-files-found: error
