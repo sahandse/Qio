@@ -57,3 +57,4 @@ document.documentElement.classList.toggle('reduced',reducedMotion);
 render();
 
 void refreshAgents();
+window.setInterval(() => { if (document.visibilityState === 'visible') void refreshAgents(); }, 15000);
