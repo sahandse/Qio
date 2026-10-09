@@ -93,6 +93,52 @@ fn recent_agent_events()->Vec<RecentEvent>{
     events
 }
 
+
+#[derive(Serialize)]
+struct BridgeSnapshot {
+    connected: bool,
+    source: &'static str,
+    activities: Vec<BridgeActivity>,
+    message: String,
+}
+#[derive(Serialize)]
+struct BridgeActivity {
+    title: String,
+    kind: String,
+    at: Option<u64>,
+}
+fn allowed_short(value:&str)->String { value.chars().filter(|c|!c.is_control()).take(100).collect() }
+#[tauri::command]
+fn dotpals_snapshot()->BridgeSnapshot {
+    use std::io::{Read,Write};
+    use std::net::{TcpStream,ToSocketAddrs};
+    use std::time::Duration;
+    let mut result=BridgeSnapshot{connected:false,source:"dotpals-local",activities:vec![],message:"پل محلی DotPals پیدا نشد".into()};
+    // A fixed loopback address avoids accessing remote services or user-controlled URLs.
+    let Some(addr)=("127.0.0.1",5175).to_socket_addrs().ok().and_then(|mut a|a.next()) else {return result};
+    let Ok(mut stream)=TcpStream::connect_timeout(&addr,Duration::from_millis(400)) else {return result};
+    let _=stream.set_read_timeout(Some(Duration::from_millis(800)));
+    let _=stream.set_write_timeout(Some(Duration::from_millis(800)));
+    if stream.write_all(b"GET /api/activity HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n").is_err(){return result}
+    let mut bytes=Vec::new();let mut limited=stream.take(524288);
+    if limited.read_to_end(&mut bytes).is_err(){return result}
+    let response=String::from_utf8_lossy(&bytes);
+    let Some((header,body))=response.split_once("\r\n\r\n") else{return result};
+    if !header.starts_with("HTTP/1.1 200") && !header.starts_with("HTTP/1.0 200"){return result}
+    let Ok(parsed)=serde_json::from_str::<serde_json::Value>(body) else{return result};
+    let Some(entries)=parsed.get("entries").and_then(|v|v.as_array()) else{return result};
+    result.connected=true;
+    result.message="DotPals محلی متصل است".into();
+    for entry in entries.iter().rev().take(12) {
+        let kind=entry.get("kind").and_then(|v|v.as_str()).unwrap_or("activity");
+        let title=entry.get("title").and_then(|v|v.as_str()).unwrap_or("فعالیت ثبت‌شده");
+        let at=entry.get("at").and_then(|v|v.as_u64());
+        // Display labels only; ignore tool arguments, paths, outputs and prompts.
+        result.activities.push(BridgeActivity{kind:allowed_short(kind),title:allowed_short(title),at});
+    }
+    result
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -112,7 +158,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 #[cfg_attr(mobile,tauri::mobile_entry_point)]
 pub fn run(){
     tauri::Builder::default()
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,dotpals_snapshot])
       .setup(|app|{
          let window=app.get_webview_window("main").expect("main window missing");
          window.set_always_on_top(true)?;
