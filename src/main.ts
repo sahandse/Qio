@@ -39,7 +39,7 @@ async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; 
 
 async function fetchProviders(){if(!('__TAURI_INTERNALS__' in window))return;try{providers=await invoke<AIProvider[]>('ai_providers');render()}catch(e){console.warn(e)}}
 function chime(type:'success'|'alert'='success'){if(!soundEnabled)return;try{const AudioCtx=window.AudioContext;const ctx=new AudioCtx();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(type==='success'?660:440,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(type==='success'?880:520,ctx.currentTime+.13);gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.065,ctx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.21);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.22);osc.onended=()=>{void ctx.close().catch(()=>{})};}catch{}}
-async function sendChat(){if(aiBusy||!('__TAURI_INTERNALS__' in window))return;aiBusy=true;aiError='';render();try{aiResponse=await invoke<string>('ai_chat',{provider:providerId,model:modelId,message:promptText});mood='happy';chime()}catch(error){aiError=String(error)}finally{aiBusy=false;render()}}
+async function sendChat(){if(aiBusy||!modelId.trim()||!promptText.trim()||!('__TAURI_INTERNALS__' in window))return;aiBusy=true;aiError='';render();try{aiResponse=await invoke<string>('ai_chat',{provider:providerId,model:modelId,message:promptText});mood='happy';chime()}catch(error){aiError=String(error)}finally{aiBusy=false;render()}}
 async function decideApproval(id:string,decision:'allow'|'deny'){try{await invoke('qio_decide_approval',{id,decision});pendingApprovals=pendingApprovals.filter(p=>p.id!==id);render()}catch(e){alert('پاسخ درخواست ثبت نشد: '+String(e))}}
 let reducedMotion = localStorage.getItem('qio-reduced-motion') === 'yes' || (localStorage.getItem('qio-reduced-motion')===null && matchMedia('(prefers-reduced-motion: reduce)').matches);
 let lightTheme = localStorage.getItem('qio-theme')==='light';
@@ -83,7 +83,7 @@ function render() {
   document.querySelector<HTMLTextAreaElement>('#ai-prompt')?.addEventListener('input',e=>{promptText=(e.target as HTMLTextAreaElement).value;});
   document.querySelector('#ai-send')?.addEventListener('click',()=>void sendChat());
   document.querySelector('#clear-chat')?.addEventListener('click',()=>{aiResponse='';aiError='';render()});
-  document.querySelector('#copy-answer')?.addEventListener('click',()=>void navigator.clipboard.writeText(aiResponse).catch(console.warn));
+  document.querySelector('#copy-answer')?.addEventListener('click',()=>{void navigator.clipboard.writeText(aiResponse).catch(console.warn)});
   document.querySelector('#sound-toggle')?.addEventListener('click',()=>{soundEnabled=!soundEnabled;localStorage.setItem('qio-sounds',soundEnabled?'yes':'no');if(soundEnabled)chime();render()});
   document.querySelectorAll<HTMLAnchorElement>('a.telegram-link').forEach(link=>link.addEventListener('click',event=>{if(!('__TAURI_INTERNALS__' in window))return;event.preventDefault();void openUrl('https://t.me/sahandse').catch(console.error)}));
   document.querySelector('#help-toggle')?.addEventListener('click',()=>{showHelp=!showHelp;render()});
@@ -108,7 +108,7 @@ function render() {
      face.style.setProperty('--look-x',x+'px');face.style.setProperty('--look-y',y+'px');
   });
   document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
-  document.querySelector('#mascot')?.addEventListener('click',()=>{if(miniMode)toggle();else toggle();});
+  document.querySelector('#mascot')?.addEventListener('click',toggle);
 }
 function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');expanded=true;}else{expanded=!expanded;}render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error));}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
