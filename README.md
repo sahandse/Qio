@@ -12,7 +12,9 @@
 - Hook مستقل کیو برای رویدادهای Claude و تعدادی قالب رویداد عمومی؛ بدون نیاز به Coucou/DotPals
 - تأیید و رد **دستی** درخواست مجوز Claude Code از پنل کیو (Hook اختیاری و محدود به زمان)
 - ثبت کد خروج واقعی دستورهای تست؛ بدون ادعای صحت تازه‌ترین نسخه کد
-- گفت‌وگوی مستقیم با AvalAI، Hooshgar، OpenAI، OpenRouter، DeepSeek، Groq، Together AI، Ollama و LM Studio
+- گفت‌وگوی مستقیم با AvalAI، Hooshgar، OpenAI، OpenRouter، DeepSeek، Groq، Together AI، Mistral AI، xAI Grok، Fireworks AI، Cerebras، Ollama و LM Studio
+
+- راهنمای تصویری درون برنامه برای هر یک از ۱۳ ارائه‌دهنده، با مراحل اختصاصی و لینک رسمی
 
 ## راه‌اندازی
 
