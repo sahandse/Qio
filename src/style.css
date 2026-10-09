@@ -179,3 +179,11 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .light-theme .brand-signal{background:#149f8b}
 .light-theme .substatus{color:#49667e}
 @media(prefers-reduced-motion:reduce){.brand-signal,.mascot-spark,.approval-card{animation:none!important}}
+
+/* Character reaction feedback */
+.mascot{cursor:pointer}
+.mascot:hover .shell{filter:brightness(1.055)}
+.mood-alert .mood-dot,.mood-error .mood-dot{background:#ffbb85;box-shadow:0 0 0 5px #ffaa8217,0 0 11px #ffba82a1}
+.mood-working .mood-dot,.mood-thinking .mood-dot{background:#86c8ff;box-shadow:0 0 0 5px #86c8ff15}
+.mood-sleep .mood-dot{background:#849ab0;box-shadow:none}
+.island.open .mascot-spark{font-size:12px}
