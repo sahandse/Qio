@@ -33,6 +33,66 @@ fn local_agent_status() -> Vec<AgentStatus> {
         AgentStatus{name,source,detected,last_event_unix:last,state:if last.is_some(){"history-found"}else if detected{"directory-found"}else{"not-found"}}
     }).collect()
 }
+
+#[derive(Serialize)]
+struct RecentEvent {
+    agent: &'static str,
+    kind: String,
+    label: String,
+    observed_at: u64,
+}
+fn find_latest_jsonl(root: &Path, depth: usize, best: &mut Option<(PathBuf,SystemTime)>) {
+    if depth==0 {return}
+    if let Ok(iter)=fs::read_dir(root) {
+        for entry in iter.flatten().take(1500) {
+            let path=entry.path();
+            if path.is_dir(){find_latest_jsonl(&path,depth-1,best)}
+            else if path.extension().and_then(|x|x.to_str())==Some("jsonl") {
+                if let Ok(time)=entry.metadata().and_then(|m|m.modified()){
+                    if best.as_ref().is_none_or(|(_,old)|time>*old){*best=Some((path,time));}
+                }
+            }
+        }
+    }
+}
+fn recent_events_from(root:&Path, agent:&'static str)->Vec<RecentEvent>{
+    let mut latest=None;
+    find_latest_jsonl(root,7,&mut latest);
+    let Some((path,modified))=latest else {return vec![]};
+    let timestamp=modified.duration_since(UNIX_EPOCH).map(|d|d.as_secs()).unwrap_or(0);
+    let Ok(file)=fs::File::open(path) else {return vec![]};
+    use std::io::{BufRead,BufReader};
+    let mut ring=std::collections::VecDeque::with_capacity(25);
+    // Read structured metadata only. Never expose prompts, command arguments or file contents.
+    for line in BufReader::new(file).lines().map_while(Result::ok){
+        if line.len()>1_000_000{continue}
+        if let Ok(value)=serde_json::from_str::<serde_json::Value>(&line){
+            let event_type=value.get("type").and_then(|v|v.as_str()).unwrap_or("");
+            let kind=match event_type {
+                "session_meta" => "session",
+                "assistant" | "response_item" => "activity",
+                "tool_result" => "tool-result",
+                "event_msg" => "activity",
+                _ => continue,
+            };
+            ring.push_back(RecentEvent{agent,kind:kind.into(),label:match kind{
+                "session"=>"نشست شناسایی شد",
+                "tool-result"=>"پاسخ ابزار ثبت شد",
+                _=>"فعالیت ثبت شد",
+            }.into(),observed_at:timestamp});
+            if ring.len()>25{ring.pop_front();}
+        }
+    }
+    ring.into_iter().collect()
+}
+#[tauri::command]
+fn recent_agent_events()->Vec<RecentEvent>{
+    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else {return vec![]};
+    let mut events=recent_events_from(&home.join(".codex/sessions"),"Codex");
+    events.extend(recent_events_from(&home.join(".claude/projects"),"Claude Code"));
+    events
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -52,7 +112,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 #[cfg_attr(mobile,tauri::mobile_entry_point)]
 pub fn run(){
     tauri::Builder::default()
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events])
       .setup(|app|{
          let window=app.get_webview_window("main").expect("main window missing");
          window.set_always_on_top(true)?;
