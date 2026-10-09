@@ -18,6 +18,12 @@ for(const event of events){
   value.push({hooks:[{type:'command',command,timeout:5,async:true}]});
   clone.hooks[event]=value;
 }
+const approval=resolve('scripts','qio-approval-hook.mjs');
+const approvalCommand='node '+JSON.stringify(approval);
+clone.hooks.PermissionRequest??=[];
+if(!clone.hooks.PermissionRequest.some(group=>Array.isArray(group.hooks)&&group.hooks.some(h=>h.command===approvalCommand))){
+ clone.hooks.PermissionRequest.push({hooks:[{type:'command',command:approvalCommand,timeout:25}]});
+}
 await mkdir(join(homedir(),'.claude'),{recursive:true});
 try{await copyFile(settings,settings+'.qio-backup-'+Date.now())}catch(e){if(e?.code!=='ENOENT')throw e}
 await writeFile(settings,JSON.stringify(clone,null,2)+'\n',{encoding:'utf8',mode:0o600});
