@@ -305,7 +305,7 @@ fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     // Preserve the position chosen by the user. Only change the content size.
-    let (w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
+    let (w,h)=if expanded{(390.0,610.0)}else{(300.0,240.0)};
     window.set_size(Size::Logical(LogicalSize::new(w,h))).map_err(|e|e.to_string())?;
     window.set_always_on_top(true).map_err(|e|e.to_string())?;
     Ok(())
