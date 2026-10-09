@@ -1,0 +1,11 @@
+{
+  "identifier": "main-capability",
+  "description": "Qio app core and notification permissions",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "notification:default"
+  ]
+}
