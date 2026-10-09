@@ -1,4 +1,5 @@
 import './style.css';
+import { invoke } from '@tauri-apps/api/core';
 type Mood = 'idle' | 'thinking' | 'happy' | 'alert';
 let mood: Mood = 'idle';
 let expanded = false;
@@ -44,6 +45,7 @@ function render() {
   });
   document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
 }
-function toggle(){expanded=!expanded;render()}
+function toggle(){expanded=!expanded;render();if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error)); }}
+if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
 document.documentElement.classList.toggle('reduced',reducedMotion);
 render();
