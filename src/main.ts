@@ -18,7 +18,7 @@ function mascot() {
 }
 function render() {
   app.innerHTML = `<div class="app">
-  <header class="topbar"><span class="brand">کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
+  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand">کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
   <main><section class="island ${expanded?'open':''}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
     <span class="substatus">هنوز هیچ عامل هوش مصنوعی متصل نشده</span>
@@ -28,8 +28,10 @@ function render() {
   <div class="agents">${agents.map(a=>`<div class="agent"><span class="agent-icon">${a.icon}</span><span class="agent-title">${a.name}</span><span class="agent-status">متصل نیست</span></div>`).join('')}</div>
   <div class="notice" role="status">این نسخه، پیش‌نمایش تعاملی رابط است. برای نمایش رویدادهای واقعی باید اتصال اختصاصی هر عامل پیاده‌سازی شود.</div>
   </section>` : ''}
-  </main><footer><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
+  </main><footer><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
   </div>`;
+  document.querySelector('#drag-region')?.addEventListener('pointerdown',e=>{if ((e.target as HTMLElement).closest('button'))return;if ('__TAURI_INTERNALS__' in window) {void invoke('drag_island').catch(console.error);}});
+  document.querySelector('#quit')?.addEventListener('click',()=>{if ('__TAURI_INTERNALS__' in window) {void invoke('quit_qio');} else {alert('خروج در نسخه دسکتاپ فعال است.');}});
   document.querySelector('#collapse')?.addEventListener('click',toggle);
   document.querySelector('#toggle')?.addEventListener('click',toggle);
   document.querySelector('#surprise')?.addEventListener('click',()=>{ mood='happy'; render(); });
