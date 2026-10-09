@@ -28,3 +28,11 @@
 
 ## Acknowledgments
 Inspired by https://github.com/Louis-CFM/coucou and https://github.com/Rikinshah787/dotpals. Qio uses original UI/mascot assets. Third-party source should be reused only with its applicable license notices.
+
+
+## 2026-10-09 — Independent monitoring update
+- Removed optional DotPals bridge from Qio's Rust runtime: no external bridge is needed for the Codex and Claude activity feed.
+- Improved native JSONL event classification: recognizes tool calls, tool responses, task start, task completion and general activity; never equates these events to a successful test.
+- Preserved typed input fields while refreshing the monitor.
+- CI now runs a Rust compile check on Windows and macOS and fails if no installer artifact is produced.
+- **Not verified:** a successful CI run, installer functionality, native approvals, and evidence-based test-verdict checking. These require additional implementation and manual validation.
