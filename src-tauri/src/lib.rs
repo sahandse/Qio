@@ -1,7 +1,7 @@
 use tauri::{Manager, PhysicalPosition, LogicalSize, Size};
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window, expanded: bool) -> Result<(), String> {
-    let (w, h) = if expanded { (390.0, 610.0) } else { (300.0, 300.0) };
+    let (w, h) = if expanded { (390.0, 610.0) } else { (300.0, 450.0) };
     window.set_size(Size::Logical(LogicalSize::new(w, h))).map_err(|e| e.to_string())?;
     window.set_always_on_top(true).map_err(|e| e.to_string())?;
     if let Some(monitor) = window.current_monitor().map_err(|e| e.to_string())? {
@@ -19,7 +19,7 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![set_island_expanded])
         .setup(|app| {
-            let window = app.get_webview_window("main").ok_or("main window missing")?;
+            let window = app.get_webview_window("main").expect("main window missing");
             window.set_always_on_top(true)?;
             Ok(())
         })
