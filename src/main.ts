@@ -82,7 +82,7 @@ function render() {
   document.querySelector('#clear-chat')?.addEventListener('click',()=>{aiResponse='';aiError='';render()});
   document.querySelector('#copy-answer')?.addEventListener('click',()=>void navigator.clipboard.writeText(aiResponse).catch(console.warn));
   document.querySelector('#sound-toggle')?.addEventListener('click',()=>{soundEnabled=!soundEnabled;localStorage.setItem('qio-sounds',soundEnabled?'yes':'no');if(soundEnabled)chime();render()});
-  document.querySelector('#mini-toggle')?.addEventListener('click',()=>{miniMode=!miniMode;expanded=false;document.documentElement.classList.toggle('qio-mini',miniMode);if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:miniMode}).catch(console.error);render()});
+  document.querySelector('#mini-toggle')?.addEventListener('click',()=>{miniMode=!miniMode;expanded=false;document.documentElement.classList.toggle('qio-mini',miniMode);render();if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:miniMode}).catch(console.error)});
   document.querySelectorAll<HTMLElement>('[data-approve]').forEach(b=>b.addEventListener('click',()=>void decideApproval(b.dataset.approve!,'allow')));
   document.querySelectorAll<HTMLElement>('[data-deny]').forEach(b=>b.addEventListener('click',()=>void decideApproval(b.dataset.deny!,'deny')));
   document.querySelector('#collapse')?.addEventListener('click',toggle);
@@ -107,7 +107,7 @@ function render() {
     render();
   });
 }
-function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:false}).catch(console.error);}expanded=!expanded;render();if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error)); }}
+function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');expanded=true;}else{expanded=!expanded;}render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error));}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
 document.documentElement.classList.toggle('reduced',reducedMotion);
 document.documentElement.classList.toggle('light-theme',lightTheme);
