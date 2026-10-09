@@ -38,3 +38,35 @@ html,body,#app{background:transparent!important;min-width:0;min-height:100%;}bod
 .approval-card b{font-size:12px}.approval-card p{color:#cbd6e5;font-size:11px;overflow-wrap:anywhere;line-height:1.7}
 .approval-actions{display:flex;gap:8px}.approval-actions button{padding:9px;border-radius:9px;background:#68dfce;color:#0b292a;font-size:11px;flex:1;font-weight:700}
 .approval-actions button.deny{background:#412b3a;color:#ffc8d0;border:1px solid #845268}
+
+/* Illustrated, lightweight Qio provider handbook */
+.guide-section{margin-top:12px;border:1px solid #31435d;background:linear-gradient(135deg,#14263a,#152138);border-radius:15px;padding:12px}
+.guide-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.guide-head div{display:flex;flex-direction:column;gap:5px}
+.guide-head strong{font-size:12px}.guide-head small{font-size:10px;color:#8faec8}
+.guide-toggle{border-radius:9px;background:#263b54;color:#d8edff;font-size:11px;padding:9px}
+.guide-filter{display:flex;gap:5px;flex-wrap:wrap;margin-top:13px}
+.guide-filter button{border:1px solid #334c63;background:#1b2c41;color:#a7bdd2;border-radius:20px;padding:7px 11px;font-size:10px}
+.guide-filter button.active{background:#83e1f5;color:#102b3b}
+.guide-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}
+.guide-card{min-width:0;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;background:#1d3047;border:1px solid #2c4561;border-radius:12px;padding:12px 4px;color:#eaf5ff}
+.guide-card.chosen{border-color:#86e5f8;background:#233b57}
+.guide-card>b{font-size:11px;overflow-wrap:anywhere}.guide-card small{color:#9eb6c9;font-size:9px}
+.guide-illustration{position:relative;isolation:isolate;display:grid;place-items:center;width:53px;height:53px;flex-shrink:0;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--guide-color) 65%,white),var(--guide-color) 55%,#192d49 110%);box-shadow:inset 0 2px 8px #ffffff66,0 9px 20px #080f1b85}
+.guide-illustration b{position:relative;z-index:2;font-size:25px;color:#102b40;filter:drop-shadow(0 1px 2px #fff7)}
+.guide-orbit{position:absolute;inset:9px -13px;border:1.5px solid #ffffff80;transform:rotate(-30deg);border-radius:50%}
+.guide-illustration.large{width:66px;height:66px;border-radius:23px}
+.guide-detail{margin-top:13px;border-radius:12px;background:#112033;border:1px solid #344e67;padding:13px}
+.guide-detail-head{display:flex;align-items:center;gap:10px}
+.guide-detail-head strong{font-size:15px}
+.guide-detail-head p{font-size:10px;line-height:1.7;color:#abc1d5;margin:4px 0}
+.guide-detail ol{padding-right:22px;padding-left:0;line-height:2;font-size:11px;color:#d9e6f2}
+.guide-detail li{margin-bottom:7px}
+.guide-env{color:#b5cee0;font-size:10px;overflow-wrap:anywhere}
+.guide-env code{color:#a2efd8}
+.guide-tip{background:#223750;padding:10px;border-radius:9px;font-size:10px;line-height:1.9;color:#c5d8ed}
+.guide-links{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.guide-links button,.guide-links a{font-size:11px;text-decoration:none;border-radius:9px;padding:9px 11px}
+.guide-links button{background:#8be5f2;color:#102c3b;font-weight:700}
+.guide-links a{color:#c9e2ff;background:#253c55}
+@media(max-width:360px){.guide-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
