@@ -103,3 +103,13 @@ footer{flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid
 footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .event-row{min-width:0}.event-row span{overflow-wrap:anywhere}
 @media(prefers-reduced-motion:reduce){.guide-card{transition:none}}
+
+/* Give expanded panels room for the actual task. */
+.island.open{padding:0 2px 7px;gap:3px}
+.island.open .mascot{height:90px;width:130px}
+.island.open .shell{scale:.55}
+.island.open .shadow{scale:.65;bottom:0}
+.island.open .status{font-size:13px}
+.island.open .substatus{font-size:10px}
+.island.open .actions{margin-top:3px}
+.island.open .actions button{padding:8px 10px}
