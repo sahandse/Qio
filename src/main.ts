@@ -7,7 +7,10 @@ let lastHistory = 0;
 let expanded = false;
 type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;state:string};
 let sources: SourceStatus[] = [];
-async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0));if(newest>lastHistory && lastHistory>0) mood='alert'; lastHistory=newest;render(); } catch(error){ console.warn('Could not read local agent status',error); } }
+type AgentEvent={agent:string;kind:string;label:string;observed_at:number};
+let events:AgentEvent[]=[];
+let eventError='';
+async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); eventError=''; const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0));if(newest>lastHistory && lastHistory>0) mood='alert'; lastHistory=newest;render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); } }
 
 let reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -32,7 +35,7 @@ function render() {
   </section>
   ${expanded ? `<section class="panel"><div class="heading"><h2>عامل‌های هوش مصنوعی</h2><span class="muted">۴ اتصال آماده پیکربندی</span></div>
   <div class="agents">${agents.map(a=>`<div class="agent"><span class="agent-icon">${a.icon}</span><span class="agent-title">${a.name}</span><span class="agent-status">${sources.find(s=>s.name===a.name)?.last_event_unix ? "تاریخچه شناسایی شد" : sources.find(s=>s.name===a.name)?.detected ? "پوشه موجود است" : "شناسایی نشده"}</span></div>`).join('')}</div>
-  <div class="mood-picker" role="group" aria-label="پیش‌نمایش حالت‌های کاراکتر">${(["idle","thinking","working","happy","alert","error","sleep"] as Mood[]).map(m=>`<button type="button" class="mood-btn ${mood===m?"selected":""}" data-mood="${m}" aria-pressed="${mood===m}">${moodText[m]}</button>`).join("")}</div><div class="notice" role="status">شناسایی پوشه و تاریخچه با اتصال زنده متفاوت است؛ تا زمان پیاده‌سازی Hook، تأیید دستورات و رویدادها فعال نیستند.</div>
+  <div class="events-panel"><strong>رویدادهای واقعی نشست‌ها</strong><small>فقط فراداده؛ بدون متن مکالمه یا کد</small>${eventError?`<p>${eventError}</p>`:events.length?events.slice(-8).reverse().map(e=>`<div class="event-row"><span>${e.agent}</span><span>${e.label}</span></div>`).join(""):`<p>رویدادی پیدا نشد</p>`}<p class="test-warning">وضعیت تست: بررسی نشده — موفقیت تست‌ها از این داده‌ها قابل اثبات نیست.</p></div><div class="mood-picker" role="group" aria-label="پیش‌نمایش حالت‌های کاراکتر">${(["idle","thinking","working","happy","alert","error","sleep"] as Mood[]).map(m=>`<button type="button" class="mood-btn ${mood===m?"selected":""}" data-mood="${m}" aria-pressed="${mood===m}">${moodText[m]}</button>`).join("")}</div><div class="notice" role="status">شناسایی پوشه و تاریخچه با اتصال زنده متفاوت است؛ تا زمان پیاده‌سازی Hook، تأیید دستورات و رویدادها فعال نیستند.</div>
   </section>` : ''}
   </main><footer><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
   </div>`;
