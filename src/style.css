@@ -113,3 +113,24 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .island.open .substatus{font-size:10px}
 .island.open .actions{margin-top:3px}
 .island.open .actions button{padding:8px 10px}
+
+.appearance-controls{border:1px solid #334960;background:#1a2e44;padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:7px}
+.appearance-controls button{padding:10px;color:#102b3e;background:#8cdef0;border-radius:10px;font-weight:700}
+.appearance-controls p{font-size:10px;color:#b4c8dd;margin:0;line-height:1.7}
+/* Soft light mode, maintaining legible AA-style contrast */
+.light-theme{color-scheme:light}
+.light-theme .app{color:#152c43;background:linear-gradient(145deg,#f8fcff,#e8f2fa);border-color:#cbdae8}
+.light-theme .topbar,.light-theme .brand{color:#152c43}
+.light-theme .brand small,.light-theme .substatus{color:#486077}
+.light-theme .circle,.light-theme .tab-bar,.light-theme .panel,.light-theme .guide-section,.light-theme .ai-chat,.light-theme .approvals,.light-theme .events-panel,.light-theme .appearance-controls{background:#eff6fb;color:#183149;border-color:#cadbe8}
+.light-theme .agent,.light-theme .guide-card,.light-theme .approval-card,.light-theme .guide-detail,.light-theme .ai-answer,.light-theme .notice,.light-theme .guide-tip{background:#e3eef7;color:#1c354c;border-color:#c0d5e4}
+.light-theme .tab{color:#44617b}.light-theme .tab.active{background:#0d708b;color:#fff}
+.light-theme .agent-title,.light-theme .heading h2,.light-theme .guide-head strong,.light-theme .ai-chat strong,.light-theme .events-panel strong,.light-theme .approvals strong{color:#183149}
+.light-theme .agent-status,.light-theme .muted,.light-theme .guide-head small,.light-theme .guide-detail-head p,.light-theme .guide-detail li,.light-theme .guide-tip,.light-theme .notice,.light-theme .ai-chat label,.light-theme .ai-chat small,.light-theme .events-panel small,.light-theme .approvals small,.light-theme .appearance-controls p{color:#49667e}
+.light-theme .ai-chat input,.light-theme .ai-chat select,.light-theme .ai-chat textarea{background:#fff;border-color:#aec4d6;color:#1a3044}
+.light-theme .guide-card>b,.light-theme .guide-card small,.light-theme .guide-env,.light-theme .event-row,.light-theme footer{color:#25445d}
+.light-theme .text-button,.light-theme .guide-toggle,.light-theme .mood-btn{color:#1f4962;background:#e0eef8}
+.light-theme .guide-links a{background:#cfebf9;color:#13445c}
+.light-theme .guide-filter button:not(.active){background:#e0edf6;color:#284b61}
+.light-theme .guide-filter button.active{background:#126a86;color:#fff}
+.light-theme .mood-btn.selected{background:#126a86;color:#fff}
