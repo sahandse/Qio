@@ -203,6 +203,37 @@ fn qio_hook_events() -> Vec<RecentEvent> {
     events.into_iter().collect()
 }
 
+
+#[derive(Serialize)]
+struct TestEvidence {
+    status: String,
+    source: String,
+    at: u64,
+    freshness: &'static str,
+}
+#[tauri::command]
+fn latest_test_evidence()->Option<TestEvidence>{
+    use std::io::{BufRead,BufReader,Seek,SeekFrom};
+    let home=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from)?;
+    let mut file=fs::File::open(home.join(".qio/test-results.jsonl")).ok()?;
+    let length=file.metadata().ok()?.len();
+    let start=length.saturating_sub(32768);
+    file.seek(SeekFrom::Start(start)).ok()?;
+    let mut lines=BufReader::new(file).lines();
+    if start>0{lines.next();}
+    let mut latest=None;
+    for line in lines.map_while(Result::ok).take(500){
+        let Ok(value)=serde_json::from_str::<serde_json::Value>(&line) else {continue};
+        if value.get("source").and_then(|v|v.as_str())!=Some("qio-test-runner"){continue}
+        let exit=value.get("exit_code").and_then(|v|v.as_i64());
+        let status=match exit{Some(0)=>"passed",Some(_)=>"failed",None=>"unclear"};
+        latest=Some(TestEvidence{status:status.into(),source:"qio-test-runner".into(),
+            at:value.get("at").and_then(|v|v.as_u64()).unwrap_or(0),
+            freshness:"not-checked-against-current-code"});
+    }
+    latest
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -223,7 +254,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
