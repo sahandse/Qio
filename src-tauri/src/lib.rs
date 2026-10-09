@@ -1,5 +1,7 @@
 use std::{env,fs,path::{Path,PathBuf},time::{SystemTime,UNIX_EPOCH}};
 use tauri::{Manager,PhysicalPosition,LogicalSize,Size};
+use tauri::menu::{Menu,MenuItem};
+use tauri::tray::TrayIconBuilder;
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -182,6 +184,21 @@ pub fn run(){
     tauri::Builder::default()
       .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,ai_providers,ai_chat])
       .setup(|app|{
+         let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
+         let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
+         let quit=MenuItem::with_id(app,"quit","خروج",true,None::<&str>)?;
+         let menu=Menu::with_items(app,&[&show,&hide,&quit])?;
+         let mut tray=TrayIconBuilder::new().menu(&menu).show_menu_on_left_click(false)
+           .on_menu_event(|app,event|{
+               match event.id.as_ref(){
+                   "quit"=>app.exit(0),
+                   "show"=>{if let Some(w)=app.get_webview_window("main"){let _=w.show();let _=w.set_focus();}},
+                   "hide"=>{if let Some(w)=app.get_webview_window("main"){let _=w.hide();}},
+                   _=>{}
+               }
+           });
+         if let Some(icon)=app.default_window_icon(){tray=tray.icon(icon.clone());}
+         tray.build(app)?;
          let window=app.get_webview_window("main").expect("main window missing");
          window.set_always_on_top(true)?;
          Ok(())
