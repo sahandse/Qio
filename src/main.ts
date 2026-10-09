@@ -84,7 +84,14 @@ if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expand
 document.documentElement.classList.toggle('reduced',reducedMotion);
 render();
 
+async function refreshApprovals(){if(!('__TAURI_INTERNALS__' in window))return;try{
+ const next=await invoke<PendingApproval[]>('qio_pending_approvals');
+ const oldIds=pendingApprovals.map(x=>x.id).join(',');
+ const newIds=next.map(x=>x.id).join(',');
+ if(oldIds!==newIds){const added=next.some(x=>!pendingApprovals.some(old=>old.id===x.id));pendingApprovals=next;if(added){mood='alert';if(notificationsEnabled)sendNotification({title:'کیو',body:'Claude Code درخواست تأیید جدید دارد'});}if(!document.activeElement?.matches('input,textarea,select'))render()}
+}catch(error){console.warn('Approval polling failed',error)}}
 void refreshAgents();
+window.setInterval(()=>void refreshApprovals(),1500);
 window.setInterval(() => { if (document.visibilityState === 'visible') void refreshAgents(); }, 15000);
 
 void fetchProviders();
