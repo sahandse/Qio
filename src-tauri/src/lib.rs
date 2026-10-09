@@ -129,7 +129,7 @@ fn dotpals_snapshot()->BridgeSnapshot {
         let mut payload=Vec::new();
         let mut rest=body.as_bytes();
         loop {
-            let Some(index)=rest.windows(2).position(|x|x==b"\\r\\n") else {return result};
+            let Some(index)=rest.windows(2).position(|x|x==b"\r\n") else {return result};
             let Ok(size)=std::str::from_utf8(&rest[..index]).ok().and_then(|v|usize::from_str_radix(v.split(';').next().unwrap_or(""),16).ok()).ok_or(()) else{return result};
             rest=&rest[index+2..];
             if size==0{break}
