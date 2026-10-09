@@ -12,7 +12,7 @@ let expanded = false;
 type PanelTab = 'chat'|'agents'|'guide'|'settings';
 let panelTab:PanelTab='chat';
 let scrollTop=0;
-function openTab(tab:PanelTab){panelTab=tab;guideOpen=tab==='guide';render();}
+function openTab(tab:PanelTab){panelTab=tab;guideOpen=tab==='guide';scrollTop=0;render();document.querySelector<HTMLElement>('.app')?.scrollTo(0,0);}
 type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;state:string};
 let sources: SourceStatus[] = [];
 type AgentEvent={agent:string;kind:string;label:string;observed_at:number};
@@ -69,7 +69,7 @@ function render() {
   document.querySelector('#guide-toggle')?.addEventListener('click',()=>{guideOpen=!guideOpen;render()});
   document.querySelectorAll<HTMLElement>('[data-guide-category]').forEach(b=>b.addEventListener('click',()=>{guideCategory=b.dataset.guideCategory||'همه';const visible=providerGuides.filter(g=>guideCategory==='همه'||g.category===guideCategory);if(!visible.some(g=>g.id===selectedGuide))selectedGuide=visible[0]?.id??selectedGuide;render()}));
   document.querySelectorAll<HTMLElement>('[data-guide-id]').forEach(b=>b.addEventListener('click',()=>{selectedGuide=b.dataset.guideId||'avalai';render()}));
-  document.querySelectorAll<HTMLElement>('[data-guide-select]').forEach(b=>b.addEventListener('click',()=>{providerId=b.dataset.guideSelect||'avalai';panelTab='chat';guideOpen=false;render()}));
+  document.querySelectorAll<HTMLElement>('[data-guide-select]').forEach(b=>b.addEventListener('click',()=>{providerId=b.dataset.guideSelect||'avalai';openTab('chat')}));
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab as PanelTab)));
   document.querySelector<HTMLSelectElement>('#ai-provider')?.addEventListener('change',e=>{providerId=(e.target as HTMLSelectElement).value;});
   document.querySelector<HTMLInputElement>('#ai-model')?.addEventListener('input',e=>{modelId=(e.target as HTMLInputElement).value;});
