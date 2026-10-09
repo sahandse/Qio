@@ -3,6 +3,10 @@ import { invoke } from '@tauri-apps/api/core';
 type Mood = 'idle' | 'thinking' | 'happy' | 'alert';
 let mood: Mood = 'idle';
 let expanded = false;
+type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;state:string};
+let sources: SourceStatus[] = [];
+async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); render(); } catch(error){ console.warn('Could not read local agent status',error); } }
+
 let reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const agents = [
@@ -21,12 +25,12 @@ function render() {
   <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand">کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
   <main><section class="island ${expanded?'open':''}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
-    <span class="substatus">هنوز هیچ عامل هوش مصنوعی متصل نشده</span>
+    <span class="substatus">وضعیت نشست‌ها از فایل‌های محلی خوانده می‌شود</span>
     <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button><button class="secondary" id="surprise">سلام کیو!</button></div>
   </section>
   ${expanded ? `<section class="panel"><div class="heading"><h2>عامل‌های هوش مصنوعی</h2><span class="muted">۴ اتصال آماده پیکربندی</span></div>
-  <div class="agents">${agents.map(a=>`<div class="agent"><span class="agent-icon">${a.icon}</span><span class="agent-title">${a.name}</span><span class="agent-status">متصل نیست</span></div>`).join('')}</div>
-  <div class="notice" role="status">این نسخه، پیش‌نمایش تعاملی رابط است. برای نمایش رویدادهای واقعی باید اتصال اختصاصی هر عامل پیاده‌سازی شود.</div>
+  <div class="agents">${agents.map(a=>`<div class="agent"><span class="agent-icon">${a.icon}</span><span class="agent-title">${a.name}</span><span class="agent-status">${sources.find(s=>s.name===a.name)?.last_event_unix ? "تاریخچه شناسایی شد" : sources.find(s=>s.name===a.name)?.detected ? "پوشه موجود است" : "شناسایی نشده"}</span></div>`).join('')}</div>
+  <div class="notice" role="status">شناسایی پوشه و تاریخچه با اتصال زنده متفاوت است؛ تا زمان پیاده‌سازی Hook، تأیید دستورات و رویدادها فعال نیستند.</div>
   </section>` : ''}
   </main><footer><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
   </div>`;
@@ -51,3 +55,5 @@ function toggle(){expanded=!expanded;render();if ('__TAURI_INTERNALS__' in windo
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
 document.documentElement.classList.toggle('reduced',reducedMotion);
 render();
+
+void refreshAgents();
