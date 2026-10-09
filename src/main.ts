@@ -1,6 +1,7 @@
 import './style.css';
 import {providerGuides} from './providerGuides';
 import { invoke } from '@tauri-apps/api/core';
+import {openUrl} from '@tauri-apps/plugin-opener';
 import {isPermissionGranted,requestPermission,sendNotification} from '@tauri-apps/plugin-notification';
 type Mood = 'idle' | 'thinking' | 'working' | 'happy' | 'alert' | 'error' | 'sleep';
 let mood: Mood = 'idle';
@@ -87,6 +88,7 @@ function render() {
   document.querySelector('#clear-chat')?.addEventListener('click',()=>{aiResponse='';aiError='';render()});
   document.querySelector('#copy-answer')?.addEventListener('click',()=>void navigator.clipboard.writeText(aiResponse).catch(console.warn));
   document.querySelector('#sound-toggle')?.addEventListener('click',()=>{soundEnabled=!soundEnabled;localStorage.setItem('qio-sounds',soundEnabled?'yes':'no');if(soundEnabled)chime();render()});
+  document.querySelectorAll<HTMLAnchorElement>('a.telegram-link').forEach(link=>link.addEventListener('click',event=>{if(!('__TAURI_INTERNALS__' in window))return;event.preventDefault();void openUrl('https://t.me/sahandse').catch(console.error)}));
   document.querySelector('#help-toggle')?.addEventListener('click',()=>{showHelp=!showHelp;render()});
   document.querySelector('#idle-toggle')?.addEventListener('click',()=>{idleHide=!idleHide;localStorage.setItem('qio-idle-hide',idleHide?'yes':'no');render()});
   document.querySelector('#mini-toggle')?.addEventListener('click',()=>{miniMode=!miniMode;expanded=false;document.documentElement.classList.toggle('qio-mini',miniMode);render();if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:miniMode}).catch(console.error)});
