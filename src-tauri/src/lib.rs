@@ -311,6 +311,12 @@ fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     Ok(())
 }
 #[tauri::command]
+fn set_mini_mode(window: tauri::Window, enabled: bool) -> Result<(), String> {
+    let (w,h) = if enabled {(150.0,165.0)} else {(300.0,240.0)};
+    window.set_size(Size::Logical(LogicalSize::new(w,h))).map_err(|e|e.to_string())?;
+    window.set_always_on_top(true).map_err(|e|e.to_string())
+}
+#[tauri::command]
 fn drag_island(window:tauri::Window)->Result<(),String>{window.start_dragging().map_err(|e|e.to_string())}
 #[tauri::command]
 fn quit_qio(app:tauri::AppHandle){app.exit(0);}
@@ -318,7 +324,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
