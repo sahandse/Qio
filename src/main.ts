@@ -19,7 +19,7 @@ type AIProvider={id:string;name:string;region:string;key_configured:boolean};
 let providers:AIProvider[]=[];
 let providerId='avalai';let modelId='';let promptText='';let aiResponse='';let aiBusy=false;let aiError='';
 let eventError='';
-const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]??''));
+const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,ch=>( {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'} as Record<string,string> )[ch]??'');
 async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try { sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); hookEvents=await invoke<AgentEvent[]>('qio_hook_events');testEvidence=await invoke<TestEvidence|null>('latest_test_evidence'); eventError=''; const newest=Math.max(0,...sources.map(s=>s.last_event_unix??0),...hookEvents.map(e=>e.observed_at||0));if(newest>lastHistory && lastHistory>0){mood='alert';if(notificationsEnabled)sendNotification({title:'کیو',body:'فعالیت جدید در نشست هوش مصنوعی ثبت شد'});} lastHistory=newest; if (!document.activeElement?.matches('input,textarea,select')) render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); if (!document.activeElement?.matches('input,textarea,select')) render(); } }
 
 async function fetchProviders(){if(!('__TAURI_INTERNALS__' in window))return;try{providers=await invoke<AIProvider[]>('ai_providers');render()}catch(e){console.warn(e)}}
