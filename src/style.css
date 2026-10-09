@@ -31,3 +31,10 @@ html,body,#app{background:transparent!important;min-width:0;min-height:100%;}bod
 .ai-chat button:disabled{opacity:.55;cursor:wait}
 .ai-answer{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;font-size:12px;background:#1b3149;border-radius:10px;padding:11px;max-height:280px;overflow-y:auto}
 .ai-error{font-size:11px;color:#ffacb2}
+
+.approvals{border:1px solid #304960;background:#14243a;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.approvals strong{font-size:12px}.approvals small{font-size:10px;color:#91a8bf}
+.approval-card{background:#1c3048;border-radius:10px;padding:11px;border:1px solid #3c5670}
+.approval-card b{font-size:12px}.approval-card p{color:#cbd6e5;font-size:11px;overflow-wrap:anywhere;line-height:1.7}
+.approval-actions{display:flex;gap:8px}.approval-actions button{padding:9px;border-radius:9px;background:#68dfce;color:#0b292a;font-size:11px;flex:1;font-weight:700}
+.approval-actions button.deny{background:#412b3a;color:#ffc8d0;border:1px solid #845268}
