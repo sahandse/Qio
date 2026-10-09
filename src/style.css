@@ -17,3 +17,8 @@ html,body,#app{background:transparent!important;min-width:0;min-height:100%;}bod
 @keyframes attention{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.045)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes celebrate{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-18px) rotate(4deg)}}
+
+.events-panel{border:1px solid #30425c;background:#101d30;border-radius:12px;padding:12px;margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.events-panel strong{font-size:12px}.events-panel small{font-size:10px;color:#96abc4}.events-panel p{font-size:10px;color:#97a9c0;margin:6px 0}
+.event-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;padding:7px 0;border-top:1px solid #24364a}
+.event-row span:last-child{color:#9fcade}.events-panel .test-warning{color:#ffcf86}
