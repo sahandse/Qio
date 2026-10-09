@@ -1,18 +1,10 @@
-name: Qio desktop checks
+name: Qio desktop build
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 jobs:
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: npm install
-      - run: npm run build
   desktop:
     strategy:
       fail-fast: false
@@ -24,7 +16,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
       - uses: dtolnay/rust-toolchain@stable
-      - run: npm install
+      - run: npm ci
       - run: npm run build
-      - run: cargo check --manifest-path src-tauri/Cargo.toml
+      - name: Generate icons
+        run: npx tauri icon assets/qio.svg
+      - name: Compile desktop application
+        run: npm run tauri build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Qio-${{ matrix.os }}
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: warn
