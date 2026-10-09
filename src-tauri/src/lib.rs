@@ -153,6 +153,63 @@ fn dotpals_snapshot()->BridgeSnapshot {
     result
 }
 
+
+#[derive(Serialize)]
+struct ProviderInfo {
+    id: &'static str,
+    name: &'static str,
+    region: &'static str,
+    key_configured: bool,
+}
+fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
+    match id {
+        "avalai" => Some(("اول‌ای‌آی (ایران)","ایرانی","https://api.avalai.ir/v1/chat/completions","AVALAI_API_KEY")),
+        "openai" => Some(("OpenAI","بین‌المللی","https://api.openai.com/v1/chat/completions","OPENAI_API_KEY")),
+        "openrouter" => Some(("OpenRouter","بین‌المللی","https://openrouter.ai/api/v1/chat/completions","OPENROUTER_API_KEY")),
+        "deepseek" => Some(("DeepSeek","بین‌المللی","https://api.deepseek.com/chat/completions","DEEPSEEK_API_KEY")),
+        "groq" => Some(("Groq","بین‌المللی","https://api.groq.com/openai/v1/chat/completions","GROQ_API_KEY")),
+        "together" => Some(("Together AI","بین‌المللی","https://api.together.xyz/v1/chat/completions","TOGETHER_API_KEY")),
+        "ollama" => Some(("Ollama (آفلاین)","محلی","http://127.0.0.1:11434/v1/chat/completions","")),
+        "lmstudio" => Some(("LM Studio (محلی)","محلی","http://127.0.0.1:1234/v1/chat/completions","")),
+        _ => None
+    }
+}
+#[tauri::command]
+fn ai_providers()->Vec<ProviderInfo>{
+    ["avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
+        .iter().filter_map(|id|provider_details(id).map(|(name,region,_,key)|ProviderInfo {
+            id:match *id {"avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
+            name,region,key_configured:key.is_empty()||env::var(key).is_ok_and(|v|!v.trim().is_empty())
+        })).collect()
+}
+#[tauri::command]
+async fn ai_chat(provider:String,model:String,message:String)->Result<String,String>{
+    let (_,_,endpoint,key_name)=provider_details(&provider).ok_or("ارائه‌دهنده معتبر نیست")?;
+    if model.trim().is_empty() || model.len()>160 {return Err("نام مدل را وارد کنید".into());}
+    if message.trim().is_empty() || message.len()>10000 {return Err("متن پیام باید بین ۱ تا ۱۰۰۰۰ نویسه باشد".into());}
+    let key=if key_name.is_empty(){String::new()}else{env::var(key_name).map_err(|_|format!("متغیر محیطی {} تنظیم نشده است",key_name))?};
+    let client=reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(70))
+        .redirect(reqwest::redirect::Policy::none())
+        .build().map_err(|_|"ساخت اتصال ناموفق بود")?;
+    let request=client.post(endpoint).json(&serde_json::json!({
+        "model":model,
+        "stream":false,
+        "messages":[
+            {"role":"system","content":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید."},
+            {"role":"user","content":message}
+        ]
+    }));
+    let request=if key_name.is_empty(){request}else{request.bearer_auth(key)};
+    let response=request.send().await.map_err(|_|"ارتباط با سرویس برقرار نشد")?;
+    let status=response.status();
+    if !status.is_success(){return Err(format!("پاسخ سرویس ناموفق بود (HTTP {})",status.as_u16()));}
+    let data:serde_json::Value=response.json().await.map_err(|_|"پاسخ سرویس قابل خواندن نبود")?;
+    data.pointer("/choices/0/message/content").and_then(|v|v.as_str())
+        .map(|s|s.chars().take(30000).collect())
+        .ok_or_else(||"این مدل پاسخ متنی قابل‌نمایش برنگرداند".into())
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -172,7 +229,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 #[cfg_attr(mobile,tauri::mobile_entry_point)]
 pub fn run(){
     tauri::Builder::default()
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,dotpals_snapshot])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,dotpals_snapshot,ai_providers,ai_chat])
       .setup(|app|{
          let window=app.get_webview_window("main").expect("main window missing");
          window.set_always_on_top(true)?;
