@@ -236,3 +236,14 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .light-theme .chat-heading #clear-chat,.light-theme .copy-answer{background:#d3e7f2!important;color:#234b63!important}
 .light-theme .ai-answer{background:#e0eff8;color:#163249}
 @media(prefers-reduced-motion:reduce){.send-glow{transition:none}}
+
+/* Mini overrides must win over generic collapsed layout specificity. */
+.qio-mini .app:not(:has(.tab-bar)){padding:6px}
+.qio-mini .app:not(:has(.tab-bar)) .mascot{height:130px;width:130px}
+.qio-mini .app:not(:has(.tab-bar)) .shell{scale:.7}
+.qio-mini .app:not(:has(.tab-bar)) .shadow{bottom:0;scale:.7}
+.qio-mini .app:not(:has(.tab-bar)) .topbar,
+.qio-mini .app:not(:has(.tab-bar)) footer,
+.qio-mini .app:not(:has(.tab-bar)) .status,
+.qio-mini .app:not(:has(.tab-bar)) .substatus,
+.qio-mini .app:not(:has(.tab-bar)) .actions{display:none}
