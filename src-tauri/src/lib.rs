@@ -125,7 +125,21 @@ fn dotpals_snapshot()->BridgeSnapshot {
     let response=String::from_utf8_lossy(&bytes);
     let Some((header,body))=response.split_once("\r\n\r\n") else{return result};
     if !header.starts_with("HTTP/1.1 200") && !header.starts_with("HTTP/1.0 200"){return result}
-    let Ok(parsed)=serde_json::from_str::<serde_json::Value>(body) else{return result};
+    let decoded = if header.to_ascii_lowercase().contains("transfer-encoding: chunked") {
+        let mut payload=Vec::new();
+        let mut rest=body.as_bytes();
+        loop {
+            let Some(index)=rest.windows(2).position(|x|x==b"\\r\\n") else {return result};
+            let Ok(size)=std::str::from_utf8(&rest[..index]).ok().and_then(|v|usize::from_str_radix(v.split(';').next().unwrap_or(""),16).ok()).ok_or(()) else{return result};
+            rest=&rest[index+2..];
+            if size==0{break}
+            if rest.len()<size+2{return result}
+            payload.extend_from_slice(&rest[..size]);
+            rest=&rest[size+2..];
+        }
+        String::from_utf8_lossy(&payload).into_owned()
+    } else {body.to_owned()};
+    let Ok(parsed)=serde_json::from_str::<serde_json::Value>(&decoded) else{return result};
     let Some(entries)=parsed.get("entries").and_then(|v|v.as_array()) else{return result};
     result.connected=true;
     result.message="DotPals محلی متصل است".into();
