@@ -10,7 +10,9 @@
     "tauri": "tauri",
     "icons": "tauri icon assets/qio.svg",
     "postinstall": "tauri icon assets/qio.svg",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "setup:claude": "node scripts/setup-claude.mjs",
+    "test:code": "node scripts/qio-test.mjs -- npm test"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
