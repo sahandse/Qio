@@ -163,6 +163,46 @@ async fn ai_chat(provider:String,model:String,message:String)->Result<String,Str
         .ok_or_else(||"این مدل پاسخ متنی قابل‌نمایش برنگرداند".into())
 }
 
+
+#[tauri::command]
+fn qio_hook_events() -> Vec<RecentEvent> {
+    use std::io::{BufRead,BufReader,Seek,SeekFrom};
+    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return vec![]};
+    let path=home.join(".qio/events.jsonl");
+    let Ok(mut file)=fs::File::open(path) else{return vec![]};
+    let Ok(size)=file.metadata().map(|m|m.len()) else{return vec![]};
+    let start=size.saturating_sub(262144);
+    if file.seek(SeekFrom::Start(start)).is_err(){return vec![]}
+    let mut lines=BufReader::new(file).lines();
+    if start>0 {let _=lines.next();}
+    let mut events=std::collections::VecDeque::with_capacity(30);
+    for line in lines.map_while(Result::ok).take(3000){
+        if line.len()>4096{continue}
+        let Ok(event)=serde_json::from_str::<serde_json::Value>(&line) else{continue};
+        let kind=event.get("kind").and_then(|v|v.as_str()).unwrap_or("");
+        let agent=match event.get("agent").and_then(|v|v.as_str()).unwrap_or("") {
+            "Claude Code"=>"Claude Code","Codex"=>"Codex","Gemini CLI"=>"Gemini CLI",
+            "OpenCode"=>"OpenCode","Cursor"=>"Cursor",_=>"Other",
+        };
+        let (kind,label)=match kind {
+            "SessionStart"=>("session","نشست جدید آغاز شد"),
+            "UserPromptSubmit"=>("thinking","درخواست جدید ثبت شد"),
+            "PreToolUse"=>("tool-start","ابزار در حال اجرا"),
+            "PostToolUse"=>("tool-result","ابزار اجرا شد؛ نتیجه تست تأیید نشده"),
+            "PostToolUseFailure"=>("error","اجرای ابزار با خطا مواجه شد"),
+            "Stop"=>("complete","عامل متوقف شد"),
+            "Notification"=>("alert","اعلان عامل ثبت شد"),
+            "SubagentStart"=>("activity","عامل فرعی شروع شد"),
+            "SubagentStop"=>("complete","عامل فرعی پایان یافت"),
+            _=>continue,
+        };
+        let timestamp=event.get("at").and_then(|v|v.as_u64()).unwrap_or(0)/1000;
+        events.push_back(RecentEvent{agent,kind:kind.to_string(),label:label.to_string(),observed_at:timestamp});
+        if events.len()>30{events.pop_front();}
+    }
+    events.into_iter().collect()
+}
+
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
@@ -183,7 +223,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
