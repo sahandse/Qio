@@ -182,6 +182,7 @@ fn quit_qio(app:tauri::AppHandle){app.exit(0);}
 #[cfg_attr(mobile,tauri::mobile_entry_point)]
 pub fn run(){
     tauri::Builder::default()
+      .plugin(tauri_plugin_notification::init())
       .invoke_handler(tauri::generate_handler![set_island_expanded,drag_island,quit_qio,local_agent_status,recent_agent_events,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
