@@ -6,6 +6,7 @@
 | ارائه‌دهنده | شناسه | متغیر محیطی API |
 |---|---|---|
 | اول‌ای‌آی، ایرانی | avalai | AVALAI_API_KEY |
+| هوشگر، ایرانی | hooshgar | HOOSHGAR_API_KEY |
 | OpenAI | openai | OPENAI_API_KEY |
 | OpenRouter | openrouter | OPENROUTER_API_KEY |
 | DeepSeek | deepseek | DEEPSEEK_API_KEY |
@@ -27,3 +28,7 @@
 منابع:
 - https://docs.avalai.org/en/api-reference/introduction
 - https://github.com/ollama/ollama/blob/main/docs/api/openai-compatibility.mdx
+
+## ارائه‌دهندهٔ ایرانی هوشگر
+آدرس مستندشدهٔ رسمی: https://api.hooshgar.ir/v1/chat/completions
+راهنما: https://hooshgar.ir/docs/chat-completions
