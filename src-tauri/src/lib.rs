@@ -304,14 +304,10 @@ fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
 
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
-    let(w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
+    // Preserve the position chosen by the user. Only change the content size.
+    let (w,h)=if expanded{(390.0,610.0)}else{(300.0,420.0)};
     window.set_size(Size::Logical(LogicalSize::new(w,h))).map_err(|e|e.to_string())?;
     window.set_always_on_top(true).map_err(|e|e.to_string())?;
-    if let Some(monitor)=window.current_monitor().map_err(|e|e.to_string())? {
-        let size=monitor.size(); let pos=monitor.position(); let scale=monitor.scale_factor();
-        let width=(w*scale).round() as i32;
-        window.set_position(PhysicalPosition::new(pos.x+(size.width as i32-width)/2,pos.y+10)).map_err(|e|e.to_string())?;
-    }
     Ok(())
 }
 #[tauri::command]
@@ -341,6 +337,15 @@ pub fn run(){
          tray.build(app)?;
          let window=app.get_webview_window("main").expect("main window missing");
          window.set_always_on_top(true)?;
+         if let Some(monitor)=window.current_monitor()? {
+             let size=monitor.size();
+             let pos=monitor.position();
+             let width=(300.0 * monitor.scale_factor()).round() as i32;
+             window.set_position(PhysicalPosition::new(
+                 pos.x+(size.width as i32-width)/2,
+                 pos.y+12
+             ))?;
+         }
          Ok(())
       })
       .run(tauri::generate_context!())
