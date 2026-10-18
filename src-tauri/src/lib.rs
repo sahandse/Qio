@@ -179,6 +179,16 @@ async fn ai_chat(provider:String,model:String,message:String)->Result<String,Str
 
 
 #[tauri::command]
+fn qio_clear_hook_events()->Result<(),String>{
+    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return Err("پوشه کاربر پیدا نشد".into())};
+    let path=home.join(".qio/events.jsonl");
+    match fs::remove_file(path){
+        Ok(())=>Ok(()),
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>Ok(()),
+        Err(error)=>Err(format!("پاک‌کردن تاریخچه انجام نشد: {error}")),
+    }
+}
+#[tauri::command]
 fn qio_hook_events() -> Vec<RecentEvent> {
     use std::io::{BufRead,BufReader,Seek,SeekFrom};
     let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return vec![]};
@@ -334,7 +344,7 @@ pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
       .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
