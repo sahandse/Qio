@@ -55,7 +55,7 @@ function characterHead(c:typeof aiCharacters[number]) {
   return `<span class="pixel-head" style="--char-accent:${c.accent};--char-skin:${c.skin};--char-hair:${c.hair};--char-eyes:${c.eyes}" aria-hidden="true"><i class="pixel-hair"></i><i class="pixel-ear left"></i><i class="pixel-ear right"></i><i class="pixel-face"><b class="pixel-eye left"></b><b class="pixel-eye right"></b><b class="pixel-nose"></b><b class="pixel-mouth"></b></i><i class="pixel-neck"></i><i class="pixel-glint">${escapeHtml(c.symbol)}</i></span>`;
 }
 function mascot() {
-  return `<div id="mascot" class="mascot minecraft-mascot ${displayMood()}" role="img" aria-label="Qio Minecraft-style pixel character">
+  return `<div id="mascot" class="mascot minecraft-mascot ${displayMood()}" role="button" tabindex="0" aria-label="${language==="fa"?"بازکردن پنل کیو":"Open Qio panel"}" title="${language==="fa"?"برای بازکردن پنل کلیک کن":"Click to open the panel"}">
   <span class="voxel-particle particle-a">✦</span><span class="voxel-particle particle-b">✧</span><span class="voxel-particle particle-c">◆</span>
   <div class="mc-figure"><div class="mc-head shell"><span class="mc-hair"></span><span class="mc-ear ear-left"></span><span class="mc-ear ear-right"></span><div class="face"><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div><div class="mc-body"><span class="mc-arm left"></span><span class="mc-torso"></span><span class="mc-arm right"></span></div><div class="mc-legs"><span></span><span></span></div></div><div class="shadow"></div></div>`;
 }
@@ -138,6 +138,7 @@ function render() {
   });
   document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
   document.querySelector('#mascot')?.addEventListener('click',toggle);
+  document.querySelector('#mascot')?.addEventListener('keydown',(event:Event)=>{const e=event as KeyboardEvent;if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
 }
 function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');expanded=true;}else{expanded=!expanded;}render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error));}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
