@@ -1,0 +1,37 @@
+name: Qoder Pull Request Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: qoder-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  qoder-review:
+    # Fork PRs do not receive repository secrets; the action will only work
+    # for PRs where the Qoder token is available.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Review pull request with Qoder
+        if: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN != '' }}
+        uses: QoderAI/qoder-action@v0
+        with:
+          qoder_personal_access_token: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN }}
+          prompt: |
+            /review-pr
+            REPO: ${{ github.repository }}
+            PR_NUMBER: ${{ github.event.pull_request.number }}
+            Focus on reproducible bugs, security, regressions, accessibility, and missing tests.
+            Do not claim tests were run unless their results are available.
