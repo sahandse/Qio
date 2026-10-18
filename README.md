@@ -14,7 +14,7 @@
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-22C55E?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sahandse/Qio/releases/latest)
 [![Persian + English](https://img.shields.io/badge/Language-FA%20%2B%20EN-06B6D4?style=for-the-badge)](#-زبانها--languages)
 
-[⬇️ دانلود نسخه ویندوز](https://github.com/sahandse/Qio/releases/latest) · [📘 راهنمای اتصال AI](docs/AI_PROVIDERS_FA.md) · [🧩 راه‌اندازی Agentها](docs/DESKTOP_SETUP_FA.md) · [💬 پشتیبانی](https://t.me/sahandse)
+[⬇️ دانلود نسخه ویندوز](https://github.com/sahandse/Qio/releases/latest) · [📘 راهنمای اتصال AI](docs/AI_PROVIDERS_FA.md) · [🧩 راه‌اندازی Agentها](docs/DESKTOP_SETUP_FA.md) · [🌐 English setup](docs/DESKTOP_SETUP_EN.md) · [🗺️ نقشه راه](docs/ROADMAP_FA.md) · [💬 پشتیبانی](https://t.me/sahandse)
 
 </div>
 
@@ -46,6 +46,7 @@
 
 - نمایش رویدادهای محلی و تاریخچهٔ نشست‌ها در موارد پشتیبانی‌شده.
 - راهنمای اتصال برای ابزارهایی مثل **Cursor، Claude Code و Qoder**.
+- اسکریپت نصب Hook برای Cursor: `npm run setup:cursor` (تنظیمات قبلی حفظ و پشتیبان‌گیری می‌شود)
 - اسکریپت نصب Hook برای Qoder: `npm run setup:qoder`
 - اسکریپت اتصال Claude Code: `npm run setup:claude`
 - وضعیت تاریخچه، Hook و اتصال زنده با هم یکی نیستند؛ هر کدام فقط وقتی گزارش می‌شوند که دادهٔ مربوط به همان مورد موجود باشد.
@@ -73,6 +74,8 @@
 
 - پنجرهٔ بدون قاب و همیشه‌روی‌صفحه
 - حالت کوچک و بزرگ، System Tray و اعلان‌های اختیاری
+- تم‌های نیمه‌شب، روشن، زمردی و بنفش؛ تغییر اندازهٔ کاراکتر و کاهش حرکت
+- پاک‌کردن جداگانهٔ تاریخچهٔ Hookهای محلی از داخل داشبورد
 - گزینه‌های شخصی‌سازی و کاهش حرکت
 - رابط فارسی و انگلیسی
 - راهنمای نصب و عیب‌یابی
@@ -85,6 +88,10 @@
 - **English:** رابط چپ‌چین و محتوای دوزبانه در حال تکمیل است.
 
 از کلید زبان داخل برنامه استفاده کن. اگر بخشی هنوز ترجمه نشده بود، آن بخش را ناقص در نظر بگیر و گزارش بده.
+
+## 🧭 نقشه راه و گزارش مشکل
+
+نقشه راه دوزبانه در [فارسی](docs/ROADMAP_FA.md) و [English](docs/ROADMAP_EN.md) قرار دارد. برای گزارش باگ یا پیشنهاد، از قالب‌های بخش [Issues](https://github.com/sahandse/Qio/issues/new/choose) استفاده کن تا نسخه، سیستم‌عامل و مراحل بازتولید مشخص باشند.
 
 ## 🛠️ اجرا از سورس
 
