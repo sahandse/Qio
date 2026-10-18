@@ -1,5 +1,6 @@
 export type AICharacter={id:string;name:string;region:'جهانی'|'ایرانی'|'چینی';role:string;accent:string;skin:string;hair:string;eyes:string;symbol:string;tag:string};
 export const aiCharacters:AICharacter[]=[
+{id:'qoder',name:'Qoder',region:'جهانی',role:'همراه کدنویسی هوشمند',accent:'#b8ff65',skin:'#e4b68d',hair:'#20283a',eyes:'#b8ff65',symbol:'Q',tag:'IDE و Agent'},
 {id:'openai',name:'OpenAI',region:'جهانی',role:'همه‌فن‌حریف',accent:'#70e0c0',skin:'#dca77d',hair:'#242b3d',eyes:'#5be0d0',symbol:'◎',tag:'چندمنظوره'},
 {id:'anthropic',name:'Claude',region:'جهانی',role:'نویسندهٔ دقیق',accent:'#e8a87c',skin:'#edc09b',hair:'#573b35',eyes:'#4b887b',symbol:'C',tag:'تحلیل و نوشتن'},
 {id:'gemini',name:'Gemini',region:'جهانی',role:'کاوشگر خلاق',accent:'#8e9cff',skin:'#dca77d',hair:'#353c72',eyes:'#9aa8ff',symbol:'✦',tag:'چندوجهی'},
