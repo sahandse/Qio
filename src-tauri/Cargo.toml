@@ -1,6 +1,6 @@
 [package]
 name = "qio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Qio Persian AI companion"
 authors = ["Qio contributors"]
 edition = "2021"

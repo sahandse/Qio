@@ -78,9 +78,10 @@ function render() {
   document.querySelectorAll<HTMLElement>('[data-guide-id]').forEach(b=>b.addEventListener('click',()=>{selectedGuide=b.dataset.guideId||'avalai';render()}));
   document.querySelectorAll<HTMLElement>('[data-guide-select]').forEach(b=>b.addEventListener('click',()=>{providerId=b.dataset.guideSelect||'avalai';openTab('chat')}));
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab as PanelTab)));
+  const syncChatSendButton=()=>{const button=document.querySelector<HTMLButtonElement>('#ai-send');if(button)button.disabled=aiBusy||!modelId.trim()||!promptText.trim();};
   document.querySelector<HTMLSelectElement>('#ai-provider')?.addEventListener('change',e=>{providerId=(e.target as HTMLSelectElement).value;});
-  document.querySelector<HTMLInputElement>('#ai-model')?.addEventListener('input',e=>{modelId=(e.target as HTMLInputElement).value;});
-  document.querySelector<HTMLTextAreaElement>('#ai-prompt')?.addEventListener('input',e=>{promptText=(e.target as HTMLTextAreaElement).value;});
+  document.querySelector<HTMLInputElement>('#ai-model')?.addEventListener('input',e=>{modelId=(e.target as HTMLInputElement).value;syncChatSendButton();});
+  document.querySelector<HTMLTextAreaElement>('#ai-prompt')?.addEventListener('input',e=>{promptText=(e.target as HTMLTextAreaElement).value;syncChatSendButton();});
   document.querySelector('#ai-send')?.addEventListener('click',()=>void sendChat());
   document.querySelector('#clear-chat')?.addEventListener('click',()=>{aiResponse='';aiError='';render()});
   document.querySelector('#copy-answer')?.addEventListener('click',()=>{void navigator.clipboard.writeText(aiResponse).catch(console.warn)});
