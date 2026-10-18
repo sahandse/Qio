@@ -359,3 +359,29 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .app{background:radial-gradient(ellipse at 12% 12%,#243c4a 0,transparent 32%),radial-gradient(ellipse at 90% 30%,#272044 0,transparent 33%),linear-gradient(145deg,#0b101b,#0d1523 55%,#101124)!important;border:1px solid #b8ff6526!important;box-shadow:0 0 0 1px #65f4ff0b,inset 0 1px 0 #ffffff0b,0 18px 55px #0008!important}.brand-signal{display:inline-block;width:9px;height:9px;background:var(--voxel-lime);box-shadow:0 0 15px #b8ff65;border-radius:2px;margin-inline-end:8px;transform:rotate(45deg)}.panel{background:linear-gradient(145deg,#121d2d,#101624)!important;border-color:#a4baff20!important;box-shadow:inset 0 1px 0 #ffffff08}.tab-bar .tab.active{background:linear-gradient(135deg,#b8ff65,#65f4ff)!important;color:#111827!important;box-shadow:0 5px 18px #65f4ff20}.actions button{background:linear-gradient(120deg,var(--voxel-lime),var(--voxel-cyan))!important;color:#0d1821!important;box-shadow:0 7px 20px #65f4ff20}.character-card{overflow:hidden;box-shadow:0 9px 22px #0002;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s}.character-card:hover{transform:translateY(-5px) rotate(-.5deg);border-color:var(--char-accent);box-shadow:0 16px 34px #0004,0 0 0 1px color-mix(in srgb,var(--char-accent) 30%,transparent)}.character-art{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--char-accent) 17%,transparent),transparent 65%),linear-gradient(145deg,#172437,#111827)!important}.pixel-head{image-rendering:pixelated;filter:drop-shadow(5px 6px 0 #0004)}.guide-help-bang{background:linear-gradient(145deg,var(--voxel-lime),var(--voxel-cyan))!important;border-color:#eaffbd!important;color:#0a1821!important;box-shadow:0 0 20px #b8ff652b!important}.featured-guide:hover{transform:translateY(-3px) scale(1.015);box-shadow:0 10px 28px #0003}.guide-detail{animation:voxel-enter .3s ease-out}.character-card{animation:voxel-enter .45s both;animation-delay:calc(var(--card-index,0)*18ms)}@keyframes voxel-enter{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .app[dir="ltr"]{direction:ltr}.app[dir="ltr"] .brand small{padding-left:6px;padding-right:0}.app[dir="ltr"] .agent-title{text-align:left}.app[dir="ltr"] .guide-detail ol{padding-left:22px;padding-right:0}.app[dir="ltr"] .character-info{text-align:left}.app[dir="ltr"] .character-pick{direction:ltr}.app[dir="ltr"] .featured-guides-title{direction:ltr}.app[dir="ltr"] .guide-head,.app[dir="ltr"] .heading{direction:ltr}.app[dir="ltr"] .ai-chat{text-align:left}.app[dir="ltr"] .ai-chat label{text-align:left}.app[dir="ltr"] .approval-card p{text-align:left}
 @media(prefers-reduced-motion:reduce){.mc-figure,.minecraft-mascot .shell,.voxel-particle,.character-card,.guide-detail{animation:none!important}.character-card,.featured-guide,.lang-toggle{transition:none!important}}
+
+
+/* Personalization controls: persistent local theme accents and character scale */
+.preference-label{font-size:11px;font-weight:700;color:#c5d8e9;margin-top:4px}
+.theme-options,.scale-options{display:flex;flex-wrap:wrap;gap:6px}
+.theme-options button,.scale-options button{flex:1;min-width:68px;border:1px solid #354b63;background:#14243a;color:#c7d8e8;border-radius:10px;padding:9px 7px;font-size:10px;font-weight:600;transition:transform .16s,border-color .16s,background .16s}
+.theme-options button:hover,.scale-options button:hover{transform:translateY(-1px);border-color:#7adff4}
+.theme-options button.selected,.scale-options button.selected{border-color:#b8ff65;background:#273c38;color:#f2ffe4;box-shadow:inset 0 0 0 1px #b8ff6530}
+#mascot:focus-visible{outline:2px solid #b8ff65;outline-offset:5px;border-radius:18px}
+#mascot[role="button"]{cursor:pointer}
+.character-scale-small .mc-figure{scale:.84}
+.character-scale-normal .mc-figure{scale:1}
+.character-scale-large .mc-figure{scale:1.14}
+.character-scale-small .minecraft-mascot,.character-scale-normal .minecraft-mascot,.character-scale-large .minecraft-mascot{overflow:visible}
+.accent-emerald .app{border-color:#63f4b655!important;background:radial-gradient(ellipse at 12% 12%,#16483d 0,transparent 35%),radial-gradient(ellipse at 90% 30%,#153b37 0,transparent 34%),linear-gradient(145deg,#091813,#0c1d1a 55%,#101c1b)!important}
+.accent-emerald .brand-signal{background:#62f4b5;box-shadow:0 0 15px #62f4b5}
+.accent-emerald .actions button,.accent-emerald .tab-bar .tab.active{background:linear-gradient(120deg,#9bffc8,#42e6a0)!important;color:#09231a!important}
+.accent-emerald .theme-options button.selected,.accent-emerald .scale-options button.selected{border-color:#62f4b5;background:#153b2c;color:#e5ffef}
+.accent-violet .app{border-color:#a78bfa55!important;background:radial-gradient(ellipse at 12% 12%,#342354 0,transparent 35%),radial-gradient(ellipse at 90% 30%,#20264d 0,transparent 34%),linear-gradient(145deg,#100d20,#17132a 55%,#101124)!important}
+.accent-violet .brand-signal{background:#c4b5fd;box-shadow:0 0 15px #a78bfa}
+.accent-violet .actions button,.accent-violet .tab-bar .tab.active{background:linear-gradient(120deg,#d8b4fe,#a78bfa)!important;color:#211335!important}
+.accent-violet .theme-options button.selected,.accent-violet .scale-options button.selected{border-color:#c4b5fd;background:#30234c;color:#f3eaff}
+.light-theme .theme-options button,.light-theme .scale-options button{background:#e6f0f8;color:#29445b;border-color:#c5d9e8}
+.light-theme .theme-options button.selected,.light-theme .scale-options button.selected{background:#dff3ce;border-color:#78b64b;color:#24401c}
+@media(max-height:520px){.character-scale-large .mc-figure{scale:1.02}}
+@media(prefers-reduced-motion:reduce){.theme-options button,.scale-options button{transition:none!important}}
