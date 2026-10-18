@@ -28,6 +28,7 @@ let testEvidence:TestEvidence|null=null;
 type AIProvider={id:string;name:string;region:string;key_configured:boolean};
 let providers:AIProvider[]=[];
 let guideOpen=true;let guideCategory='همه';let selectedGuide='avalai';let characterRegion='همه';
+let language: 'fa'|'en' = localStorage.getItem('qio-language')==='en'?'en':'fa';
 let soundEnabled=localStorage.getItem('qio-sounds')==='yes';
 let miniMode=false;
 let providerId='avalai';let modelId='';let promptText='';let aiResponse='';let aiBusy=false;let aiError='';
@@ -52,15 +53,28 @@ function characterHead(c:typeof aiCharacters[number]) {
   return `<span class="pixel-head" style="--char-accent:${c.accent};--char-skin:${c.skin};--char-hair:${c.hair};--char-eyes:${c.eyes}" aria-hidden="true"><i class="pixel-hair"></i><i class="pixel-ear left"></i><i class="pixel-ear right"></i><i class="pixel-face"><b class="pixel-eye left"></b><b class="pixel-eye right"></b><b class="pixel-nose"></b><b class="pixel-mouth"></b></i><i class="pixel-neck"></i><i class="pixel-glint">${escapeHtml(c.symbol)}</i></span>`;
 }
 function mascot() {
-  return `<div id="mascot" class="mascot ${displayMood()}" role="img" aria-label="شخصیت کیو، حالت ${mood}">
-  <div class="shell"><span class="ear ear-left"></span><span class="ear ear-right"></span><div class="face"><span class="cheek cheek-left"></span><span class="cheek cheek-right"></span><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div>
-  <span class="mascot-spark spark-one">✦</span><span class="mascot-spark spark-two">✧</span><div class="shadow"></div></div>`;
+  return `<div id="mascot" class="mascot minecraft-mascot ${displayMood()}" role="img" aria-label="Qio Minecraft-style pixel character">
+  <span class="voxel-particle particle-a">✦</span><span class="voxel-particle particle-b">✧</span><span class="voxel-particle particle-c">◆</span>
+  <div class="mc-figure"><div class="mc-head shell"><span class="mc-hair"></span><span class="mc-ear ear-left"></span><span class="mc-ear ear-right"></span><div class="face"><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div><div class="mc-body"><span class="mc-arm left"></span><span class="mc-torso"></span><span class="mc-arm right"></span></div><div class="mc-legs"><span></span><span></span></div></div><div class="shadow"></div></div>`;
 }
+function applyLanguage(){
+  const root=document.querySelector<HTMLElement>('.app');if(!root)return;
+  root.dir=language==='fa'?'rtl':'ltr';root.lang=language;document.documentElement.lang=language;document.documentElement.dir=language==='fa'?'rtl':'ltr';
+  if(language==='fa')return;
+  const dictionary:Record<string,string>={
+    'کیو':'Qio','به کیو خوش اومدی!':'Welcome to Qio!','کنارت هستم ✨':'Your pixel sidekick ✨','نمایش فعالیت‌ها':'Open dashboard','کوچک‌کردن':'Minimize','گفت‌وگو':'Chat','شخصیت‌ها':'Characters','فعالیت‌ها':'Activity','راهنما':'Guides','تنظیمات':'Settings','همه':'All','جهانی':'Global','ایرانی':'Iranian','چینی':'Chinese','انتخاب شخصیت':'Choose character','جهان شخصیت‌های هوش مصنوعی':'AI Character Universe','۳۰ شخصیت مکعبی؛ هرکدام با حال‌وهوا و تخصص مخصوص خودش. فقط سرِ پیکسلی، الهام‌گرفته از بازی‌های بلوکی و با طراحی اختصاصی کیو.':'Meet a universe of voxel characters, each with a distinct personality and specialty.','انتخاب در کیو':'Use in Qio','وب‌سایت رسمی ↗':'Official website ↗','راهنمای اتصال هوش مصنوعی‌ها':'AI setup guides','آموزش اختصاصی با تصویر برای هر سرویس':'Step-by-step setup for each service','راهنمای سریع سرویس‌های اصلی':'Quick guides to the main tools','روی ! بزن':'Tap ! for help','نصب و اتصال':'Install & connect','نصب و API':'Install & API','نصب و OpenAI API':'Install & OpenAI API','بستن راهنما':'Hide guides','مشاهده راهنما':'Show guides','عامل‌های هوش مصنوعی':'AI agents','وضعیت اتصال محلی':'Local connection status','هنوز Agent محلی شناسایی نشده. راهنمای اتصال رو ببین.':'No local agent detected yet. Check the setup guides.','گفت‌وگو با کیو':'Chat with Qio','دستیار مستقیم و مستقل':'Standalone assistant','پاک‌کردن':'Clear','ارائه‌دهنده':'Provider','شناسه مدل':'Model ID','شناسه دقیق مدل را وارد کنید':'Enter the exact model ID','پیام':'Message','از کیو سؤال بپرس...':'Ask Qio something...','ارسال پیام':'Send message','در حال دریافت پاسخ...':'Thinking…','کپی پاسخ':'Copy response','درخواست‌های تأیید':'Approval requests','همه‌چیز آرومه':'All clear','درخواستی در انتظار نیست.':'No pending requests.','تأیید همین درخواست':'Approve request','رد درخواست':'Deny request','ظاهر و رفتار کیو':'Qio appearance & behavior','حالت همراه کوچک':'Compact companion mode','راهنما و ارتباط':'Help & support','! راهنما و رفع مشکل':'! Help & troubleshooting','راهنمای کیو':'Qio help','راهنمای کامل ↗':'Full guide ↗','صدا و رنگ‌بندی':'Sound & theme','فعال‌کردن صدا 🔔':'Enable sound 🔔','تم تاریک 🌙':'Dark theme 🌙','تم روشن ☀️':'Light theme ☀️','تم و انیمیشن‌ها برای همین دستگاه ذخیره می‌شوند.':'Theme and animation preferences are saved on this device.','اعلان‌ها':'Notifications','خروج':'Quit','نسخه اولیه رابط کاربری':'Early access','کاهش حرکت':'Reduce motion','فعال‌کردن انیمیشن':'Enable animations','راهنمای سریع سرویس‌های اصلی':'Quick setup for key tools','Cursor':'Cursor','Claude':'Claude','ChatGPT':'ChatGPT','Qoder':'Qoder','پوشه شناسایی شده':'Folder detected','آخرین تاریخچه:':'Last activity:','سبز: تاریخچه یا رویداد شناسایی شده؛ به معنی اتصال زنده قطعی نیست. برای رویدادهای زنده Hook مخصوص Agent لازم است.':'A detected event does not guarantee a live connection. Live events require an agent hook.','بدون مدل محلی یا API معتبر، پاسخ هوش مصنوعی ارائه نمی‌شود. وضعیت تست فقط از اجرای واقعی خوانده می‌شود.':'Responses require a valid local model or API. Test status is based on recorded runs.','برای مشکلات نصب و اتصال، راهنمای فارسی مخزن را ببین.':'For setup help, open the repository documentation.'
+  };
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes:Text[]=[];while(walker.nextNode())nodes.push(walker.currentNode as Text);
+  for(const node of nodes){const value=node.nodeValue?.trim();if(value&&dictionary[value])node.nodeValue=node.nodeValue!.replace(value,dictionary[value]);}
+  root.querySelectorAll<HTMLElement>('[placeholder]').forEach(el=>{const p=el.getAttribute('placeholder');if(p&&dictionary[p])el.setAttribute('placeholder',dictionary[p]);});
+  root.querySelectorAll<HTMLElement>('[title]').forEach(el=>{const p=el.getAttribute('title');if(p&&dictionary[p])el.setAttribute('title',dictionary[p]);});
+}
+
 function render() {
   const prev=document.querySelector<HTMLElement>('.app');
   const lastScroll=prev?.scrollTop??scrollTop;
   app.innerHTML = `<div class="app">
-  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span>کیو <small>Qio</small></span><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></header>
+  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span><span class="brand-fa">کیو</span><small>Qio</small></span><div class="topbar-tools"><button class="lang-toggle" id="lang-toggle" title="Switch language">${language==='fa'?'EN':'فا'}</button><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></div></header>
   <main><section class="island ${expanded?'open':''} mood-${displayMood()}" aria-label="جزیره کیو">
     ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
     <span class="substatus"><span class="mood-dot"></span>${pendingApprovals.length?'درخواست تأیید منتظر شماست':aiBusy?'در حال دریافت پاسخ':latestHook()?'رویداد اخیر Agent':'منتظر رویداد واقعی'}</span>
@@ -73,6 +87,8 @@ function render() {
   </section>` : ''}
   </main><footer><button id="notifications" class="text-button">اعلان‌ها</button><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
   </div>`;
+  applyLanguage();
+  document.querySelector('#lang-toggle')?.addEventListener('click',()=>{language=language==='fa'?'en':'fa';localStorage.setItem('qio-language',language);render();});
   document.querySelector('#drag-region')?.addEventListener('pointerdown',e=>{if ((e.target as HTMLElement).closest('button'))return;if ('__TAURI_INTERNALS__' in window) {void invoke('drag_island').catch(console.error);}});
   document.querySelector('#notifications')?.addEventListener('click',()=>void enableNotifications());
   document.querySelector('#quit')?.addEventListener('click',()=>{if ('__TAURI_INTERNALS__' in window) {void invoke('quit_qio');} else {alert('خروج در نسخه دسکتاپ فعال است.');}});
