@@ -196,7 +196,7 @@ fn qio_hook_events() -> Vec<RecentEvent> {
         let kind=event.get("kind").and_then(|v|v.as_str()).unwrap_or("");
         let agent=match event.get("agent").and_then(|v|v.as_str()).unwrap_or("") {
             "Claude Code"=>"Claude Code","Codex"=>"Codex","Gemini CLI"=>"Gemini CLI",
-            "OpenCode"=>"OpenCode","Cursor"=>"Cursor",_=>"Other",
+            "OpenCode"=>"OpenCode","Cursor"=>"Cursor","Qoder"=>"Qoder",_=>"Other",
         };
         let (kind,label)=match kind {
             "SessionStart"=>("session","نشست جدید آغاز شد"),
