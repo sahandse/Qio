@@ -15,8 +15,6 @@ concurrency:
 
 jobs:
   qoder-review:
-    # Fork PRs do not receive repository secrets; the action will only work
-    # for PRs where the Qoder token is available.
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -25,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Review pull request with Qoder
-        if: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN != '' }}
+        if: ${{ vars.QODER_ENABLED == 'true' && github.event.pull_request.head.repo.full_name == github.repository }}
         uses: QoderAI/qoder-action@v0
         with:
           qoder_personal_access_token: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN }}
