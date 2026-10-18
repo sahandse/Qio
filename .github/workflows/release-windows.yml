@@ -1,0 +1,85 @@
+name: Qio Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag to create (example: v0.1.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qio-windows-release-${{ inputs.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install application dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Check Rust compilation
+        run: cargo check --manifest-path src-tauri/Cargo.toml
+
+      - name: Build Windows installers
+        run: npm run tauri build -- --bundles nsis,msi
+
+      - name: Verify installer files exist
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") }
+          if (-not $files -or $files.Count -lt 1) {
+            throw "No Windows installer (.exe or .msi) was generated."
+          }
+          $files | ForEach-Object { Get-FileHash $_.FullName -Algorithm SHA256 | Select-Object Path, Hash | Format-List }
+
+      - name: Prepare release files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") } | Copy-Item -Destination release-assets
+          Get-ChildItem release-assets -File | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Add-Content -Path release-assets/SHA256SUMS.txt
+          }
+          Get-ChildItem release-assets -File | Format-Table Name, Length
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: Qio ${{ inputs.tag_name || github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            release-assets/*.exe
+            release-assets/*.msi
+            release-assets/SHA256SUMS.txt
