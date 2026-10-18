@@ -25,3 +25,4 @@ try {
  await mkdir(directory,{recursive:true,mode:0o700});
  await appendFile(join(directory,'events.jsonl'),entry+'\n',{encoding:'utf8',mode:0o600});
 } catch { /* Hook must never block or crash the coding agent. */ }
+if(agent==='Cursor')console.log(JSON.stringify({ok:true}));
