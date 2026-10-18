@@ -117,6 +117,15 @@ struct ProviderInfo {
 fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
     match id {
         "hooshgar" => Some(("هوشگر (ایران)","ایرانی","https://api.hooshgar.ir/v1/chat/completions","HOOSHGAR_API_KEY")),
+        "gemini" => Some(("Google Gemini","بین‌المللی","https://generativelanguage.googleapis.com/v1beta/openai/chat/completions","GEMINI_API_KEY")),
+        "perplexity" => Some(("Perplexity AI","بین‌المللی","https://api.perplexity.ai/chat/completions","PERPLEXITY_API_KEY")),
+        "sambanova" => Some(("SambaNova","بین‌المللی","https://api.sambanova.ai/v1/chat/completions","SAMBANOVA_API_KEY")),
+        "nvidia" => Some(("NVIDIA NIM","بین‌المللی","https://integrate.api.nvidia.com/v1/chat/completions","NVIDIA_API_KEY")),
+        "siliconflow" => Some(("SiliconFlow","بین‌المللی","https://api.siliconflow.com/v1/chat/completions","SILICONFLOW_API_KEY")),
+        "huggingface" => Some(("Hugging Face","بین‌المللی","https://router.huggingface.co/v1/chat/completions","HF_TOKEN")),
+        "githubmodels" => Some(("GitHub Models","بین‌المللی","https://models.github.ai/inference/chat/completions","GITHUB_TOKEN")),
+        "cohere" => Some(("Cohere","بین‌المللی","https://api.cohere.com/compatibility/v1/chat/completions","COHERE_API_KEY")),
+        "novita" => Some(("Novita AI","بین‌المللی","https://api.novita.ai/v3/openai/chat/completions","NOVITA_API_KEY")),
         "mistral" => Some(("Mistral AI","بین‌المللی","https://api.mistral.ai/v1/chat/completions","MISTRAL_API_KEY")),
         "xai" => Some(("xAI Grok","بین‌المللی","https://api.x.ai/v1/chat/completions","XAI_API_KEY")),
         "fireworks" => Some(("Fireworks AI","بین‌المللی","https://api.fireworks.ai/inference/v1/chat/completions","FIREWORKS_API_KEY")),
@@ -134,9 +143,9 @@ fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static st
 }
 #[tauri::command]
 fn ai_providers()->Vec<ProviderInfo>{
-    ["mistral","xai","fireworks","cerebras","hooshgar","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
+    ["mistral","xai","fireworks","cerebras","hooshgar","gemini","perplexity","sambanova","nvidia","siliconflow","huggingface","githubmodels","cohere","novita","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
         .iter().filter_map(|id|provider_details(id).map(|(name,region,_,key)|ProviderInfo {
-            id:match *id {"mistral"=>"mistral","xai"=>"xai","fireworks"=>"fireworks","cerebras"=>"cerebras","hooshgar"=>"hooshgar","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
+            id:match *id {"mistral"=>"mistral","xai"=>"xai","fireworks"=>"fireworks","cerebras"=>"cerebras","hooshgar"=>"hooshgar","gemini"=>"gemini","perplexity"=>"perplexity","sambanova"=>"sambanova","nvidia"=>"nvidia","siliconflow"=>"siliconflow","huggingface"=>"huggingface","githubmodels"=>"githubmodels","cohere"=>"cohere","novita"=>"novita","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
             name,region,key_configured:key.is_empty()||env::var(key).is_ok_and(|v|!v.trim().is_empty())
         })).collect()
 }
