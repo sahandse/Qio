@@ -32,7 +32,7 @@ if(!next.hooks||Array.isArray(next.hooks)||typeof next.hooks!=='object') {
   console.error('Invalid hooks object; no changes made.');
   process.exit(1);
 }
-const quote=value=>'"'+value.replaceAll('\\','\\\\').replaceAll('"','\\"')+'"';
+const quote=value=>'"'+value+'"';
 const command=quote(process.execPath)+' '+quote(hook)+' --agent=Cursor';
 for(const event of events) {
   const list=Array.isArray(next.hooks[event])?next.hooks[event]:[];
@@ -47,6 +47,6 @@ try {
 } catch(error) {
   if(error?.code!=='ENOENT') throw error;
 }
-await writeFile(settings,JSON.stringify(next,null,2)+'\\n',{encoding:'utf8',mode:0o600});
+await writeFile(settings,JSON.stringify(next,null,2)+'\n',{encoding:'utf8',mode:0o600});
 console.log('Qio Cursor hooks installed. Restart Cursor if events do not appear.');
 console.log('Only event metadata is logged locally; prompts, shell commands, and file contents are not stored.');
