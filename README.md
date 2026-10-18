@@ -1,78 +1,94 @@
 <div align="center">
 
-<img src="public/qio-guide-hero.svg" alt="Qio — همراه هوشمند دسکتاپ" width="860" />
+<img src="public/qio-guide-hero.svg" alt="Qio — voxel AI desktop companion" width="960" />
 
-# ✦ Qio | کیو
+# ✦ Qio / کیو
 
-### دوست کوچولوی هوشمندت؛ همیشه کنار کدت.
+### دوست هوشمند دسکتاپت؛ با حال‌وهوای voxel و Minecraft
 
-**یه دوست کوچولوی فارسی که موقع کدنویسی با هوش مصنوعی، روی ویندوز یا مک کنارت می‌مونه.**
-چشم‌هاش دنبالت می‌کنن، با اتفاق‌های مهم واکنش نشون می‌ده و هر وقت خواستی می‌تونی با مدل‌های مختلف هوش مصنوعی حرف بزنی. همه‌چیز جمع‌وجور و بی‌دردسره! ✨
+**کیو یک همراه جمع‌وجور برای کار با ابزارهای هوش مصنوعی و برنامه‌نویسی است.**  
+با کاراکتر مکعبی، رابط فارسی و انگلیسی، حالت‌های واکنشی و راهنماهای اتصال، همیشه گوشهٔ دسکتاپت جا دارد. 🟩
 
-<br/>
+[![Latest Release](https://img.shields.io/github/v/release/sahandse/Qio?style=for-the-badge&label=Latest%20release&color=8B5CF6)](https://github.com/sahandse/Qio/releases/latest)
+[![Desktop Build](https://img.shields.io/github/actions/workflow/status/sahandse/Qio/ui-check.yml?style=for-the-badge&label=Desktop%20build)](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
+[![Windows](https://img.shields.io/badge/Windows-10%2F11-22C55E?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sahandse/Qio/releases/latest)
+[![Persian + English](https://img.shields.io/badge/Language-FA%20%2B%20EN-06B6D4?style=for-the-badge)](#-زبانها--languages)
 
-[![Windows](https://img.shields.io/badge/Windows-Builds-1477c9?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
-[![macOS](https://img.shields.io/badge/macOS-Builds-273a58?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
-[![Linux](https://img.shields.io/badge/Linux-Experimental-f3a45c?style=for-the-badge&logo=linux&logoColor=black)](docs/INSTALL_LINUX_FA.md)
-[![Support](https://img.shields.io/badge/Telegram-@sahandse-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/sahandse)
-
-[**⬇ مشاهده خروجی‌های ساخت**](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml) · [**📖 نصب قدم‌به‌قدم**](#-راهنمای-نصب-برای-هر-سیستمعامل) · [**⚙ اتصال AI**](docs/AI_PROVIDERS_FA.md) · [**❗ راهنما و پشتیبانی**](https://t.me/sahandse)
-
-<sub>⚠️ کیو هنوز نسخه آزمایشی 0.1.0 هست. قبل از دانلود، توی GitHub Actions چک کن فایل نصب واقعاً ساخته شده باشه؛ فعلاً نسخه نهایی و تأییدشده نداریم.</sub>
+[⬇️ دانلود نسخه ویندوز](https://github.com/sahandse/Qio/releases/latest) · [📘 راهنمای اتصال AI](docs/AI_PROVIDERS_FA.md) · [🧩 راه‌اندازی Agentها](docs/DESKTOP_SETUP_FA.md) · [💬 پشتیبانی](https://t.me/sahandse)
 
 </div>
 
 ---
 
-## 🌟 کیو چه کارای باحالی بلده؟
+## 🧊 ظاهر تازهٔ کیو
 
-| ✨ چی توی کیو می‌بینی؟ | ⚙️ پشت صحنه چه خبره؟ |
-|---|---|
-| **جزیره شناور و دوست‌داشتنی** | پنجره بدون قاب و همیشه‌روی‌صفحه؛ حالت معمولی، باز و Mini |
-| **کاراکتر با احساس** | حرکت چشم، چشمک، حالت‌های کار/فکر/خوشحالی/هشدار/استراحت؛ صداهای اختیاری |
-| **رویدادهای برنامه‌نویسی** | خواندن تاریخچه‌ی محلی Codex و Claude Code؛ Hook اختیاری برای رویدادهای مستقل |
-| **کنترل درخواست‌های Claude** | مشاهده و تأیید/رد دستی PermissionRequest، بدون تأیید خودکار |
-| **چت مستقیم هوش مصنوعی** | اتصال کدنویسی‌شده به ۲۲ ارائه‌دهنده Cloud و Local |
-| **تنظیمات شخصی** | روشن/تاریک، کاهش حرکت، اعلان‌ها، صدای اختیاری، نمایش کوچک |
-| **اعلان و Tray** | اعلان بومی با اجازه‌ی کاربر؛ منوی نمایش، پنهان‌کردن و خروج |
-| **راهنمای تصویری** | مراحل اتصال جداگانه برای ۲۲ ارائه‌دهنده AI |
-| **پشتیبانی فارسی** | «! راهنما و رفع مشکل» و لینک مستقیم [تلگرام @sahandse](https://t.me/sahandse) |
+- **کاراکتر voxel** با حال‌وهوای بازی‌های بلوکی، روی پس‌زمینهٔ تیره و جزئیات نئونی.
+- **فارسی و English** با جهت درست متن (RTL/LTR).
+- پنجرهٔ شناور و بدون قاب، حالت کوچک و بزرگ و دسترسی از System Tray.
+- واکنش‌های بصری و اعلان‌های اختیاری؛ حرکت‌ها را می‌توان محدود کرد.
+- نمایش وضعیت‌ها باید بر پایهٔ نتیجهٔ واقعی باشد؛ صرف نمایش یک Agent یا تاریخچه به معنی آنلاین‌بودن آن نیست.
 
-**یه نکته مهم:** کیو الکی نمی‌گه «همه‌چی وصله»! دیدن تاریخچه یعنی یه فعالیت قبلاً ثبت شده، نه اینکه Agent همین الان آنلاینه. موفق‌شدن تست و وصل‌بودن API هم فقط با نتیجه واقعی مشخص می‌شه.
+## 🚀 دانلود و نصب
 
-## 🪄 کیو چه شکلی کنارت می‌مونه؟
-
-<table>
-<tr>
-<td width="33%" align="center"><strong>۱. جزیره جمع‌وجور</strong><br/>کیو در گوشهٔ صفحه، با وضعیت کوتاه و کاراکتر واکنش‌گرا</td>
-<td width="33%" align="center"><strong>۲. Mini Companion</strong><br/>یک کاراکتر کوچک برای دسکتاپ و دسترسی سریع به پنل</td>
-<td width="33%" align="center"><strong>۳. پنل کامل</strong><br/>چهار بخش گفت‌وگو، فعالیت‌ها، راهنما و تنظیمات</td>
-</tr>
-</table>
-
-> 🎨 عکس بالای صفحه، تصویر اختصاصی خود کیوئه؛ اسکرین‌شات اجرای برنامه نیست. وقتی نسخه‌ها تست شدن، عکس واقعی هم می‌ذاریم.
-
-## 💻 می‌خوای کیو رو نصب کنی؟ از اینجا شروع کن
-
-| سیستم‌عامل | وضعیت بسته | آموزش فارسی کامل |
+| سیستم‌عامل | دریافت | وضعیت |
 |---|---|---|
-| 🪟 **Windows 10/11** | Workflow ساخت EXE/MSI؛ موفقیت خروجی هنوز تأیید نشده | [نصب و رفع اشکال ویندوز](docs/INSTALL_WINDOWS_FA.md) |
-| 🍎 **macOS** | Workflow ساخت DMG؛ امضا و notarization تأیید نشده | [نصب و ساخت روی مک](docs/INSTALL_MACOS_FA.md) |
-| 🐧 **Linux** | آزمایشی؛ Build خودکار رسمی ندارد | [راهنمای اجرای سورس لینوکس](docs/INSTALL_LINUX_FA.md) |
-| 📱 **Android / iOS** | نسخهٔ قابل نصب ارائه نشده | — |
+| 🪟 **Windows 10/11** | [نصب‌کننده EXE](https://github.com/sahandse/Qio/releases/latest) · [فایل MSI](https://github.com/sahandse/Qio/releases/latest) | نسخهٔ منتشرشده: **v0.1.4** |
+| 🍎 **macOS** | [خروجی‌های ساخت دسکتاپ](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml) | فقط Artifact اجرای موفق را دریافت کنید؛ امضا و notarization تضمین نشده |
+| 🐧 **Linux** | [راهنمای اجرا از سورس](docs/INSTALL_LINUX_FA.md) | آزمایشی |
+| 📱 **Android / iOS** | — | نسخهٔ قابل نصب منتشر نشده |
 
-### نصب راحت از GitHub، اگه فایل آماده بود
+برای Windows، صفحهٔ [Latest Release](https://github.com/sahandse/Qio/releases/latest) را باز کن و فایل EXE یا MSI همان نسخه را از بخش **Assets** بگیر. فایل‌های نسخه و نام آن‌ها را قبل از نصب بررسی کن؛ برای بررسی هش، فایل `SHA256SUMS.txt` همان Release در دسترس است.
 
-1. وارد [Qio desktop build](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml) شوید.
-2. اجرای **موفق** مخصوص آخرین تغییرات شاخه `main` را انتخاب کنید.
-3. فقط اگر بخش **Artifacts** شامل بستهٔ مربوط به سیستم‌عامل شما بود، آن را دریافت کنید.
-4. بسته ZIP را استخراج و نصب‌کننده را طبق راهنمای سیستم‌عامل اجرا کنید.
+## ✨ امکانات
 
-**حواست باشه:** فایل‌های بخش Artifacts ممکنه هنوز امضای دیجیتال یا تست نهایی نداشته باشن. قبل از استفاده، مطمئن شو خروجی معتبر و مناسب سیستمت هست.
+<details>
+<summary><strong>🧑‍💻 همراه برنامه‌نویسی و Agentها</strong></summary>
 
-### دوست داری خودت از سورس اجراش کنی؟
+- نمایش رویدادهای محلی و تاریخچهٔ نشست‌ها در موارد پشتیبانی‌شده.
+- راهنمای اتصال برای ابزارهایی مثل **Cursor، Claude Code و Qoder**.
+- اسکریپت نصب Hook برای Qoder: `npm run setup:qoder`
+- اسکریپت اتصال Claude Code: `npm run setup:claude`
+- وضعیت تاریخچه، Hook و اتصال زنده با هم یکی نیستند؛ هر کدام فقط وقتی گزارش می‌شوند که دادهٔ مربوط به همان مورد موجود باشد.
+- درخواست‌های Permission خودکار تأیید نمی‌شوند؛ تصمیم نهایی با کاربر است.
 
-به Node.js 22، Rust و پیش‌نیازهای [Tauri 2](https://v2.tauri.app/start/prerequisites/) نیاز دارید.
+</details>
+
+<details>
+<summary><strong>🤖 گفت‌وگوی مستقیم با ارائه‌دهندگان AI</strong></summary>
+
+اتصال‌های تعریف‌شده در سورس شامل این سرویس‌ها هستند:
+
+- **ایرانی:** AvalAI، Hooshgar
+- **ابری:** OpenAI، Gemini، OpenRouter، DeepSeek، Groq، Together AI، Mistral AI، xAI Grok، Fireworks AI، Cerebras، Perplexity، SambaNova، NVIDIA NIM، SiliconFlow، Hugging Face، GitHub Models، Cohere و Novita AI
+- **محلی:** Ollama و LM Studio
+
+برای سرویس ابری، کلید API معتبر و مدل قابل استفاده لازم است. برای Ollama یا LM Studio نیز باید سرور و مدل روی سیستم خودت اجرا باشند. وجود نام سرویس در فهرست به معنی تأیید اتصال یا دسترسی حساب نیست.
+
+راهنما: [ارائه‌دهندگان و تنظیمات API](docs/AI_PROVIDERS_FA.md)
+
+</details>
+
+<details>
+<summary><strong>🎛️ تجربهٔ دسکتاپ</strong></summary>
+
+- پنجرهٔ بدون قاب و همیشه‌روی‌صفحه
+- حالت کوچک و بزرگ، System Tray و اعلان‌های اختیاری
+- گزینه‌های شخصی‌سازی و کاهش حرکت
+- رابط فارسی و انگلیسی
+- راهنمای نصب و عیب‌یابی
+
+</details>
+
+## 🌐 زبان‌ها / Languages
+
+- **فارسی:** رابط راست‌چین و راهنماهای فارسی.
+- **English:** رابط چپ‌چین و محتوای دوزبانه در حال تکمیل است.
+
+از کلید زبان داخل برنامه استفاده کن. اگر بخشی هنوز ترجمه نشده بود، آن بخش را ناقص در نظر بگیر و گزارش بده.
+
+## 🛠️ اجرا از سورس
+
+پیش‌نیازها: Node.js 22، Rust و پیش‌نیازهای [Tauri 2](https://v2.tauri.app/start/prerequisites/).
 
 ```bash
 git clone https://github.com/sahandse/Qio.git
@@ -82,40 +98,43 @@ npm test
 npm run tauri dev
 ```
 
-ساخت فایل‌های نصب روی سیستم سازگار:
+ساخت بسته روی سیستم سازگار:
 
 ```bash
 npm run tauri build
 ```
 
-## 🧠 کیو با کدوم هوش مصنوعی‌ها حرف می‌زنه؟
+برای تست واقعی یک دستور دلخواه، آن را از مسیر پروژه و با اسکریپت مناسب اجرا کن؛ موفقیت تست‌های خود Qio به معنی تست‌شدن همهٔ ابزارها یا سرویس‌های خارجی نیست.
 
-| 🇮🇷 ایرانی | ☁️ بین‌المللی | 🖥️ محلی |
-|---|---|---|
-| AvalAI، Hooshgar | OpenAI، Gemini، OpenRouter، DeepSeek، Groq، Together AI، Mistral AI، Grok (xAI)، Fireworks AI، Cerebras، Perplexity، SambaNova، NVIDIA NIM، SiliconFlow، Hugging Face، GitHub Models، Cohere، Novita AI | Ollama، LM Studio |
+## 🔐 امنیت و شفافیت
 
-**در حال حاضر ۲۲ اتصال ارائه‌دهنده در کد تعریف شده‌اند.** برای سرویس‌های ابری، کلید API و مدل فعال می‌خوای؛ برای Ollama و LM Studio هم باید مدل روی کامپیوتر خودت اجرا بشه.
+- کلیدهای API را در README، Issue یا اسکرین‌شات منتشر نکن؛ آن‌ها را طبق راهنمای ارائه‌دهنده در متغیرهای محیطی تنظیم کن.
+- Hookهای Qio برای رویدادهای پشتیبانی‌شده طراحی شده‌اند؛ متن کامل مکالمه یا محتوای فایل‌ها نباید به‌عنوان وضعیت اتصال فرض شود.
+- اجازهٔ اجرای ابزارها به‌صورت خودکار پذیرفته نمی‌شود.
+- اتصال واقعی، سازگاری هر Agent و نتیجهٔ درخواست API فقط با بررسی همان اجرا مشخص می‌شود.
 
-[📘 مستندات ارائه‌دهندگان](docs/AI_PROVIDERS_FA.md) · [📚 نصب و اتصال Agentها](docs/DESKTOP_SETUP_FA.md)
+## 🐛 مشکل داری یا ایده‌ای داری؟
 
-## 🔐 اطلاعاتت چی می‌شه؟
-
-- رویدادهای Hook در `~/.qio/` ثبت می‌شوند؛ متن کامل مکالمه یا خروجی کد برای نوار فعالیت کپی نمی‌شود.
-- پیش‌نمایش کوتاه درخواست مجوز می‌تواند شامل اطلاعات حساس دستور باشد و فقط برای تصمیم خود کاربر نمایش داده می‌شود.
-- مجوز ابزارها به‌صورت خودکار پذیرفته نمی‌شود.
-- ثبت نتیجه تست بر اساس **کد خروج فرایند** است؛ تازه‌بودن نتیجه نسبت به آخرین تغییرات کد بررسی قطعی نشده است.
-- سازگاری نهایی رابط و بسته‌ها با Windows/macOS، اتصال همهٔ سرویس‌ها و هماهنگی تمامی Hookها هنوز باید در اجرای واقعی آزمایش شوند.
-
-## ❓ جایی گیر کردی؟ بیا حرف بزنیم!
-
-توی خود برنامه هم کافیه بری **تنظیمات ← ! راهنما و رفع مشکل ← تلگرام و پشتیبانی**. اونجا راحت پیدامون می‌کنی. 💬
-
-[**✈️ تلگرام @sahandse**](https://t.me/sahandse) · [**🐛 ثبت مشکل GitHub**](https://github.com/sahandse/Qio/issues) · [**📊 وضعیت توسعه**](docs/STATUS.md)
+[ثبت مشکل در GitHub](https://github.com/sahandse/Qio/issues) · [وضعیت توسعه](docs/STATUS.md) · [تلگرام @sahandse](https://t.me/sahandse)
 
 <div align="center">
 
-### Qio — کوچولو، باهوش و همیشه همراه. 💙
+**Qio — کوچولو، بلوکی و همیشه همراه. 💜🟩**
 
-<sub>ساخته‌شده با TypeScript، Rust و Tauri 2 · نسخهٔ در حال توسعه</sub>
+<sub>TypeScript · Rust · Tauri 2 · نسخهٔ منتشرشده: v0.1.4</sub>
 
 </div>
+
+---
+
+## English
+
+**Qio is a compact desktop AI companion** with a voxel-inspired character, Persian/English interface, a floating window, optional notifications, and setup guides for supported coding-agent workflows.
+
+- **Download:** [Latest Windows release](https://github.com/sahandse/Qio/releases/latest)
+- **AI providers:** [Provider and API guide](docs/AI_PROVIDERS_FA.md)
+- **Agent setup:** [Desktop setup guide](docs/DESKTOP_SETUP_FA.md)
+- **Build status:** [GitHub Actions](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
+- **Issues and feedback:** [Open an issue](https://github.com/sahandse/Qio/issues)
+
+Qio distinguishes local history, hook events, and live API connectivity. A listed provider or detected history does not by itself mean a service is currently connected.
