@@ -29,7 +29,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           ref: ${{ github.ref }}
 
       - name: Detect version release
@@ -63,7 +63,11 @@ jobs:
               should_release=true
             else
               tag="v$current_version"
-              should_release=false
+              if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+                should_release=false
+              else
+                should_release=true
+              fi
             fi
           fi
           echo "should_release=$should_release" >> "$GITHUB_OUTPUT"
