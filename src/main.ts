@@ -101,7 +101,7 @@ function render() {
   const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
   const face=document.querySelector<HTMLElement>('.face');
   const shell=document.querySelector<HTMLElement>('.shell');
-  document.querySelector('#mascot')?.addEventListener('pointermove',e=>{
+  document.querySelector('#mascot')?.addEventListener('pointermove',(e: PointerEvent)=>{
      if(reducedMotion||!face||!shell)return;
      const rect=shell.getBoundingClientRect();
      const x=Math.max(-5,Math.min(5,(e.clientX-(rect.left+rect.width/2))/12));
