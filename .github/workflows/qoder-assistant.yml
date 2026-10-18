@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Qoder assistant
-        if: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN != '' }}
+        if: ${{ vars.QODER_ENABLED == 'true' }}
         uses: QoderAI/qoder-action@v0
         with:
           qoder_personal_access_token: ${{ secrets.QODER_PERSONAL_ACCESS_TOKEN }}
