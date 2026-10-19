@@ -79,3 +79,5 @@ test('focus timer persists locally and has explicit controls',()=>{const ui=read
 test('local reminders persist and require a future date',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/localStorage\.getItem\('qio-local-reminders'/);assert.match(ui,/localStorage\.setItem\('qio-local-reminders'/);assert.match(ui,/id="reminder-at" type="datetime-local"/);assert.match(ui,/at<=Date\.now\(\)/);assert.match(ui,/window\.setInterval\(checkLocalReminders,5000\)/)});
 
 test('recurring reminders advance after their due time',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/repeat\?:'none'\|'daily'\|'weekly'/);assert.match(ui,/id="reminder-repeat"/);assert.match(ui,/r\.repeat==='daily'\|\|r\.repeat==='weekly'/);assert.match(ui,/604800000/)});
+
+test('reminder calendar marks scheduled days and supports month navigation',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/function renderReminderCalendar\(\)/);assert.match(ui,/id="reminder-calendar"/);assert.match(ui,/id="calendar-prev"/);assert.match(ui,/id="calendar-next"/);assert.match(ui,/data-calendar-day/)});
