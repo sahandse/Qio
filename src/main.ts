@@ -85,7 +85,6 @@ function mascot() {
       <button class="qio-shortcut" id="quick-chat" title="${language==="fa"?"گفت‌وگو":"Chat"}" aria-label="${language==="fa"?"گفت‌وگو":"Chat"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2 1-5a7.5 7.5 0 1 1 16-4.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></button>
       <button class="qio-shortcut settings" id="quick-settings" title="${language==="fa"?"تنظیمات":"Settings"}" aria-label="${language==="fa"?"تنظیمات":"Settings"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1.9-1.2 2.1-1.4-.5a7.7 7.7 0 0 1-1.7 1l-.2 1.5h-2.4l-.3-1.5a7.7 7.7 0 0 1-1.8-.7l-1.3.7-1.5-1.9 1-1.2a7.8 7.8 0 0 1-.3-1.9l-1.3-.7.7-2.3 1.5.1a7.7 7.7 0 0 1 1.3-1.4l-.1-1.5 2.3-.7.8 1.3a7.8 7.8 0 0 1 1.9.2l1-1.1 2 1.3-.5 1.4a7.8 7.8 0 0 1 .8 1.7l1.5.3v2.4Z"/></svg></button>
     </div>
-    <button id="mascot" class="qio-character-hit" aria-label="${language==="fa"?"بازکردن پنل کیو":"Open Qio panel"}" title="${language==="fa"?"بازکردن پنل":"Open panel"}"></button>
   </div>`;
 }
 let qioCanvasFrame=0;
@@ -136,6 +135,19 @@ function drawQioCharacter(){
     ctx.strokeStyle='#8b5cff';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(180,76);ctx.quadraticCurveTo(172,45,195,34);ctx.stroke();
     ctx.save();ctx.shadowColor='#6affb4';ctx.shadowBlur=18;ctx.fillStyle='#6affb4';ctx.beginPath();ctx.ellipse(199,31,12,7,-.6,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.fillStyle='#ffffff80';ctx.beginPath();ctx.ellipse(130,104,22,7,-.6,0,Math.PI*2);ctx.fill();
+    // A visible, friendly smile; keep the face expressive in every normal state.
+    if(moodNow!=='error'&&moodNow!=='sleep'){
+      ctx.save();
+      ctx.strokeStyle=moodNow==='alert'?'#ffc36b':'#72ffc0';
+      ctx.lineWidth=4;
+      ctx.lineCap='round';
+      ctx.shadowColor=ctx.strokeStyle;
+      ctx.shadowBlur=8;
+      ctx.beginPath();
+      ctx.arc(180,177,15,0.18,Math.PI-0.18,false);
+      ctx.stroke();
+      ctx.restore();
+    }
     if(moodNow==='working'&&!reduced){ctx.fillStyle='#9a7cff';for(let i=0;i<3;i++){ctx.globalAlpha=.45+.55*Math.sin(t*7+i);ctx.beginPath();ctx.arc(253+i*9,70-i*12,3+i,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;}
     if(moodNow==='alert'){ctx.fillStyle='#ffb454';ctx.beginPath();ctx.arc(274,105,14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#24162b';ctx.font='bold 20px sans-serif';ctx.fillText('!',274,112);}
     ctx.restore();
@@ -234,9 +246,10 @@ ${githubError?`<p class="github-error">${escapeHtml(githubError)}</p>`:githubRun
   document.querySelector<HTMLElement>('.app')?.classList.toggle('quiet-island',idleHide&&!expanded&&pendingApprovals.length===0&&(Date.now()-lastActivityAt)>60000);
   const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
   drawQioCharacter();
-  document.querySelector('#mascot')?.addEventListener('click',()=>{qioSquishUntil=Date.now()+230;toggle();});
-  document.querySelector('.qio-stage')?.addEventListener('pointerdown',(event)=>{
+  const dragSurface=document.querySelector<HTMLElement>('.qio-stage');
+  dragSurface?.addEventListener('pointerdown',(event)=>{
     if((event.target as HTMLElement).closest('button'))return;
+    qioSquishUntil=Date.now()+180;
     if('__TAURI_INTERNALS__' in window)void invoke('drag_island').catch(error=>console.warn('Could not drag Qio window',error));
   });
   document.querySelector('#quick-chat')?.addEventListener('click',()=>{expanded=true;openTab('chat');});
