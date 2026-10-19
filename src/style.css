@@ -550,3 +550,40 @@ body{margin:0!important;padding:0!important;overflow:hidden!important}
 .island.open .ai-chat button{min-height:38px!important;line-height:1.5!important}
 @media(max-width:360px){.island.open .panel{padding-inline:7px!important}.island.open .tab-bar{margin-inline:4px!important}.island.open .tab{padding-inline:3px!important;font-size:9px!important}}
 @media(max-height:460px){.island.open .qio-stage{flex-basis:54px!important;height:54px!important;width:62px!important;max-width:62px!important}.island.open .tab-bar{margin-bottom:3px!important}.island.open .panel{padding-top:5px!important}}
+
+/* Qio companion: fully transparent, floating status bubble, draggable mascot */
+html,body,#app,.app,.app::before,.app::after,main,.island,.island::before,.island::after{background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important}
+html,body,#app{margin:0!important;padding:0!important;overflow:hidden!important}
+.app{margin:0!important;padding:0!important;gap:0!important;overflow:visible!important}
+.island:not(.open){padding:0!important;margin:0!important;background:transparent!important}
+.island:not(.open) .qio-stage{width:188px!important;height:210px!important;max-width:188px!important;margin:0!important;overflow:visible!important;cursor:grab;touch-action:none}
+.island:not(.open) .qio-stage:active{cursor:grabbing}
+.qio-stage{position:relative;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;touch-action:none}
+#qio-character{background:transparent!important;filter:none!important;cursor:grab}
+.qio-character-hit{cursor:grab!important;touch-action:none!important}
+.qio-speech{position:absolute;z-index:5;top:-4px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(260px,90vw);display:flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid #7bf5bc45;border-radius:14px;background:transparent!important;box-shadow:none!important;color:#e7fff3;font-size:11px;line-height:1.55;text-align:center;pointer-events:none;overflow-wrap:anywhere}
+.qio-speech span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qio-speech-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#70f6b1;box-shadow:0 0 9px #70f6b177}
+.mood-alert .qio-speech{border-color:#ffbf6b66;color:#ffe8c6}.mood-alert .qio-speech-dot{background:#ffc36b}
+.mood-error .qio-speech{border-color:#ff7d9666;color:#ffdbe2}.mood-error .qio-speech-dot{background:#ff7d96}
+.island:not(.open) .qio-shortcuts{right:0!important;top:55%!important;transform:translate(20%,-50%)!important;gap:8px!important}
+.island:not(.open) .qio-shortcut{width:30px!important;height:30px!important;background:transparent!important;border-color:#70f6b166!important;box-shadow:none!important;backdrop-filter:none!important}
+.island:not(.open) .qio-shortcut.settings{border-color:#b69aff80!important;color:#c8aaff!important}
+.island.open .qio-speech{top:-1px;max-width:90%;font-size:10px}
+.island.open .qio-stage{cursor:grab}
+.island.open .qio-stage:active{cursor:grabbing}
+.island.open .tab-bar{background:transparent!important;border:0!important;box-shadow:none!important}
+.island.open .panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px 11px 24px!important}
+.island.open .appearance-controls{display:flex;gap:12px!important;padding:0!important;background:transparent!important;border:0!important}
+.island.open .settings-section-title{font-size:12px!important;margin:17px 0 4px!important;padding-bottom:8px!important;border-bottom:1px solid #7f9bb51f;color:#83f5bd!important}
+.island.open .preference-label{font-size:11px!important;color:#c2d1df!important;margin:8px 2px 5px!important}
+.island.open .theme-options,.island.open .scale-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px!important}
+.island.open .theme-options button,.island.open .scale-options button{min-width:0;min-height:40px!important;padding:8px 4px!important;border-radius:12px!important;background:#111b25a8!important;border-color:#7b98ad2c!important;color:#c8d7e3!important;white-space:normal!important;line-height:1.5!important}
+.island.open .theme-options button.selected,.island.open .scale-options button.selected{background:#15382ba8!important;border-color:#70f6b1a8!important;color:#aaffd0!important}
+.island.open .appearance-controls>button:not(.github-refresh){min-height:42px!important;border-radius:12px!important;background:#101b27a8!important;border-color:#7b98ad30!important;color:#e0ecf5!important;text-align:right!important}
+.island.open .settings-help,.island.open .github-card,.island.open .ai-chat,.island.open .events-panel,.island.open .approvals{background:#0d1722a8!important;border-color:#7b98ad24!important}
+.island.open .ai-chat input,.island.open .ai-chat textarea,.island.open .ai-chat select,.island.open .event-search input,.island.open .event-tools select{background:#101b27a8!important;border-color:#7b98ad38!important}
+.island.open .tab{border:0!important;background:transparent!important}
+.island.open .tab.active{background:#143628b8!important;color:#aaffd0!important;border:1px solid #70f6b14d!important}
+@media(max-width:360px){.island.open .panel{padding-inline:7px!important}.qio-speech{max-width:84vw!important}}
+@media(prefers-reduced-motion:reduce){.qio-speech,.qio-shortcut{transition:none!important}}
