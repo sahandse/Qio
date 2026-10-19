@@ -27,3 +27,16 @@ test('Qio test runner records the true exit status and never invents a pass',()=
   assert.equal(evidence.exit_code,3);
  }finally{rmSync(home,{recursive:true,force:true})}
 });
+
+test('approval hook exposes bounded Edit/Write previews for manual review',()=>{
+ const hook=readFileSync(resolve('scripts/qio-approval-hook.mjs'),'utf8');
+ const ui=readFileSync(resolve('src/main.ts'),'utf8');
+ const rust=readFileSync(resolve('src-tauri/src/lib.rs'),'utf8');
+ assert.match(hook,/input\.tool_name==='Edit'/);
+ assert.match(hook,/input\.tool_name==='Write'/);
+ assert.match(hook,/diff_preview:diffPreview\|\|undefined/);
+ assert.match(ui,/approval-diff/);
+ assert.match(ui,/escapeHtml\(a\.diff_preview\)/);
+ assert.match(rust,/diff_preview:v\.get\("diff_preview"\)/);
+ assert.match(hook,/display\(diffPreview,1600\)/);
+});

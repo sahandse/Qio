@@ -634,3 +634,8 @@ html,body,#app{margin:0!important;padding:0!important;overflow:hidden!important}
 @media(max-height:460px){.island.open .qio-stage{flex-basis:56px!important;width:64px!important;height:56px!important;max-width:64px!important}.island.open .panel{padding-top:5px!important}}
 
 .agent-led.active{background:#67e7bf;box-shadow:0 0 9px #62e5b9;animation:qio-live-pulse 1.6s ease-in-out infinite}.agent-led.recent{background:#f4c66d;box-shadow:0 0 7px #f4c66d66}.agent-led.configured{background:#8e9fb6;box-shadow:none}@keyframes qio-live-pulse{0%,100%{opacity:1}50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.agent-led.active{animation:none}}
+
+/* Stage 3: bounded, locally rendered approval change preview */
+.approval-diff{margin:.65rem 0;padding:.55rem .7rem;border:1px solid var(--border,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.14)}
+.approval-diff summary{cursor:pointer;font-size:.84rem;color:var(--accent,#8be8b0);user-select:none}
+.approval-diff pre{margin:.65rem 0 0;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:.78rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text,#eee)}

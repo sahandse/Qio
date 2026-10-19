@@ -22,12 +22,21 @@ const pending=join(dir,id+'.request.json');
 const answer=join(dir,id+'.answer.json');
 const display=(value,max)=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,max);
 const tool=display(input.tool_name,100);
-const preview=display(input.tool_input?.command??input.tool_input?.file_path??input.tool_input?.path??'',450);
+const toolInput=input.tool_input??{};
+const preview=display(toolInput.command??toolInput.file_path??toolInput.path??'',450);
+// Only expose bounded Edit/Write content previews for explicit local review.
+let diffPreview='';
+if(input.tool_name==='Edit' && typeof toolInput.old_string==='string' && typeof toolInput.new_string==='string'){
+ diffPreview='--- before\n'+display(toolInput.old_string,700)+'\n+++ after\n'+display(toolInput.new_string,700);
+}else if(input.tool_name==='Write' && typeof toolInput.content==='string'){
+ diffPreview='+++ new file content\n'+display(toolInput.content,1200);
+}
+diffPreview=display(diffPreview,1600);
 try{
  const heartbeat=Number(await readFile(join(root,'heartbeat'),'utf8'));
  if(!Number.isFinite(heartbeat) || (Date.now()/1000-heartbeat)>25)process.exit(0);
  await mkdir(dir,{recursive:true,mode:0o700});
- await writeFile(pending,JSON.stringify({id,tool,preview,at:Date.now(),expires_at:Date.now()+20000})+'\n',{mode:0o600,flag:'wx'});
+ await writeFile(pending,JSON.stringify({id,tool,preview,diff_preview:diffPreview||undefined,at:Date.now(),expires_at:Date.now()+20000})+'\n',{mode:0o600,flag:'wx'});
  for(let i=0;i<40;i++){
    await sleep(500);
    let decision;

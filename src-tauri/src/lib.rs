@@ -369,6 +369,7 @@ struct PendingApproval {
     id: String,
     tool: String,
     preview: String,
+    diff_preview: Option<String>,
     expires_at: u64,
 }
 fn qio_root()->Option<PathBuf>{
@@ -402,6 +403,7 @@ fn qio_pending_approvals()->Vec<PendingApproval>{
             id:id.into(),
             tool:v.get("tool").and_then(|x|x.as_str()).unwrap_or("").chars().take(100).collect(),
             preview:v.get("preview").and_then(|x|x.as_str()).unwrap_or("").chars().take(450).collect(),
+            diff_preview:v.get("diff_preview").and_then(|x|x.as_str()).map(|s|s.chars().take(1800).collect()),
             expires_at,
         });
     }
