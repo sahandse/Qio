@@ -24,6 +24,25 @@ fn newest_file(path: &Path, depth: usize) -> Option<SystemTime> {
     }
     latest
 }
+fn newest_qio_event(home: &Path, agent: &str) -> Option<u64> {
+    let path = home.join(".qio").join("events.jsonl");
+    let file = fs::File::open(path).ok()?;
+    use std::io::{BufRead, BufReader};
+    let reader = BufReader::new(file);
+    let mut latest = None;
+    for line in reader.lines().map_while(Result::ok).take(100_000) {
+        if line.len() > 16_384 { continue; }
+        if let Ok(value) = serde_json::from_str::<serde_json::Value>(&line) {
+            if value.get("agent").and_then(|v| v.as_str()) == Some(agent) {
+                if let Some(at) = value.get("at").and_then(|v| v.as_u64()) {
+                    let seconds = at / 1000;
+                    if latest.map_or(true, |old| seconds > old) { latest = Some(seconds); }
+                }
+            }
+        }
+    }
+    latest
+}
 #[tauri::command]
 fn local_agent_status() -> Vec<AgentStatus> {
     let home = env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from);
@@ -40,10 +59,21 @@ fn local_agent_status() -> Vec<AgentStatus> {
             .is_some_and(|contents|marker.is_some_and(|needle|contents.contains(needle)));
         let path_is_dir = path.as_ref().is_some_and(|p|p.is_dir());
         let path_is_file = path.as_ref().is_some_and(|p|p.is_file());
-        let last = path.as_ref().filter(|p|p.is_dir()).and_then(|p|newest_file(p,7))
+        let history = path.as_ref().filter(|p|p.is_dir()).and_then(|p|newest_file(p,7))
             .and_then(|t|t.duration_since(UNIX_EPOCH).ok()).map(|d|d.as_secs());
+        let hook_event = home.as_ref().and_then(|h|newest_qio_event(h,name));
+        let last = match (history, hook_event) {
+            (Some(a),Some(b)) => Some(a.max(b)),
+            (Some(a),None) => Some(a),
+            (None,Some(b)) => Some(b),
+            (None,None) => None,
+        };
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).ok().map(|d|d.as_secs()).unwrap_or(0);
+        let age = last.map(|at|now.saturating_sub(at));
         let detected = last.is_some() || hook_configured || path_is_dir || path_is_file;
-        let state = if last.is_some() {"history-found"}
+        let state = if age.is_some_and(|seconds|seconds <= 120) {"active-event"}
+            else if age.is_some_and(|seconds|seconds <= 1800) {"recent-event"}
+            else if history.is_some() {"history-found"}
             else if hook_configured {"hooks-configured"}
             else if path_is_file {"config-found"}
             else if path_is_dir {"directory-found"}

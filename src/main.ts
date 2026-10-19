@@ -59,9 +59,13 @@ let accentTheme: 'default'|'emerald'|'violet' = (['default','emerald','violet'].
 let characterScale: 'small'|'normal'|'large' = (['small','normal','large'].includes(localStorage.getItem('qio-character-scale')||'') ? localStorage.getItem('qio-character-scale') as 'small'|'normal'|'large' : 'normal');
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const agentIcon=(name:string)=>name==='Claude Code'?'C':name==='Codex'?'◉':name==='Cursor'?'C':name==='Qoder'?'Q':'✦';
-const sourceStatusLabel=(s:SourceStatus)=>s.last_event_unix
+const sourceStatusLabel=(s:SourceStatus)=>s.state==='active-event'
+  ? (language==='fa'?'رویداد واقعی در ۲ دقیقه اخیر':'Real event in the last 2 minutes')
+  : s.state==='recent-event'
+  ? (language==='fa'?'رویداد اخیر: ':'Recent event: ')+new Date((s.last_event_unix||0)*1000).toLocaleString(language==='fa'?'fa-IR':'en-US')
+  : s.last_event_unix
   ? (language==='fa'?'آخرین تاریخچه: ':'Last history: ')+new Date(s.last_event_unix*1000).toLocaleString(language==='fa'?'fa-IR':'en-US')
-  : s.state==='hooks-configured'?(language==='fa'?'Hook کیو تنظیم شده':'Qio hook configured')
+  : s.state==='hooks-configured'?(language==='fa'?'Hook کیو تنظیم شده؛ هنوز رویدادی ثبت نشده':'Qio hook configured; no event recorded yet')
   : s.state==='config-found'?(language==='fa'?'تنظیمات پیدا شد؛ Hook کیو فعال نیست':'Settings found; Qio hook is not configured')
   : (language==='fa'?'پوشه شناسایی شده':'Folder detected');
 function renderActivityRows(list:AgentEvent[],emptyFa:string,emptyEn:string){
