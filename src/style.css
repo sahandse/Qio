@@ -431,3 +431,9 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .github-result{font-size:9px;white-space:nowrap;color:#b8c6d7}.github-result.success{color:#68edb3}.github-result.failure{color:#ff879a}.github-result.running{color:#ffd27a}.github-run>a{color:#8ee9fa;text-decoration:none;font-size:15px;padding:2px}
 .github-error{font-size:10px;line-height:1.8;color:#ff9aaa;overflow-wrap:anywhere}.github-empty{font-size:10px;color:#9cb0c7}.github-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.github-card-foot a{color:#91e8f8;text-decoration:none}
 @keyframes github-pulse{50%{opacity:.4;transform:scale(.82)}}@media(prefers-reduced-motion:reduce){.github-led.busy{animation:none}}
+
+/* Small tactile feedback for Qio's original Canvas character */
+.qio-character-hit{border-radius:48%;touch-action:manipulation}
+.qio-character-hit:active{background:transparent}
+.qio-stage:focus-within .qio-shortcut{border-color:#6affb4}
+@media(hover:none){.qio-shortcut:hover{transform:none}}

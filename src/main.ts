@@ -86,15 +86,27 @@ function mascot() {
   </div>`;
 }
 let qioCanvasFrame=0;
+let qioLookX=0,qioLookY=0,qioSquishUntil=0;
+let qioPointerX:number|null=null,qioPointerY:number|null=null;
 function drawQioCharacter(){
   if(qioCanvasFrame)cancelAnimationFrame(qioCanvasFrame);
   const canvas=document.querySelector<HTMLCanvasElement>('#qio-character');if(!canvas)return;
   const ctx=canvas.getContext('2d');if(!ctx)return;
   const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage=canvas.closest<HTMLElement>('.qio-stage');
+  if(stage){
+    stage.onpointermove=(event)=>{const r=stage.getBoundingClientRect();qioPointerX=((event.clientX-r.left)/Math.max(1,r.width)-.5)*2;qioPointerY=((event.clientY-r.top)/Math.max(1,r.height)-.5)*2;};
+    stage.onpointerleave=()=>{qioPointerX=null;qioPointerY=null;};
+  }
   const moodNow=displayMood();
   const draw=(ms:number)=>{
-    const t=ms/1000, w=360,h=380, bounce=reduced?0:Math.sin(t*2)*5;
+    const t=ms/1000, w=360,h=380, bounce=reduced?0:Math.sin(t*2)*4;
+    const targetX=qioPointerX===null?0:qioPointerX*5,targetY=qioPointerY===null?0:qioPointerY*4;
+    qioLookX+=(targetX-qioLookX)*.12;qioLookY+=(targetY-qioLookY)*.12;
+    const blink=!reduced && (t%5.8>5.65 && t%5.8<5.78);
+    const squish=Date.now()<qioSquishUntil&&!reduced;
     ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(0,bounce);
+    if(squish){ctx.translate(180,270);ctx.scale(1.08,.88);ctx.translate(-180,-270);}
     const glow=ctx.createRadialGradient(180,185,15,180,185,145);
     glow.addColorStop(0,moodNow==='alert'?'#ff9f4338':'#55f7b42c');glow.addColorStop(1,'#11182700');
     ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
@@ -109,11 +121,12 @@ function drawQioCharacter(){
     ctx.fillStyle='#100f22';ctx.beginPath();ctx.roundRect(98,91,164,137,38);ctx.fill();
     const eyeY=moodNow==='sleep'?158:150;
     for(const ex of [145,215]){
-      ctx.save();ctx.shadowColor=moodNow==='alert'?'#ffb454':'#61ffac';ctx.shadowBlur=18;
+      ctx.save();ctx.translate(qioLookX,qioLookY);
+      ctx.shadowColor=moodNow==='alert'?'#ffb454':'#61ffac';ctx.shadowBlur=18;
       ctx.fillStyle=moodNow==='error'?'#ff6688':'#68ffad';
       if(moodNow==='sleep'){ctx.strokeStyle='#68ffad';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ex,eyeY,11,Math.PI,Math.PI*2);ctx.stroke();}
       else if(moodNow==='error'){ctx.strokeStyle='#ff6688';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(ex-8,eyeY-8);ctx.lineTo(ex+8,eyeY+8);ctx.moveTo(ex+8,eyeY-8);ctx.lineTo(ex-8,eyeY+8);ctx.stroke();}
-      else {ctx.beginPath();ctx.roundRect(ex-10,eyeY-18,20,moodNow==='working'&&!reduced?26+Math.sin(t*8)*4:34,10);ctx.fill();}
+      else {const eyeHeight=blink?3:(moodNow==='working'&&!reduced?26+Math.sin(t*8)*4:34);ctx.beginPath();ctx.roundRect(ex-10,eyeY-eyeHeight/2,20,eyeHeight,10);ctx.fill();}
       ctx.restore();
     }
     ctx.fillStyle='#8b5cff';ctx.beginPath();ctx.arc(88,159,28,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6af7b5';ctx.font='bold 25px sans-serif';ctx.textAlign='center';ctx.fillText('Q',88,168);
@@ -218,7 +231,7 @@ ${githubError?`<p class="github-error">${escapeHtml(githubError)}</p>`:githubRun
   document.querySelector<HTMLElement>('.app')?.classList.toggle('quiet-island',idleHide&&!expanded&&pendingApprovals.length===0&&(Date.now()-lastActivityAt)>60000);
   const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
   drawQioCharacter();
-  document.querySelector('#mascot')?.addEventListener('click',toggle);
+  document.querySelector('#mascot')?.addEventListener('click',()=>{qioSquishUntil=Date.now()+230;toggle();});
   document.querySelector('#quick-chat')?.addEventListener('click',()=>{expanded=true;openTab('chat');});
   document.querySelector('#quick-settings')?.addEventListener('click',()=>{expanded=true;openTab('settings');});
 }
