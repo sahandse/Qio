@@ -58,7 +58,7 @@ let lightTheme = localStorage.getItem('qio-theme')==='light';
 let accentTheme: 'default'|'emerald'|'violet' = (['default','emerald','violet'].includes(localStorage.getItem('qio-accent-theme')||'') ? localStorage.getItem('qio-accent-theme') as 'default'|'emerald'|'violet' : 'default');
 let characterScale: 'small'|'normal'|'large' = (['small','normal','large'].includes(localStorage.getItem('qio-character-scale')||'') ? localStorage.getItem('qio-character-scale') as 'small'|'normal'|'large' : 'normal');
 const app = document.querySelector<HTMLDivElement>('#app')!;
-const agentIcon=(name:string)=>name==='Claude Code'?'C':name==='Codex'?'◉':name==='Cursor'?'C':name==='Qoder'?'Q':'✦';
+const agentIcon=(name:string)=>name==='Claude Code'?'C':name==='Codex'?'◉':name==='Cursor'?'C':name==='Qoder'?'Q':name==='Gemini CLI'?'✧':name==='OpenCode'?'⌘':'✦';
 const sourceStatusLabel=(s:SourceStatus)=>s.state==='active-event'
   ? (language==='fa'?'رویداد واقعی در ۲ دقیقه اخیر':'Real event in the last 2 minutes')
   : s.state==='recent-event'
