@@ -58,7 +58,10 @@ fn local_agent_status() -> Vec<AgentStatus> {
         ("Codex","~/.codex/sessions",".codex/sessions",None,None),
         ("Claude Code","~/.claude/projects",".claude/projects",Some(".claude/settings.json"),Some("qio-hook.mjs")),
         ("Cursor","~/.cursor/hooks.json",".cursor/hooks.json",Some(".cursor/hooks.json"),Some("qio-hook.mjs")),
-        ("Qoder","~/.qoder/settings.json",".qoder/settings.json",Some(".qoder/settings.json"),Some("qio-qoder-hook.mjs"))
+        ("Qoder","~/.qoder/settings.json",".qoder/settings.json",Some(".qoder/settings.json"),Some("qio-qoder-hook.mjs")),
+        // These are read-only history discovery for now; do not imply Qio hooks are installed.
+        ("Gemini CLI","~/.gemini/tmp",".gemini/tmp",None,None),
+        ("OpenCode","~/.local/share/opencode/storage",".local/share/opencode/storage",None,None)
     ];
     choices.iter().map(|&(name,source,relative,config_relative,marker)|{
         let path = home.as_ref().map(|h|h.join(relative));
