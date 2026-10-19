@@ -406,3 +406,18 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .event-search input:focus-visible,.event-tools select:focus-visible,.event-search button:focus-visible,.event-tools>button:focus-visible{outline:2px solid #b8ff65;outline-offset:2px}
 .light-theme .event-search input,.light-theme .event-tools select{background:#f2f7fb;color:#21384b;border-color:#c3d6e4}
 @media(max-width:340px){.event-tools{grid-template-columns:minmax(0,1fr)}.event-search,.event-tools select,.event-tools>button{grid-column:1;grid-row:auto}.event-search button{padding-inline:8px}}
+
+/* Qio original Canvas companion — minimal floating character and two shortcuts */
+.qio-stage{position:relative;width:100%;height:260px;max-width:360px;margin:0 auto;display:flex;align-items:center;justify-content:center;isolation:isolate}
+#qio-character{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.qio-shortcuts{position:absolute;right:calc(50% - 145px);top:50%;transform:translateY(-8%);display:flex;flex-direction:column;gap:11px;z-index:3}
+.qio-shortcut{width:35px;height:35px;display:grid;place-items:center;border-radius:13px;background:rgba(17,27,43,.78);border:1px solid rgba(105,255,181,.38);color:#6affb4;box-shadow:0 5px 20px #0004,0 0 14px #65ffb41c;backdrop-filter:blur(10px);padding:8px;transition:transform .2s ease,border-color .2s ease}
+.qio-shortcut.settings{color:#c39aff;border-color:#a77aff55}
+.qio-shortcut svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qio-shortcut:hover{transform:scale(1.08);border-color:#6affb4}
+.qio-character-hit{position:absolute;inset:0 40px 0 15px;background:transparent;z-index:2;border:0;cursor:pointer}
+.island:not(.open) .status,.island:not(.open) .substatus,.island:not(.open) .compact-live,.island:not(.open) .actions{display:none!important}
+.island:not(.open){padding:0;margin:0;gap:0}
+.island:not(.open) .qio-stage{height:300px;max-width:390px}
+@media(max-height:500px){.island:not(.open) .qio-stage{height:230px}.qio-stage{height:230px}}
+@media(prefers-reduced-motion:reduce){.qio-shortcut{transition:none}}

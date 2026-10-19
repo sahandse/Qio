@@ -70,9 +70,56 @@ function characterHead(c:typeof aiCharacters[number]) {
   return `<span class="pixel-head" style="--char-accent:${c.accent};--char-skin:${c.skin};--char-hair:${c.hair};--char-eyes:${c.eyes}" aria-hidden="true"><i class="pixel-hair"></i><i class="pixel-ear left"></i><i class="pixel-ear right"></i><i class="pixel-face"><b class="pixel-eye left"></b><b class="pixel-eye right"></b><b class="pixel-nose"></b><b class="pixel-mouth"></b></i><i class="pixel-neck"></i><i class="pixel-glint">${escapeHtml(c.symbol)}</i></span>`;
 }
 function mascot() {
-  return `<div id="mascot" class="mascot minecraft-mascot ${displayMood()}" role="button" tabindex="0" aria-label="${language==="fa"?"بازکردن پنل کیو":"Open Qio panel"}" title="${language==="fa"?"برای بازکردن پنل کلیک کن":"Click to open the panel"}">
-  <span class="voxel-particle particle-a">✦</span><span class="voxel-particle particle-b">✧</span><span class="voxel-particle particle-c">◆</span>
-  <div class="mc-figure"><div class="mc-head shell"><span class="mc-hair"></span><span class="mc-ear ear-left"></span><span class="mc-ear ear-right"></span><div class="face"><div class="eyes"><span class="eye"><i></i></span><span class="eye"><i></i></span></div><span class="mouth"></span></div></div><div class="mc-body"><span class="mc-arm left"></span><span class="mc-torso"></span><span class="mc-arm right"></span></div><div class="mc-legs"><span></span><span></span></div></div><div class="shadow"></div></div>`;
+  return `<div class="qio-stage mood-${displayMood()}">
+    <canvas id="qio-character" width="360" height="380" role="img" aria-label="${language==="fa"?"کاراکتر هوشمند کیو":"Qio AI character"}"></canvas>
+    <div class="qio-shortcuts">
+      <button class="qio-shortcut" id="quick-chat" title="${language==="fa"?"گفت‌وگو":"Chat"}" aria-label="${language==="fa"?"گفت‌وگو":"Chat"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2 1-5a7.5 7.5 0 1 1 16-4.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></button>
+      <button class="qio-shortcut settings" id="quick-settings" title="${language==="fa"?"تنظیمات":"Settings"}" aria-label="${language==="fa"?"تنظیمات":"Settings"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1.9-1.2 2.1-1.4-.5a7.7 7.7 0 0 1-1.7 1l-.2 1.5h-2.4l-.3-1.5a7.7 7.7 0 0 1-1.8-.7l-1.3.7-1.5-1.9 1-1.2a7.8 7.8 0 0 1-.3-1.9l-1.3-.7.7-2.3 1.5.1a7.7 7.7 0 0 1 1.3-1.4l-.1-1.5 2.3-.7.8 1.3a7.8 7.8 0 0 1 1.9.2l1-1.1 2 1.3-.5 1.4a7.8 7.8 0 0 1 .8 1.7l1.5.3v2.4Z"/></svg></button>
+    </div>
+    <button id="mascot" class="qio-character-hit" aria-label="${language==="fa"?"بازکردن پنل کیو":"Open Qio panel"}" title="${language==="fa"?"بازکردن پنل":"Open panel"}"></button>
+  </div>`;
+}
+let qioCanvasFrame=0;
+function drawQioCharacter(){
+  if(qioCanvasFrame)cancelAnimationFrame(qioCanvasFrame);
+  const canvas=document.querySelector<HTMLCanvasElement>('#qio-character');if(!canvas)return;
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const moodNow=displayMood();
+  const draw=(ms:number)=>{
+    const t=ms/1000, w=360,h=380, bounce=reduced?0:Math.sin(t*2)*5;
+    ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(0,bounce);
+    const glow=ctx.createRadialGradient(180,185,15,180,185,145);
+    glow.addColorStop(0,moodNow==='alert'?'#ff9f4338':'#55f7b42c');glow.addColorStop(1,'#11182700');
+    ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#0008';ctx.beginPath();ctx.ellipse(180,326,69,10,0,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.shadowColor='#56f5b8';ctx.shadowBlur=22;
+    const body=ctx.createLinearGradient(105,215,250,320);body.addColorStop(0,'#f3f2ff');body.addColorStop(.55,'#c5c6df');body.addColorStop(1,'#7168a9');
+    ctx.fillStyle=body;ctx.beginPath();ctx.roundRect(125,220,110,95,32);ctx.fill();ctx.restore();
+    ctx.fillStyle='#a9a9c9';ctx.beginPath();ctx.roundRect(88,83,184,165,46);ctx.fill();
+    const shell=ctx.createLinearGradient(90,80,270,245);shell.addColorStop(0,'#ffffff');shell.addColorStop(.45,'#d9d9f2');shell.addColorStop(1,'#8278c5');
+    ctx.fillStyle=shell;ctx.beginPath();ctx.roundRect(82,73,196,173,48);ctx.fill();
+    ctx.strokeStyle='#ffffffa8';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#100f22';ctx.beginPath();ctx.roundRect(98,91,164,137,38);ctx.fill();
+    const eyeY=moodNow==='sleep'?158:150;
+    for(const ex of [145,215]){
+      ctx.save();ctx.shadowColor=moodNow==='alert'?'#ffb454':'#61ffac';ctx.shadowBlur=18;
+      ctx.fillStyle=moodNow==='error'?'#ff6688':'#68ffad';
+      if(moodNow==='sleep'){ctx.strokeStyle='#68ffad';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ex,eyeY,11,Math.PI,Math.PI*2);ctx.stroke();}
+      else if(moodNow==='error'){ctx.strokeStyle='#ff6688';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(ex-8,eyeY-8);ctx.lineTo(ex+8,eyeY+8);ctx.moveTo(ex+8,eyeY-8);ctx.lineTo(ex-8,eyeY+8);ctx.stroke();}
+      else {ctx.beginPath();ctx.roundRect(ex-10,eyeY-18,20,moodNow==='working'&&!reduced?26+Math.sin(t*8)*4:34,10);ctx.fill();}
+      ctx.restore();
+    }
+    ctx.fillStyle='#8b5cff';ctx.beginPath();ctx.arc(88,159,28,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6af7b5';ctx.font='bold 25px sans-serif';ctx.textAlign='center';ctx.fillText('Q',88,168);
+    ctx.strokeStyle='#8b5cff';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(180,76);ctx.quadraticCurveTo(172,45,195,34);ctx.stroke();
+    ctx.save();ctx.shadowColor='#6affb4';ctx.shadowBlur=18;ctx.fillStyle='#6affb4';ctx.beginPath();ctx.ellipse(199,31,12,7,-.6,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.fillStyle='#ffffff80';ctx.beginPath();ctx.ellipse(130,104,22,7,-.6,0,Math.PI*2);ctx.fill();
+    if(moodNow==='working'&&!reduced){ctx.fillStyle='#9a7cff';for(let i=0;i<3;i++){ctx.globalAlpha=.45+.55*Math.sin(t*7+i);ctx.beginPath();ctx.arc(253+i*9,70-i*12,3+i,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;}
+    if(moodNow==='alert'){ctx.fillStyle='#ffb454';ctx.beginPath();ctx.arc(274,105,14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#24162b';ctx.font='bold 20px sans-serif';ctx.fillText('!',274,112);}
+    ctx.restore();
+    if(!reduced)qioCanvasFrame=requestAnimationFrame(draw);
+  };
+  draw(performance.now());
 }
 function applyLanguage(){
   const root=document.querySelector<HTMLElement>('.app');if(!root)return;
@@ -107,8 +154,8 @@ function render() {
   app.innerHTML = `<div class="app">
   <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span><span class="brand-fa">کیو</span><small>Qio</small></span><div class="topbar-tools"><button class="lang-toggle" id="lang-toggle" title="Switch language">${language==='fa'?'EN':'فا'}</button><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></div></header>
   <main><section class="island ${expanded?'open':''} mood-${displayMood()}" aria-label="جزیره کیو">
-    ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':'کنارت هستم ✨'}</p>
-    <span class="substatus"><span class="mood-dot"></span>${pendingApprovals.length?'درخواست تأیید منتظر شماست':aiBusy?'در حال دریافت پاسخ':latestHook()?'رویداد اخیر Agent':'منتظر رویداد واقعی'}</span>
+    ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':''}</p>
+    <span class="substatus" ${expanded?'':'hidden'}><span class="mood-dot"></span>${pendingApprovals.length?'درخواست تأیید منتظر شماست':aiBusy?'در حال دریافت پاسخ':latestHook()?'رویداد اخیر Agent':'منتظر رویداد واقعی'}</span>
     ${!expanded&&latestHook()?`<div class="compact-live"><span class="live-led"></span>${escapeHtml(latestHook()!.agent)} · ${escapeHtml(latestHook()!.label)}</div>`:''}
     <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button></div>
   </section>
@@ -160,19 +207,10 @@ function render() {
   document.querySelectorAll<HTMLElement>('[data-character-scale]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.characterScale;if(next!=='small'&&next!=='normal'&&next!=='large')return;characterScale=next;localStorage.setItem('qio-character-scale',characterScale);document.documentElement.classList.remove('character-scale-small','character-scale-normal','character-scale-large');document.documentElement.classList.add('character-scale-'+characterScale);render();}));
   document.querySelector<HTMLElement>('.app')?.classList.toggle('quiet-island',idleHide&&!expanded&&pendingApprovals.length===0&&(Date.now()-lastActivityAt)>60000);
   const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
-  const face=document.querySelector<HTMLElement>('.face');
-  const shell=document.querySelector<HTMLElement>('.shell');
-  document.querySelector('#mascot')?.addEventListener('pointermove',(event: Event)=>{
-     const e = event as PointerEvent;
-     if(reducedMotion||!face||!shell)return;
-     const rect=shell.getBoundingClientRect();
-     const x=Math.max(-5,Math.min(5,(e.clientX-(rect.left+rect.width/2))/12));
-     const y=Math.max(-4,Math.min(4,(e.clientY-(rect.top+rect.height/2))/12));
-     face.style.setProperty('--look-x',x+'px');face.style.setProperty('--look-y',y+'px');
-  });
-  document.querySelector('#mascot')?.addEventListener('pointerleave',()=>{face?.style.setProperty('--look-x','0px');face?.style.setProperty('--look-y','0px');});
+  drawQioCharacter();
   document.querySelector('#mascot')?.addEventListener('click',toggle);
-  document.querySelector('#mascot')?.addEventListener('keydown',(event:Event)=>{const e=event as KeyboardEvent;if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+  document.querySelector('#quick-chat')?.addEventListener('click',()=>{expanded=true;openTab('chat');});
+  document.querySelector('#quick-settings')?.addEventListener('click',()=>{expanded=true;openTab('settings');});
 }
 function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');expanded=true;}else{expanded=!expanded;}render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error));}
 if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
