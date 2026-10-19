@@ -482,3 +482,45 @@ body{overflow:hidden!important}
 .guide-detail{padding:14px!important;border-radius:14px!important}
 .guide-detail ol{padding-inline-start:20px!important;line-height:1.85!important}
 @media(prefers-reduced-motion:reduce){.service-orb,.character-card,.featured-guide,.guide-card{transition:none!important;animation:none!important}}
+
+/* Final Qio visual system: clean transparent mascot + independently scrollable settings */
+html,body,#app{width:100%;min-width:0;min-height:0;margin:0!important;overflow:hidden!important;background:transparent!important}
+.app{width:100%;min-width:0;min-height:0;max-height:100dvh;overflow:hidden!important;display:flex;flex-direction:column;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;gap:0!important}
+main{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}
+.island{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important}
+.island.open{overflow:hidden}
+.island.open .qio-stage{flex:0 0 92px;width:100px;height:92px;max-width:100px;margin:0 auto 4px;overflow:visible}
+.island.open #qio-character{width:100%;height:100%}
+.island.open .status{font-size:13px;margin:0 0 3px}
+.island.open .substatus{font-size:10px;margin-bottom:8px}
+.tab-bar{flex:0 0 auto;display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;padding:5px 3px 8px;max-width:100%;border-bottom:1px solid #263547}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border-radius:10px!important;padding:8px 11px!important;font-size:11px!important;background:#121c2a!important;color:#9aadc2!important;border:1px solid transparent!important}
+.tab.active{background:linear-gradient(135deg,#183b31,#18283a)!important;color:#aaffd1!important;border-color:#3a8b69!important}
+.panel{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#40566b transparent;padding:10px 8px 22px!important;background:transparent!important}
+.panel::-webkit-scrollbar{width:5px}
+.panel::-webkit-scrollbar-thumb{background:#40566b;border-radius:9px}
+.appearance-controls{display:flex;flex-direction:column;gap:9px}
+.settings-section-title{margin:12px 0 2px;padding:0 2px;color:#8cebb8;font-size:11px;font-weight:750;letter-spacing:.01em}
+.appearance-controls>button,.appearance-controls select,.appearance-controls input,.appearance-controls textarea{max-width:100%;box-sizing:border-box}
+.appearance-controls>button:not(.github-refresh){min-height:38px;padding:9px 12px;border-radius:12px;border:1px solid #283b4e;background:linear-gradient(145deg,#152233,#101925);color:#d9e8f5;text-align:start;font-size:11px;transition:border-color .18s,background .18s}
+.appearance-controls>button:not(.github-refresh):hover{border-color:#4c9978;background:#182d2a}
+.appearance-controls p{font-size:10px;line-height:1.8;color:#91a4b9;margin:0 2px}
+.preference-label{margin:8px 2px 0;color:#aebfd0;font-size:11px}
+.theme-options,.scale-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.theme-options button,.scale-options button{min-width:0;padding:8px 5px;border-radius:10px;border:1px solid #293b4e;background:#111c29;color:#b8c9da;font-size:10px;overflow-wrap:anywhere}
+.theme-options button.selected,.scale-options button.selected{border-color:#56d99a;background:#17352b;color:#aaffd1;box-shadow:inset 0 0 0 1px #56d99a22}
+.github-card{width:100%;box-sizing:border-box;min-width:0}
+.github-runs,.github-run,.github-run-info{min-width:0}
+.github-run{flex-wrap:wrap}
+.settings-help{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid #283b4e;border-radius:13px;background:#111b28;font-size:11px;line-height:1.8;color:#b6c6d7}
+.settings-help a{color:#8be8bb;text-decoration:none}
+.guide-section,.characters-page,.events-panel,.ai-chat{min-width:0;max-width:100%;box-sizing:border-box}
+.ai-chat label{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:11px;color:#aebfd0}
+.ai-chat input,.ai-chat textarea,.ai-chat select{width:100%;min-width:0;box-sizing:border-box;border-radius:11px;border:1px solid #2a4055;background:#101a27;color:#e1edf7;padding:10px;font:inherit}
+.qio-stage{background:transparent!important;border:0!important;box-shadow:none!important}
+.qio-stage canvas{background:transparent!important}
+.qio-shortcut{border:1px solid #344b5b!important;box-shadow:none!important}
+.qio-shortcut.settings{border-color:#55477d!important}
+@media(max-height:420px){.island.open .qio-stage{flex-basis:62px;height:62px;width:72px;max-width:72px}.panel{padding-top:6px!important}}
+@media(prefers-reduced-motion:reduce){.appearance-controls>button,.theme-options button,.scale-options button{transition:none!important}}
