@@ -1,0 +1,122 @@
+name: Qio macOS Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/macos-release.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional existing release tag to attach macOS builds to (for example v0.1.5)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qio-macos-${{ github.event.release.tag_name || inputs.release_tag || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build macOS (${{ matrix.target }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install application dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Check Rust compilation
+        run: cargo check --manifest-path src-tauri/Cargo.toml --target ${{ matrix.target }}
+
+      - name: Build macOS disk image
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          npm run tauri build -- --target "$TARGET" --bundles dmg
+          VERSION=$(node -p "require('./package.json').version")
+          IMAGE=$(find "src-tauri/target/$TARGET/release/bundle/dmg" -maxdepth 1 -type f -name '*.dmg' -print -quit)
+          if [ -z "$IMAGE" ]; then
+            echo "No DMG was generated for $TARGET"
+            exit 1
+          fi
+          mkdir -p release-assets
+          cp "$IMAGE" "release-assets/Qio_${VERSION}_${TARGET}.dmg"
+          shasum -a 256 "release-assets/Qio_${VERSION}_${TARGET}.dmg" > "release-assets/SHA256SUMS-macOS-${TARGET}.txt"
+          ls -lh release-assets
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qio-macos-${{ matrix.target }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-macos-assets:
+    name: Attach macOS builds to GitHub Release
+    needs: build
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: qio-macos-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Verify release files
+        run: |
+          set -euo pipefail
+          find release-assets -maxdepth 1 -type f -name '*.dmg' -print
+          test "$(find release-assets -maxdepth 1 -type f -name '*.dmg' | wc -l)" -ge 2
+          test "$(find release-assets -maxdepth 1 -type f -name 'SHA256SUMS-macOS-*.txt' | wc -l)" -ge 2
+
+      - name: Publish macOS assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag || github.event.release.tag_name }}
+          name: Qio ${{ inputs.release_tag || github.event.release.tag_name }}
+          draft: false
+          prerelease: false
+          overwrite_files: true
+          files: |
+            release-assets/*.dmg
+            release-assets/SHA256SUMS-macOS-*.txt
