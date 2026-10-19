@@ -52,3 +52,13 @@ test('notifications are opt-in by category and deduplicated',()=>{
  assert.match(ui,/now-previous<60000/);
  assert.match(ui,/notifyIfEnabled\('Claude Code درخواست تأیید جدید دارد','approval'\)/);
 });
+
+test('settings search and keyboard shortcuts are wired to real UI actions',()=>{
+ const ui=readFileSync('src/main.ts','utf8');
+ assert.match(ui,/id="settings-search"/);
+ assert.match(ui,/settings-search-status/);
+ assert.match(ui,/addEventListener\('keydown'/);
+ assert.match(ui,/event\.ctrlKey\|\|event\.metaKey/);
+ assert.match(ui,/event\.altKey&&event\.shiftKey/);
+ assert.match(ui,/event\.key==='Escape'/);
+});
