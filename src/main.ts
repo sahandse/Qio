@@ -300,8 +300,7 @@ async function refreshApprovals(){if(!('__TAURI_INTERNALS__' in window))return;t
 void refreshAgents();
 window.setInterval(()=>void refreshApprovals(),1500);
 window.setInterval(() => { if (document.visibilityState === 'visible') void refreshAgents(); }, 15000);
-window.setInterval(() => { if (document.visibilityState === 'visible' && expanded && panelTab==='settings') { void refreshGithubActions();
-void refreshSystemSnapshot(); void refreshSystemSnapshot(); } }, 30000);
+window.setInterval(() => { if (document.visibilityState === 'visible' && expanded && panelTab==='settings') { void refreshGithubActions(); void refreshSystemSnapshot(); } }, 30000);
 
 void fetchProviders();
 void refreshGithubActions();
