@@ -2,7 +2,7 @@ use std::{env,fs,path::{Path,PathBuf},time::{SystemTime,UNIX_EPOCH}};
 use tauri::{Manager,PhysicalPosition,LogicalSize,Size};
 use tauri::menu::{Menu,MenuItem};
 use tauri::tray::TrayIconBuilder;
-use serde::Serialize;
+use serde::{Deserialize,Serialize};
 
 #[derive(Serialize)]
 struct AgentStatus {
@@ -385,6 +385,18 @@ fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
     file.write_all(payload.to_string().as_bytes()).map_err(|e|e.to_string())
 }
 
+#[derive(Serialize,Deserialize)]
+struct GithubRun { id:u64, name:String, status:String, conclusion:Option<String>, html_url:String, created_at:String, run_number:u64, head_sha:String }
+#[derive(Deserialize)]
+struct GithubRunsResponse { workflow_runs:Vec<GithubRun> }
+#[tauri::command]
+async fn github_actions_status()->Result<Vec<GithubRun>,String>{
+ let client=reqwest::Client::builder().user_agent("Qio-Desktop-App").timeout(std::time::Duration::from_secs(12)).build().map_err(|e|e.to_string())?;
+ let response=client.get("https://api.github.com/repos/sahandse/Qio/actions/runs?per_page=8").header("Accept","application/vnd.github+json").send().await.map_err(|e|format!("اتصال به GitHub برقرار نشد: {e}"))?;
+ if !response.status().is_success(){return Err(format!("GitHub API پاسخ {} داد؛ کمی بعد دوباره تلاش کن.",response.status()));}
+ let payload=response.json::<GithubRunsResponse>().await.map_err(|e|format!("پاسخ GitHub قابل‌خواندن نبود: {e}"))?;
+ Ok(payload.workflow_runs)
+}
 #[tauri::command]
 fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
     // Preserve the position chosen by the user. Only change the content size.
@@ -408,7 +420,7 @@ pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
       .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_chat,github_actions_status])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
