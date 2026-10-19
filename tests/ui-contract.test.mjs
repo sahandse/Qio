@@ -31,3 +31,15 @@ test('chat rejects incomplete messages and settings contain real support link',(
  assert.match(ui,/if\(aiBusy\|\|!modelId\.trim\(\)\|\|!promptText\.trim\(\)/);
  assert.match(ui,/https:\/\/t\.me\/sahandse/);
 });
+
+test('AI model picker discovers models from real endpoints and permits manual entry',()=>{
+ const rust=readFileSync('src-tauri/src/lib.rs','utf8');
+ const main=readFileSync('src/main.ts','utf8');
+ assert.match(rust,/async fn ai_models\(provider:String\)/);
+ assert.match(rust,/strip_suffix\("chat\/completions"\)/);
+ assert.match(rust,/redirect\(reqwest::redirect::Policy::none\(\)\)/);
+ assert.match(rust,/ai_providers,ai_models,ai_chat/);
+ assert.match(main,/id="ai-models-refresh"/);
+ assert.match(main,/list="ai-model-options"/);
+ assert.match(main,/loadAIModels/);
+});

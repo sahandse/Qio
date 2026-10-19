@@ -208,6 +208,30 @@ fn ai_providers()->Vec<ProviderInfo>{
         })).collect()
 }
 #[tauri::command]
+async fn ai_models(provider:String)->Result<Vec<String>,String>{
+    let (_,_,endpoint,key_name)=provider_details(&provider).ok_or("ارائه‌دهنده معتبر نیست")?;
+    let key=if key_name.is_empty(){String::new()}else{env::var(key_name).map_err(|_|format!("متغیر محیطی {} تنظیم نشده است",key_name))?};
+    let models_url=if provider=="anthropic" {"https://api.anthropic.com/v1/models".to_string()}
+    else if let Some(base)=endpoint.strip_suffix("chat/completions"){format!("{}models",base)}
+    else{return Err("فهرست مدل برای این endpoint پشتیبانی نمی‌شود؛ شناسه مدل را دستی وارد کنید".into())};
+    let client=reqwest::Client::builder().timeout(std::time::Duration::from_secs(12))
+        .redirect(reqwest::redirect::Policy::none()).build().map_err(|_|"ساخت اتصال ناموفق بود")?;
+    let mut request=client.get(models_url);
+    if provider=="anthropic" && !key.is_empty(){request=request.header("x-api-key",key.as_str()).header("anthropic-version","2023-06-01");}
+    else if !key.is_empty(){request=request.bearer_auth(key);}
+    let response=request.send().await.map_err(|_|"دریافت فهرست مدل‌ها ناموفق بود؛ سرور و اتصال را بررسی کنید")?;
+    if !response.status().is_success(){return Err(format!("سرویس فهرست مدل‌ها پاسخ ناموفق داد (HTTP {})",response.status().as_u16()))}
+    let data:serde_json::Value=response.json().await.map_err(|_|"پاسخ فهرست مدل‌ها قابل خواندن نیست")?;
+    let items=data.get("data").and_then(|v|v.as_array()).or_else(||data.get("models").and_then(|v|v.as_array()));
+    let mut models:Vec<String>=items.into_iter().flatten().filter_map(|v|{
+        v.get("id").or_else(||v.get("name")).and_then(|x|x.as_str())
+            .map(|s|s.trim().to_string()).filter(|s|!s.is_empty()&&s.len()<=160)
+    }).take(250).collect();
+    models.sort();models.dedup();
+    if models.is_empty(){return Err("سرویس فهرست مدل قابل انتخابی برنگرداند؛ شناسه مدل را دستی وارد کنید".into())}
+    Ok(models)
+}
+#[tauri::command]
 async fn ai_chat(provider:String,model:String,message:String)->Result<String,String>{
     let (_,_,endpoint,key_name)=provider_details(&provider).ok_or("ارائه‌دهنده معتبر نیست")?;
     if model.trim().is_empty() || model.len()>160 {return Err("نام مدل را وارد کنید".into());}
@@ -463,7 +487,7 @@ pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
       .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_chat,github_actions_status])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_models,ai_chat,github_actions_status])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;

@@ -639,3 +639,6 @@ html,body,#app{margin:0!important;padding:0!important;overflow:hidden!important}
 .approval-diff{margin:.65rem 0;padding:.55rem .7rem;border:1px solid var(--border,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.14)}
 .approval-diff summary{cursor:pointer;font-size:.84rem;color:var(--accent,#8be8b0);user-select:none}
 .approval-diff pre{margin:.65rem 0 0;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:.78rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text,#eee)}
+
+/* Stage 4: real model discovery control */
+#ai-models-refresh{width:100%;margin:.45rem 0 .8rem;padding:.6rem .85rem;border:1px solid var(--border,rgba(255,255,255,.16));border-radius:10px;background:rgba(110,220,170,.08);color:inherit;cursor:pointer}#ai-models-refresh:disabled{opacity:.6;cursor:wait}
