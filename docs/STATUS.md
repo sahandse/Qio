@@ -1,38 +1,37 @@
 # Qio — implementation status
 
 ## Implemented in source
-- Persian RTL interface; original CSS mascot with seven motion states and reduced-motion option.
-- Tauri 2 window with borderless always-on-top behavior, repositioning, dragging and compact/expanded dimensions.
-- Windows and macOS build workflow that installs dependencies, generates app icons and attempts platform installers.
-- Local Codex and Claude Code session-directory detection; recent session JSONL event **metadata** shown in Persian. No prompt, file content or shell command arguments are exposed.
-- Frontend refresh every 15 seconds, with a clear distinction between detected history and live integrations.
+- Tauri 2 floating desktop companion with original voxel character, expressive states, reduced-motion control, themes, and character scaling.
+- Persian/English direction switching, plus search and agent filters for local activity history.
+- Local metadata-only hooks and setup scripts for Cursor, Claude Code, and Qoder. The UI distinguishes hook configuration from actual activity.
+- Direct API chat with OpenAI-compatible providers and a native Anthropic Messages API path for Claude.
+- Optional notifications and a persistent local setting to pause new hook-event logging. Existing history remains until explicitly cleared.
+- Windows release workflow creates EXE/MSI installers and SHA256 checksums.
+- macOS workflow builds DMGs for Intel and Apple Silicon and can attach them to a release after the Windows release workflow succeeds.
+
+## Release and verification
+- Latest verified published release before the next release pipeline: v0.1.5.
+- Source version is configured for v0.1.6. Do not treat it as published until GitHub Release contains the expected installer assets.
+- macOS builds are currently unsigned and not notarized unless a release explicitly states otherwise.
+- CI must pass tests, frontend build, Rust compilation, and packaging before the new release is considered ready.
 
 ## Not yet complete or independently verified
-- Build and runtime have not been successfully verified on a Windows or macOS runner. Check GitHub Actions before distributing.
-- Live agent protocol hooks, native permission approvals, per-command results, diff viewer and genuine automated test-outcome evidence.
-- Tray/menu-bar integration, click-through empty regions, native notification support, custom sounds and auto-update.
-- Code signing and notarization: require a valid signing identity and securely configured credentials.
+- Complete translation of every guide and status string.
+- Tested adapters for every listed coding agent and compatibility across their versions.
+- macOS code signing and notarization.
+- Resource-use/performance checks and manual installation validation on physical Windows and macOS devices.
 
 ## Security / accuracy rules
-- Never equate a discovered session file with a running agent.
+- Never equate a discovered session file or configured hook with a running agent.
 - Never label tests as passed without actual test-run output or verified exit status for the correct repository revision.
 - No auto-approval or remote arbitrary command execution.
-- Input files remain on the local computer.
+- API keys are read from environment variables; never commit them or include them in screenshots.
+- Hook logging stores limited metadata only; the local settings control can pause new event logging.
 
 ## Manual validation
-1. Check the **Qio desktop build** workflow under GitHub Actions for both Windows and macOS.
-2. On each platform install the output artifact and confirm the frameless window can open, drag, resize and quit.
-3. Verify CSS character moods, reduced motion and RTL text.
-4. Start local Codex and Claude Code sessions and verify that only known JSONL metadata appear.
-5. Test with missing or inaccessible home directories and with no agents installed.
-
-## Acknowledgments
-Inspired by https://github.com/Louis-CFM/coucou and https://github.com/Rikinshah787/dotpals. Qio uses original UI/mascot assets. Third-party source should be reused only with its applicable license notices.
-
-
-## 2026-10-09 — Independent monitoring update
-- Removed optional DotPals bridge from Qio's Rust runtime: no external bridge is needed for the Codex and Claude activity feed.
-- Improved native JSONL event classification: recognizes tool calls, tool responses, task start, task completion and general activity; never equates these events to a successful test.
-- Preserved typed input fields while refreshing the monitor.
-- CI now runs a Rust compile check on Windows and macOS and fails if no installer artifact is produced.
-- **Not verified:** a successful CI run, installer functionality, native approvals, and evidence-based test-verdict checking. These require additional implementation and manual validation.
+1. Check the **Qio Windows Release**, **Qio desktop build**, and **Qio macOS Build** workflows in GitHub Actions.
+2. On Windows, install the EXE/MSI and verify open, drag, resize, notifications, settings, and quit.
+3. On macOS, install the correct architecture DMG and follow the macOS security prompts; the current build is not notarized.
+4. Verify RTL/LTR, reduced motion, event search/filter, and local logging opt-out.
+5. Test Cursor, Claude Code, and Qoder hooks with a low-risk task; verify only event metadata is recorded.
+6. Confirm a new release has EXE, MSI, DMG files for both architectures, and checksum files before sharing the release link.

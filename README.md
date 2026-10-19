@@ -12,9 +12,10 @@
 [![Latest Release](https://img.shields.io/github/v/release/sahandse/Qio?style=for-the-badge&label=Latest%20release&color=8B5CF6)](https://github.com/sahandse/Qio/releases/latest)
 [![Desktop Build](https://img.shields.io/github/actions/workflow/status/sahandse/Qio/ui-check.yml?style=for-the-badge&label=Desktop%20build)](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-22C55E?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sahandse/Qio/releases/latest)
+[![macOS Build](https://img.shields.io/github/actions/workflow/status/sahandse/Qio/macos-release.yml?style=for-the-badge&label=macOS%20build)](https://github.com/sahandse/Qio/actions/workflows/macos-release.yml)
 [![Persian + English](https://img.shields.io/badge/Language-FA%20%2B%20EN-06B6D4?style=for-the-badge)](#-زبانها--languages)
 
-[⬇️ دانلود نسخه ویندوز](https://github.com/sahandse/Qio/releases/latest) · [📘 راهنمای اتصال AI](docs/AI_PROVIDERS_FA.md) · [🧩 راه‌اندازی Agentها](docs/DESKTOP_SETUP_FA.md) · [🌐 English setup](docs/DESKTOP_SETUP_EN.md) · [🗺️ نقشه راه](docs/ROADMAP_FA.md) · [💬 پشتیبانی](https://t.me/sahandse)
+[⬇️ دانلود نسخه دسکتاپ](https://github.com/sahandse/Qio/releases/latest) · [📘 راهنمای اتصال AI](docs/AI_PROVIDERS_FA.md) · [🧩 راه‌اندازی Agentها](docs/DESKTOP_SETUP_FA.md) · [🌐 English setup](docs/DESKTOP_SETUP_EN.md) · [🗺️ نقشه راه](docs/ROADMAP_FA.md) · [💬 پشتیبانی](https://t.me/sahandse)
 
 </div>
 
@@ -32,12 +33,12 @@
 
 | سیستم‌عامل | دریافت | وضعیت |
 |---|---|---|
-| 🪟 **Windows 10/11** | [نصب‌کننده EXE](https://github.com/sahandse/Qio/releases/latest) · [فایل MSI](https://github.com/sahandse/Qio/releases/latest) | نسخهٔ منتشرشده: **v0.1.4** |
-| 🍎 **macOS** | [خروجی‌های ساخت دسکتاپ](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml) | فقط Artifact اجرای موفق را دریافت کنید؛ امضا و notarization تضمین نشده |
+| 🪟 **Windows 10/11** | [نصب‌کننده EXE و MSI](https://github.com/sahandse/Qio/releases/latest) | نسخهٔ منتشرشده را در Latest Release بررسی کنید |
+| 🍎 **macOS** | [DMGهای Intel و Apple Silicon](https://github.com/sahandse/Qio/releases/latest) | فقط پس از موفقیت ساخت و انتشار؛ امضا و notarization فعلاً تضمین نشده |
 | 🐧 **Linux** | [راهنمای اجرا از سورس](docs/INSTALL_LINUX_FA.md) | آزمایشی |
 | 📱 **Android / iOS** | — | نسخهٔ قابل نصب منتشر نشده |
 
-برای Windows، صفحهٔ [Latest Release](https://github.com/sahandse/Qio/releases/latest) را باز کن و فایل EXE یا MSI همان نسخه را از بخش **Assets** بگیر. فایل‌های نسخه و نام آن‌ها را قبل از نصب بررسی کن؛ برای بررسی هش، فایل `SHA256SUMS.txt` همان Release در دسترس است.
+صفحهٔ [Latest Release](https://github.com/sahandse/Qio/releases/latest) را باز کن و فایل‌های همان نسخه را از بخش **Assets** بگیر. هش نصب‌کننده‌های ویندوز در `SHA256SUMS.txt` و هش فایل‌های macOS در فایل‌های `SHA256SUMS-macOS-*.txt` قرار می‌گیرد. DMGهای مک تا زمانی که ساخت هر دو معماری موفق و فایل‌ها به Release متصل نشده باشند، منتشرشده محسوب نمی‌شوند.
 
 ## ✨ امکانات
 
@@ -128,7 +129,7 @@ npm run tauri build
 
 **Qio — کوچولو، بلوکی و همیشه همراه. 💜🟩**
 
-<sub>TypeScript · Rust · Tauri 2 · نسخهٔ منتشرشده: v0.1.4</sub>
+<sub>TypeScript · Rust · Tauri 2 · نسخهٔ تنظیم‌شده در سورس: v0.1.6؛ انتشار نصب‌کننده‌ها فقط پس از موفقیت CI تأیید می‌شود.</sub>
 
 </div>
 
@@ -138,10 +139,10 @@ npm run tauri build
 
 **Qio is a compact desktop AI companion** with a voxel-inspired character, Persian/English interface, a floating window, optional notifications, and setup guides for supported coding-agent workflows.
 
-- **Download:** [Latest Windows release](https://github.com/sahandse/Qio/releases/latest)
-- **AI providers:** [Provider and API guide](docs/AI_PROVIDERS_FA.md)
+- **Download:** [Latest Windows and macOS release assets](https://github.com/sahandse/Qio/releases/latest)
+- **AI providers:** [Provider and API guide](docs/AI_PROVIDERS_FA.md) — includes native Claude/Anthropic Messages API support.
 - **Agent setup:** [Desktop setup guide](docs/DESKTOP_SETUP_FA.md)
 - **Build status:** [GitHub Actions](https://github.com/sahandse/Qio/actions/workflows/ui-check.yml)
 - **Issues and feedback:** [Open an issue](https://github.com/sahandse/Qio/issues)
 
-Qio distinguishes local history, hook events, and live API connectivity. A listed provider or detected history does not by itself mean a service is currently connected.
+Qio distinguishes local history, hook events, and live API connectivity. Activity can be searched and filtered by agent; local metadata logging can be disabled in Settings. A listed provider or detected history does not by itself mean a service is currently connected. macOS DMGs are not signed or notarized unless a future release explicitly confirms that.
