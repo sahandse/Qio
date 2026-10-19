@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 // Qio local hook adapter. Reads an agent's JSON event from stdin and stores metadata only.
 import {homedir} from 'node:os';
-import {mkdir,appendFile} from 'node:fs/promises';
+import {mkdir,appendFile,readFile} from 'node:fs/promises';
 import {join} from 'node:path';
+try {
+  const settings=JSON.parse(await readFile(join(homedir(),'.qio','settings.json'),'utf8'));
+  if(settings.event_logging_enabled===false)process.exit(0);
+} catch(error) {
+  if(error?.code!=='ENOENT')process.exit(0);
+}
 let raw='';
 for await (const chunk of process.stdin) {
   raw+=chunk.toString('utf8');

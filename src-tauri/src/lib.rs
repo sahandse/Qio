@@ -212,6 +212,37 @@ async fn ai_chat(provider:String,model:String,message:String)->Result<String,Str
 
 
 #[tauri::command]
+fn qio_event_logging_enabled()->bool{
+    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return false};
+    match fs::read_to_string(home.join(".qio/settings.json")){
+        Ok(raw)=>serde_json::from_str::<serde_json::Value>(&raw).ok()
+            .and_then(|v|v.get("event_logging_enabled").and_then(|x|x.as_bool())).unwrap_or(true),
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>true,
+        Err(_)=>false,
+    }
+}
+#[tauri::command]
+fn qio_set_event_logging(enabled:bool)->Result<bool,String>{
+    let home=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from).ok_or("پوشه کاربر پیدا نشد")?;
+    let directory=home.join(".qio");
+    fs::create_dir_all(&directory).map_err(|e|e.to_string())?;
+    let path=directory.join("settings.json");
+    let mut settings=match fs::read_to_string(&path){
+        Ok(raw)=>serde_json::from_str::<serde_json::Value>(&raw).map_err(|_|"تنظیمات حریم خصوصی معتبر نیست")?,
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>serde_json::json!({}),
+        Err(error)=>return Err(error.to_string()),
+    };
+    if !settings.is_object(){return Err("ساختار تنظیمات معتبر نیست".into())}
+    settings["event_logging_enabled"]=serde_json::json!(enabled);
+    let temp=directory.join("settings.json.tmp");
+    let encoded=serde_json::to_vec_pretty(&settings).map_err(|e|e.to_string())?;
+    fs::write(&temp,encoded).map_err(|e|e.to_string())?;
+    if path.exists(){fs::remove_file(&path).map_err(|e|e.to_string())?}
+    fs::rename(&temp,&path).map_err(|e|e.to_string())?;
+    Ok(enabled)
+}
+
+#[tauri::command]
 fn qio_clear_hook_events()->Result<(),String>{
     let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return Err("پوشه کاربر پیدا نشد".into())};
     let path=home.join(".qio/events.jsonl");
@@ -377,7 +408,7 @@ pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
       .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,ai_providers,ai_chat])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_chat])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;

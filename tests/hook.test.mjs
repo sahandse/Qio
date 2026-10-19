@@ -1,12 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {mkdtempSync,readFileSync,existsSync,rmSync} from 'node:fs';
+import {mkdtempSync,readFileSync,existsSync,rmSync,mkdirSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
-function run(payload,{agent='Claude Code',args=[]}={}){
+function run(payload,{agent='Claude Code',args=[],loggingEnabled=true}={}){
   const dir=mkdtempSync(join(tmpdir(),'qio-test-'));
   try{
+    if(!loggingEnabled){mkdirSync(join(dir,'.qio'),{recursive:true});writeFileSync(join(dir,'.qio','settings.json'),JSON.stringify({event_logging_enabled:false}));}
     const env={...process.env,HOME:dir,USERPROFILE:dir,QIO_AGENT:agent};
     const p=spawnSync(process.execPath,[resolve('scripts/qio-hook.mjs'),...args],{input:JSON.stringify(payload),env,encoding:'utf8'});
     assert.equal(p.status,0);
@@ -36,4 +37,8 @@ test('maps Cursor events and logs only safe metadata',()=>{
   assert.equal(e.agent,'Cursor');
   assert.ok(!('file_path' in e));
   assert.ok(!('command' in e));
+});
+
+test('respects the local metadata logging opt-out',()=>{
+  assert.equal(run({hook_event_name:'PostToolUse',tool_name:'Bash'},{loggingEnabled:false}),null);
 });
