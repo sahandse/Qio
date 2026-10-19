@@ -73,3 +73,5 @@ test('system dashboard renders real metrics and refreshes from the OS command',(
  assert.match(ui,/network_received_bytes/);
  assert.match(ui,/memory_used_bytes/);
 });
+
+test('focus timer persists locally and has explicit controls',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/localStorage\.getItem\('qio-focus-timer'\)/);assert.match(ui,/localStorage\.setItem\('qio-focus-timer'/);assert.match(ui,/id="focus-timer-toggle"/);assert.match(ui,/id="focus-timer-reset"/);assert.match(ui,/id="focus-timer-break"/);assert.match(ui,/window\.setInterval\(tickFocusTimer,500\)/)});
