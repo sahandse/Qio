@@ -43,3 +43,12 @@ test('AI model picker discovers models from real endpoints and permits manual en
  assert.match(main,/list="ai-model-options"/);
  assert.match(main,/loadAIModels/);
 });
+
+test('notifications are opt-in by category and deduplicated',()=>{
+ const ui=readFileSync('src/main.ts','utf8');
+ assert.match(ui,/qio-event-notifications/);
+ assert.match(ui,/qio-approval-notifications/);
+ assert.match(ui,/notificationQuietUntil/);
+ assert.match(ui,/now-previous<60000/);
+ assert.match(ui,/notifyIfEnabled\('Claude Code درخواست تأیید جدید دارد','approval'\)/);
+});
