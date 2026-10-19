@@ -27,12 +27,28 @@ fn newest_file(path: &Path, depth: usize) -> Option<SystemTime> {
 #[tauri::command]
 fn local_agent_status() -> Vec<AgentStatus> {
     let home = env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from);
-    let choices = [("Codex","~/.codex/sessions",".codex/sessions"),("Claude Code","~/.claude/projects",".claude/projects")];
-    choices.iter().map(|&(name,source,relative)|{
+    let choices = [
+        ("Codex","~/.codex/sessions",".codex/sessions",None,None),
+        ("Claude Code","~/.claude/projects",".claude/projects",Some(".claude/settings.json"),Some("qio-hook.mjs")),
+        ("Cursor","~/.cursor/hooks.json",".cursor/hooks.json",Some(".cursor/hooks.json"),Some("qio-hook.mjs")),
+        ("Qoder","~/.qoder/settings.json",".qoder/settings.json",Some(".qoder/settings.json"),Some("qio-qoder-hook.mjs"))
+    ];
+    choices.iter().map(|&(name,source,relative,config_relative,marker)|{
         let path = home.as_ref().map(|h|h.join(relative));
-        let detected = path.as_ref().is_some_and(|p|p.is_dir());
-        let last = path.as_ref().and_then(|p|newest_file(p,7)).and_then(|t|t.duration_since(UNIX_EPOCH).ok()).map(|d|d.as_secs());
-        AgentStatus{name,source,detected,last_event_unix:last,state:if last.is_some(){"history-found"}else if detected{"directory-found"}else{"not-found"}}
+        let config_path = home.as_ref().and_then(|h|config_relative.map(|r|h.join(r)));
+        let hook_configured = config_path.as_ref().and_then(|p|fs::read_to_string(p).ok())
+            .is_some_and(|contents|marker.is_some_and(|needle|contents.contains(needle)));
+        let path_is_dir = path.as_ref().is_some_and(|p|p.is_dir());
+        let path_is_file = path.as_ref().is_some_and(|p|p.is_file());
+        let last = path.as_ref().filter(|p|p.is_dir()).and_then(|p|newest_file(p,7))
+            .and_then(|t|t.duration_since(UNIX_EPOCH).ok()).map(|d|d.as_secs());
+        let detected = last.is_some() || hook_configured || path_is_dir || path_is_file;
+        let state = if last.is_some() {"history-found"}
+            else if hook_configured {"hooks-configured"}
+            else if path_is_file {"config-found"}
+            else if path_is_dir {"directory-found"}
+            else {"not-found"};
+        AgentStatus{name,source,detected,last_event_unix:last,state}
     }).collect()
 }
 
