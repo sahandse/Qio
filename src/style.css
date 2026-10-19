@@ -642,3 +642,22 @@ html,body,#app{margin:0!important;padding:0!important;overflow:hidden!important}
 
 /* Stage 4: real model discovery control */
 #ai-models-refresh{width:100%;margin:.45rem 0 .8rem;padding:.6rem .85rem;border:1px solid var(--border,rgba(255,255,255,.16));border-radius:10px;background:rgba(110,220,170,.08);color:inherit;cursor:pointer}#ai-models-refresh:disabled{opacity:.6;cursor:wait}
+
+/* Read-only local system dashboard */
+.system-dashboard{border:1px solid #293b50;border-radius:14px;padding:12px;background:linear-gradient(145deg,#121f2d,#101827);margin:8px 0 14px}
+.system-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.system-dashboard-head p{font-size:11px;color:#9eb0c6;margin:0}
+.system-dashboard button{background:#183b39;color:#b8ffe0;border:1px solid #2a6655;border-radius:9px;padding:7px 10px;font-size:11px}
+.system-dashboard button:disabled{opacity:.55;cursor:wait}
+.system-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.system-metric{min-width:0;border:1px solid #29364a;border-radius:10px;padding:9px;background:#121b29}
+.system-metric span,.system-disk span{display:block;color:#96a8bf;font-size:10px;overflow-wrap:anywhere}
+.system-metric strong{display:block;color:#effaf6;font-size:12px;margin-top:5px;overflow-wrap:anywhere}
+.metric-track{height:5px;background:#283447;border-radius:99px;overflow:hidden;margin-top:8px}
+.metric-track i{display:block;height:100%;background:linear-gradient(90deg,#55f5b2,#8d7aff);border-radius:99px;max-width:100%}
+.system-disks{display:grid;gap:8px;margin:10px 0}
+.system-disk>div:first-child{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.system-disk strong{font-size:11px;overflow-wrap:anywhere}
+.system-dashboard small{display:block;color:#8297af;font-size:10px;margin-top:10px}
+.system-error{color:#ffb4b4;font-size:11px;overflow-wrap:anywhere}
+@media(max-width:360px){.system-metrics{grid-template-columns:1fr}.system-disk>div:first-child{align-items:flex-start;flex-direction:column}}

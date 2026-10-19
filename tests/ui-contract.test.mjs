@@ -63,4 +63,13 @@ test('settings search and keyboard shortcuts are wired to real UI actions',()=>{
  assert.match(ui,/event\.key==='Escape'/);
 });
 
-test('system snapshot is based on operating system metrics',()=>{const rust=readFileSync('src-tauri/src/lib.rs','utf8');const cargo=readFileSync('src-tauri/Cargo.toml','utf8');assert.match(cargo,/sysinfo/);assert.match(rust,/fn system_snapshot\(\) -> Result<SystemSnapshot,String>/);assert.match(rust,/system\.global_cpu_usage\(\)/);assert.match(rust,/system\.used_memory\(\)/);assert.match(rust,/disk\.available_space\(\)/);assert.match(rust,/total_received\(\)/);assert.match(rust,/system_snapshot\]\)/);});
+test('system snapshot is based on operating system metrics',()=>{const rust=readFileSync('src-tauri/src/lib.rs','utf8');const cargo=readFileSync('src-tauri/Cargo.toml','utf8');assert.match(cargo,/sysinfo/);assert.match(rust,/fn system_snapshot\(\) -> Result<SystemSnapshot,String>/);assert.match(rust,/system\.global_cpu_usage\(\)/);assert.match(rust,/system\.used_memory\(\)/);assert.match(rust,/\.available_space\(\)/);assert.match(rust,/total_received\(\)/);assert.match(rust,/system_snapshot\]\)/);});
+
+test('system dashboard renders real metrics and refreshes from the OS command',()=>{
+ const ui=readFileSync('src/main.ts','utf8');
+ assert.match(ui,/invoke<SystemSnapshot>\('system_snapshot'\)/);
+ assert.match(ui,/id="system-dashboard-content"|id="system-snapshot-content"/);
+ assert.match(ui,/id="system-refresh"/);
+ assert.match(ui,/network_received_bytes/);
+ assert.match(ui,/memory_used_bytes/);
+});
