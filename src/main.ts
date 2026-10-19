@@ -76,7 +76,10 @@ function characterHead(c:typeof aiCharacters[number]) {
   return `<span class="pixel-head" style="--char-accent:${c.accent};--char-skin:${c.skin};--char-hair:${c.hair};--char-eyes:${c.eyes}" aria-hidden="true"><i class="pixel-hair"></i><i class="pixel-ear left"></i><i class="pixel-ear right"></i><i class="pixel-face"><b class="pixel-eye left"></b><b class="pixel-eye right"></b><b class="pixel-nose"></b><b class="pixel-mouth"></b></i><i class="pixel-neck"></i><i class="pixel-glint">${escapeHtml(c.symbol)}</i></span>`;
 }
 function mascot() {
-  return `<div class="qio-stage mood-${displayMood()}">
+  const currentMood=displayMood();
+  const bubbleText=currentMood==='happy'&&aiResponse.trim()?aiResponse.trim().slice(0,110):moodText[currentMood];
+  return `<div class="qio-stage mood-${currentMood}" title="${language==='fa'?'برای جابه‌جایی، کاراکتر را بکشید':'Drag the character to move it'}">
+    <div class="qio-speech" role="status"><span class="qio-speech-dot"></span><span>${escapeHtml(bubbleText)}</span></div>
     <canvas id="qio-character" width="360" height="380" role="img" aria-label="${language==="fa"?"کاراکتر هوشمند کیو":"Qio AI character"}"></canvas>
     <div class="qio-shortcuts">
       <button class="qio-shortcut" id="quick-chat" title="${language==="fa"?"گفت‌وگو":"Chat"}" aria-label="${language==="fa"?"گفت‌وگو":"Chat"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2 1-5a7.5 7.5 0 1 1 16-4.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></button>
@@ -232,6 +235,10 @@ ${githubError?`<p class="github-error">${escapeHtml(githubError)}</p>`:githubRun
   const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
   drawQioCharacter();
   document.querySelector('#mascot')?.addEventListener('click',()=>{qioSquishUntil=Date.now()+230;toggle();});
+  document.querySelector('.qio-stage')?.addEventListener('pointerdown',(event)=>{
+    if((event.target as HTMLElement).closest('button'))return;
+    if('__TAURI_INTERNALS__' in window)void invoke('drag_island').catch(error=>console.warn('Could not drag Qio window',error));
+  });
   document.querySelector('#quick-chat')?.addEventListener('click',()=>{expanded=true;openTab('chat');});
   document.querySelector('#quick-settings')?.addEventListener('click',()=>{expanded=true;openTab('settings');});
 }
