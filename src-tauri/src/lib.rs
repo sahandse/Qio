@@ -456,6 +456,22 @@ fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
 struct GithubRun { id:u64, name:String, status:String, conclusion:Option<String>, html_url:String, created_at:String, run_number:u64, head_sha:String }
 #[derive(Deserialize)]
 struct GithubRunsResponse { workflow_runs:Vec<GithubRun> }
+#[derive(Serialize)]
+struct SystemSnapshot { cpu_usage_percent:f32, memory_used_bytes:u64, memory_total_bytes:u64, disks:Vec<DiskSnapshot>, network_received_bytes:u64, network_transmitted_bytes:u64 }
+#[derive(Serialize)]
+struct DiskSnapshot { name:String, total_bytes:u64, available_bytes:u64 }
+#[tauri::command]
+fn system_snapshot() -> Result<SystemSnapshot,String> {
+ let mut system=sysinfo::System::new(); system.refresh_cpu_usage(); system.refresh_memory();
+ let cpu_usage_percent=system.global_cpu_usage().clamp(0.0,100.0);
+ let memory_total_bytes=system.total_memory(); let memory_used_bytes=system.used_memory();
+ let disks=sysinfo::Disks::new_with_refreshed_list().iter().take(32).map(|d|DiskSnapshot{name:d.name().to_string_lossy().chars().take(120).collect(),total_bytes:d.total_space(),available_bytes:d.available_space()}).collect();
+ let networks=sysinfo::Networks::new_with_refreshed_list();
+ let network_received_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_received()));
+ let network_transmitted_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_transmitted()));
+ Ok(SystemSnapshot{cpu_usage_percent,memory_used_bytes,memory_total_bytes,disks,network_received_bytes,network_transmitted_bytes})
+}
+
 #[tauri::command]
 async fn github_actions_status()->Result<Vec<GithubRun>,String>{
  let client=reqwest::Client::builder().user_agent("Qio-Desktop-App").timeout(std::time::Duration::from_secs(12)).build().map_err(|e|e.to_string())?;
@@ -487,7 +503,7 @@ pub fn run(){
     tauri::Builder::default()
       .plugin(tauri_plugin_notification::init())
       .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_models,ai_chat,github_actions_status])
+      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_models,ai_chat,github_actions_status,system_snapshot])
       .setup(|app|{
          let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
          let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
