@@ -33,8 +33,10 @@ fn newest_qio_event(home: &Path, agent: &str) -> Option<u64> {
     if length > MAX_TAIL_BYTES {
         file.seek(SeekFrom::End(-(MAX_TAIL_BYTES as i64))).ok()?;
     }
-    let mut content = String::new();
-    file.take(MAX_TAIL_BYTES).read_to_string(&mut content).ok()?;
+    let mut bytes = Vec::with_capacity(MAX_TAIL_BYTES as usize);
+    file.take(MAX_TAIL_BYTES).read_to_end(&mut bytes).ok()?;
+    // A seek can start in the middle of a UTF-8 character; lossy decoding keeps valid JSON lines usable.
+    let content = String::from_utf8_lossy(&bytes);
     let mut latest = None;
     for line in content.lines().rev().take(5000) {
         if line.len() > 16_384 { continue; }
