@@ -1,59 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-label="Qio voxel AI companion, neon block world">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080D18"/><stop offset=".55" stop-color="#12162C"/><stop offset="1" stop-color="#20113A"/></linearGradient>
-    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#202A46"/><stop offset="1" stop-color="#11182B"/></linearGradient>
-    <linearGradient id="lime" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#D9FF73"/><stop offset="1" stop-color="#66E39A"/></linearGradient>
-    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B9A0FF"/><stop offset="1" stop-color="#6C55F5"/></linearGradient>
-    <filter id="glow"><feGaussianBlur stdDeviation="16"/></filter>
-    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#7D8FBF" stroke-opacity=".1" stroke-width="1"/></pattern>
-  </defs>
-  <rect width="1120" height="500" rx="36" fill="url(#bg)"/>
-  <rect width="1120" height="500" rx="36" fill="url(#grid)"/>
-  <circle cx="545" cy="236" r="178" fill="#7C5CFF" opacity=".16" filter="url(#glow)"/>
-  <circle cx="555" cy="240" r="150" fill="#8AF7A8" opacity=".12" filter="url(#glow)"/>
-  <path d="M64 394H1056M100 420H1020" stroke="#7B8DC1" stroke-opacity=".22" stroke-width="2"/>
-  <g opacity=".85">
-    <path d="M82 140l38-22 38 22-38 22z" fill="#5F4AD6"/><path d="M82 140v42l38 22v-42z" fill="#3E338D"/><path d="M120 162v42l38-22v-42z" fill="#7964F7"/>
-    <path d="M926 104l48-28 48 28-48 28z" fill="#5ACB8B"/><path d="M926 104v48l48 28v-48z" fill="#32815E"/><path d="M974 132v48l48-28v-48z" fill="#8BF4AE"/>
-    <path d="M915 330l28-16 28 16-28 16z" fill="#7862E9"/><path d="M915 330v31l28 16v-31z" fill="#463C9B"/><path d="M943 346v31l28-16v-31z" fill="#A897FF"/>
-    <path d="M130 320l28-16 28 16-28 16z" fill="#7CDDA1"/><path d="M130 320v31l28 16v-31z" fill="#3E9466"/><path d="M158 336v31l28-16v-31z" fill="#A5F5C0"/>
-  </g>
-  <g transform="translate(360 62)">
-    <ellipse cx="202" cy="360" rx="160" ry="22" fill="#7CF0A6" opacity=".18"/>
-    <path d="M65 285h274v54H65z" fill="#1D2D4A"/>
-    <path d="M65 285l38-25h236l-25 25z" fill="#314569"/>
-    <path d="M103 260v25l-38 25v-25z" fill="#263653"/>
-    <path d="M314 260v25l25 25v-25z" fill="#1A2840"/>
-    <rect x="103" y="65" width="204" height="204" rx="8" fill="#0A101D" stroke="#B2A1FF" stroke-width="5"/>
-    <rect x="119" y="81" width="172" height="172" fill="url(#lime)"/>
-    <rect x="119" y="81" width="172" height="30" fill="#E8FF9B"/>
-    <rect x="119" y="223" width="172" height="30" fill="#50C985"/>
-    <rect x="135" y="111" width="140" height="112" fill="#1A2440"/>
-    <rect x="150" y="129" width="36" height="43" fill="#F5FCFF"/>
-    <rect x="224" y="129" width="36" height="43" fill="#F5FCFF"/>
-    <rect x="162" y="142" width="20" height="26" fill="#70E6FF"/>
-    <rect x="236" y="142" width="20" height="26" fill="#70E6FF"/>
-    <rect x="184" y="187" width="42" height="10" fill="#C4FF8A"/>
-    <rect x="175" y="197" width="60" height="8" fill="#C4FF8A"/>
-    <rect x="83" y="112" width="20" height="80" fill="#B2A1FF"/>
-    <rect x="307" y="112" width="20" height="80" fill="#B2A1FF"/>
-    <path d="M83 112h20v-18H83zM307 112h20V94h-20z" fill="#D5CAFF"/>
-    <rect x="121" y="269" width="54" height="56" fill="#6653E8"/>
-    <rect x="237" y="269" width="54" height="56" fill="#6653E8"/>
-    <rect x="109" y="325" width="78" height="26" fill="#A997FF"/>
-    <rect x="225" y="325" width="78" height="26" fill="#A997FF"/>
-    <rect x="83" y="201" width="38" height="64" fill="#8B79FF"/>
-    <rect x="291" y="201" width="38" height="64" fill="#8B79FF"/>
-    <rect x="73" y="247" width="58" height="28" fill="#A997FF"/>
-    <rect x="281" y="247" width="58" height="28" fill="#A997FF"/>
-    <rect x="143" y="22" width="125" height="34" rx="8" fill="#17233B" stroke="#7C6AFF" stroke-width="2"/>
-    <circle cx="161" cy="39" r="5" fill="#A9FF7B"/><text x="174" y="44" font-family="monospace" font-size="13" fill="#E8E9FF">QIO ONLINE?</text>
-  </g>
-  <g font-family="ui-sans-serif,system-ui,sans-serif">
-    <text x="64" y="80" fill="#C5B8FF" font-size="18" font-weight="700" letter-spacing="4">DESKTOP AI COMPANION</text>
-    <text x="64" y="118" fill="#F5F7FF" font-size="42" font-weight="800">Qio <tspan fill="#A9FF7B">/ کیو</tspan></text>
-    <text x="64" y="456" fill="#B4BEDA" font-size="15">Persian + English  •  Voxel character  •  Tauri desktop app</text>
-    <rect x="815" y="394" width="244" height="52" rx="14" fill="#18243A" stroke="#6FE39B" stroke-opacity=".8"/>
-    <circle cx="838" cy="420" r="6" fill="#A9FF7B"/><text x="856" y="425" fill="#E8FBEF" font-size="15" font-weight="700">FA / EN • QODER READY</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+<title id="title">Qio — AI desktop companion</title><desc id="desc">Qio's original rounded companion character with a dark face, neon green eyes, a green sprout and violet details.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080D18"/><stop offset=".55" stop-color="#11182A"/><stop offset="1" stop-color="#20133A"/></linearGradient>
+ <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#D9D8F0"/><stop offset="1" stop-color="#8B7BD0"/></linearGradient>
+ <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#A99AFF"/><stop offset="1" stop-color="#5D4CC7"/></linearGradient>
+ <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#D7FF91"/><stop offset="1" stop-color="#55E7A0"/></linearGradient>
+ <radialGradient id="aura"><stop stop-color="#5DFFC0" stop-opacity=".22"/><stop offset="1" stop-color="#5DFFC0" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8293BB" stroke-opacity=".09"/></pattern>
+ <filter id="glow"><feGaussianBlur stdDeviation="20"/></filter>
+</defs>
+<rect width="1200" height="560" rx="32" fill="url(#bg)"/><rect width="1200" height="560" rx="32" fill="url(#grid)"/>
+<circle cx="815" cy="265" r="230" fill="url(#aura)"/><circle cx="815" cy="265" r="158" fill="#8067FF" opacity=".12" filter="url(#glow)"/>
+<g fill="none" stroke="#7B8BB4" stroke-opacity=".18"><circle cx="815" cy="265" r="180"/><circle cx="815" cy="265" r="208" stroke-dasharray="4 12"/><path d="M590 265H1040M815 40V490"/></g>
+<g transform="translate(660 76)">
+ <ellipse cx="155" cy="390" rx="130" ry="17" fill="#02040A" opacity=".55"/>
+ <path d="M88 307Q70 330 78 370L92 395H218L232 370Q240 330 222 307Z" fill="url(#body)" stroke="#C6B9FF" stroke-opacity=".65" stroke-width="3"/>
+ <path d="M105 320Q155 342 205 320" fill="none" stroke="#E6DEFF" stroke-opacity=".65" stroke-width="4" stroke-linecap="round"/>
+ <rect x="43" y="70" width="224" height="226" rx="60" fill="url(#shell)" stroke="#F2F0FF" stroke-width="3"/>
+ <rect x="60" y="89" width="190" height="185" rx="46" fill="#101322" stroke="#8D79F5" stroke-width="4"/>
+ <path d="M88 111Q110 98 129 111" stroke="#FFFFFF" stroke-opacity=".65" stroke-width="5" fill="none" stroke-linecap="round"/>
+ <g fill="url(#green)" filter="url(#glow)" opacity=".6"><ellipse cx="112" cy="176" rx="26" ry="27"/><ellipse cx="198" cy="176" rx="26" ry="27"/></g>
+ <g fill="#6DFFB0"><rect x="96" y="153" width="31" height="43" rx="15"/><rect x="183" y="153" width="31" height="43" rx="15"/></g>
+ <path d="M132 219Q155 234 178 219" stroke="#8C79FF" stroke-width="5" stroke-linecap="round" fill="none"/>
+ <path d="M153 75Q145 45 168 22" stroke="#61EBA6" stroke-width="8" stroke-linecap="round" fill="none"/>
+ <path d="M164 28Q185 4 207 17Q197 42 164 39Z" fill="url(#green)" stroke="#A9FFD0" stroke-width="2"/>
+ <path d="M162 37Q139 15 120 30Q133 52 162 48Z" fill="#76F2AD" stroke="#A9FFD0" stroke-width="2"/>
+ <circle cx="82" cy="258" r="13" fill="#A58CFF"/><circle cx="230" cy="258" r="13" fill="#A58CFF"/>
+ <path d="M42 334Q19 322 25 298" stroke="#8F7AFF" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="24" cy="292" r="12" fill="#D7D0FF"/>
+ <path d="M268 333Q290 320 283 296" stroke="#8F7AFF" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="284" cy="290" r="12" fill="#D7D0FF"/>
+</g>
+<g font-family="ui-sans-serif,system-ui,sans-serif">
+ <text x="76" y="94" fill="#A9FBC9" font-size="17" font-weight="700" letter-spacing="5">YOUR DESKTOP AI COMPANION</text>
+ <text x="72" y="174" fill="#F5F6FF" font-size="68" font-weight="850">Qio <tspan fill="#A9FF7B">/ کیو</tspan></text>
+ <text x="76" y="222" fill="#D1D9ED" font-size="25">همراه هوشمند، همیشه کنار دستت.</text>
+ <text x="76" y="260" fill="#9DAAC8" font-size="17">Canvas character · Floating desktop UI · FA / EN</text>
+ <rect x="76" y="310" width="300" height="56" rx="16" fill="#15263A" stroke="#64EBA7" stroke-opacity=".7"/>
+ <circle cx="102" cy="338" r="7" fill="#68FFB0"/><text x="123" y="344" fill="#E5FFF0" font-size="17" font-weight="700">OPEN SOURCE · QIO</text>
+ <rect x="76" y="390" width="240" height="48" rx="13" fill="#211A3C" stroke="#9D85FF" stroke-opacity=".7"/>
+ <text x="96" y="420" fill="#D7CBFF" font-size="15">AI · AGENTS · ACTIONS</text>
+ <text x="76" y="505" fill="#7F8EAE" font-size="14">TypeScript · Rust · Tauri 2</text>
+</g>
+<g fill="#8D7BFF"><circle cx="620" cy="128" r="5"/><circle cx="1050" cy="170" r="7"/><circle cx="1015" cy="402" r="4"/><circle cx="600" cy="388" r="4"/></g>
+<g fill="#6CFFB1"><circle cx="1010" cy="100" r="4"/><circle cx="580" cy="300" r="5"/><circle cx="970" cy="460" r="5"/></g>
 </svg>
