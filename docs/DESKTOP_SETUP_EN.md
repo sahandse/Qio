@@ -38,6 +38,10 @@ Official documentation: https://docs.qoder.com/extensions/hooks
 
 Run `npm run setup:claude` and restart Claude Code. The installer preserves existing settings and creates a backup. Permission requests are never automatically approved; review each request in Qio before making a decision.
 
+## Direct Claude API chat
+
+Qio supports Claude through Anthropic's native Messages API. Set `ANTHROPIC_API_KEY` in the environment, restart Qio, choose **Claude (Anthropic API)**, and enter a model ID available to your account. A Claude app subscription and API billing are separate.
+
 ## Cursor, Claude, ChatGPT, and Qio's direct API chat are different
 
 Installing Cursor, Claude Desktop, or ChatGPT does not connect those applications as a model backend inside Qio. Direct model chat in Qio uses a supported provider API and a valid model ID. API billing and consumer app subscriptions are separate. See [AI provider setup](AI_PROVIDERS_FA.md).
@@ -50,5 +54,6 @@ Installing Cursor, Claude Desktop, or ChatGPT does not connect those application
 
 - Never commit API keys or paste them into issues or screenshots.
 - Hook events and test evidence are stored locally under `~/.qio`.
+- Use Settings → Privacy to pause new metadata logging. Existing history is retained until you clear it explicitly.
 - Qio must be running to show its dashboard; a hook event does not prove an Agent is currently online.
 - For build failures, include the operating system, Qio version, the failing workflow link, and the relevant error text. Redact secrets and personal file paths.
