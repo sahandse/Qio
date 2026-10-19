@@ -26,13 +26,19 @@ fn newest_file(path: &Path, depth: usize) -> Option<SystemTime> {
 }
 fn newest_qio_event(home: &Path, agent: &str) -> Option<u64> {
     let path = home.join(".qio").join("events.jsonl");
-    let file = fs::File::open(path).ok()?;
-    use std::io::{BufRead, BufReader};
-    let reader = BufReader::new(file);
+    use std::io::{Read, Seek, SeekFrom};
+    let mut file = fs::File::open(path).ok()?;
+    let length = file.metadata().ok()?.len();
+    const MAX_TAIL_BYTES: u64 = 1_048_576;
+    if length > MAX_TAIL_BYTES {
+        file.seek(SeekFrom::End(-(MAX_TAIL_BYTES as i64))).ok()?;
+    }
+    let mut content = String::new();
+    file.take(MAX_TAIL_BYTES).read_to_string(&mut content).ok()?;
     let mut latest = None;
-    for line in reader.lines().map_while(Result::ok).take(100_000) {
+    for line in content.lines().rev().take(5000) {
         if line.len() > 16_384 { continue; }
-        if let Ok(value) = serde_json::from_str::<serde_json::Value>(&line) {
+        if let Ok(value) = serde_json::from_str::<serde_json::Value>(line) {
             if value.get("agent").and_then(|v| v.as_str()) == Some(agent) {
                 if let Some(at) = value.get("at").and_then(|v| v.as_u64()) {
                     let seconds = at / 1000;

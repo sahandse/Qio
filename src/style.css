@@ -632,3 +632,5 @@ html,body,#app{margin:0!important;padding:0!important;overflow:hidden!important}
 .island.open .ai-chat input,.island.open .ai-chat textarea,.island.open .ai-chat select,.island.open .event-search input,.island.open .event-tools select{background:#0e19256e!important;border-color:#8ca7b52b!important}
 @media(max-width:360px){.island.open .tab-bar{grid-template-columns:repeat(3,minmax(0,1fr))!important}.island.open .panel{padding-inline:7px!important}.qio-speech{max-width:84vw!important}}
 @media(max-height:460px){.island.open .qio-stage{flex-basis:56px!important;width:64px!important;height:56px!important;max-width:64px!important}.island.open .panel{padding-top:5px!important}}
+
+.agent-led.active{background:#67e7bf;box-shadow:0 0 9px #62e5b9;animation:qio-live-pulse 1.6s ease-in-out infinite}.agent-led.recent{background:#f4c66d;box-shadow:0 0 7px #f4c66d66}.agent-led.configured{background:#8e9fb6;box-shadow:none}@keyframes qio-live-pulse{0%,100%{opacity:1}50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.agent-led.active{animation:none}}
