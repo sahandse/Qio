@@ -437,3 +437,48 @@ footer .text-button{margin:0;padding:5px 4px;min-height:30px}
 .qio-character-hit:active{background:transparent}
 .qio-stage:focus-within .qio-shortcut{border-color:#6affb4}
 @media(hover:none){.qio-shortcut:hover{transform:none}}
+
+/* Requested compact floating companion: transparent, no backdrop, no frame */
+html,body,#app{background:transparent!important;box-shadow:none!important;border:0!important}
+body{overflow:hidden!important}
+.app{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;gap:0!important;overflow:visible!important;max-height:100vh}
+.topbar,footer,.island:not(.open) .status,.island:not(.open) .substatus,.island:not(.open) .actions,.island:not(.open) .compact-live{display:none!important}
+.island:not(.open){background:transparent!important;border:0!important;box-shadow:none!important}
+.island:not(.open) .qio-stage{height:160px;width:170px;max-width:170px;margin:0;overflow:visible}
+.qio-stage{height:190px;max-width:210px}
+#qio-character{width:100%;height:100%;filter:none!important}
+.qio-stage:before,.qio-stage:after{display:none!important;content:none!important}
+.qio-shortcuts{right:0;top:50%;gap:8px;transform:translate(28%,-50%)}
+.qio-shortcut{width:30px;height:30px;border-radius:50%;padding:7px;background:rgba(12,18,28,.78);box-shadow:none;backdrop-filter:blur(6px)}
+.qio-character-hit{inset:0 22px 0 0}
+.island:not(.open) .qio-character-hit{inset:0 18px 0 0}
+.island:not(.open) .qio-shortcuts{right:2px}
+.qio-shortcut:hover{transform:scale(1.05)}
+/* Replace legacy character portraits with a unified, modern service directory */
+.character-art{position:relative;display:grid;place-items:center;min-height:125px;overflow:hidden;border-radius:16px;background:radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--char-accent) 18%,transparent),transparent 68%)!important}
+.pixel-head,.pixel-head *,.hero-head-stack{display:none!important}
+.service-orb{position:relative;width:72px;height:72px;display:grid;place-items:center;border-radius:24px;background:linear-gradient(145deg,#202b3c,#0e1523);border:1px solid color-mix(in srgb,var(--char-accent) 70%,transparent);box-shadow:0 0 28px color-mix(in srgb,var(--char-accent) 20%,transparent),inset 0 1px #ffffff20;transform:rotate(-5deg)}
+.service-orb:before{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--char-accent) 35%,transparent);border-radius:18px}
+.service-orb span{font-size:24px;font-weight:750;color:var(--char-accent);transform:rotate(5deg);text-shadow:0 0 18px color-mix(in srgb,var(--char-accent) 35%,transparent)}
+.service-orbit{position:absolute;width:96px;height:96px;border:1px solid color-mix(in srgb,var(--char-accent) 25%,transparent);border-radius:50%;transform:rotate(-22deg) scaleY(.56)}
+.characters-hero{padding:8px 0 14px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.character-card{background:linear-gradient(145deg,#121b29,#0b111c)!important;border:1px solid #263548!important;border-radius:18px!important;box-shadow:none!important}
+.character-card:hover{border-color:color-mix(in srgb,var(--char-accent) 55%,#263548)!important;transform:translateY(-2px)}
+.character-info h3{font-size:13px!important}
+.character-info p{font-size:11px!important;color:#9eafc2!important}
+.character-pick{border-radius:10px!important;background:#1b2938!important;color:#dfffea!important}
+.guide-section{gap:12px!important}
+.guide-head{margin-bottom:4px}
+.featured-guides-title{font-size:12px!important}
+.featured-guide-grid{grid-template-columns:1fr!important;gap:7px!important}
+.featured-guide{display:flex!important;align-items:center!important;min-height:56px!important;padding:9px 12px!important;border-radius:12px!important;box-shadow:none!important}
+.featured-guide-symbol{width:34px!important;height:34px!important;flex:0 0 34px!important}
+.guide-help-bang{margin-inline-start:auto!important}
+.guide-filter{margin:10px 0!important}
+.guide-gallery{display:flex!important;flex-direction:column!important;gap:6px!important}
+.guide-card{display:flex!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:8px 10px!important;border-radius:11px!important;text-align:start!important}
+.guide-card .guide-illustration{width:32px!important;height:32px!important;flex:0 0 32px!important}
+.guide-card>small{margin-inline-start:auto!important}
+.guide-detail{padding:14px!important;border-radius:14px!important}
+.guide-detail ol{padding-inline-start:20px!important;line-height:1.85!important}
+@media(prefers-reduced-motion:reduce){.service-orb,.character-card,.featured-guide,.guide-card{transition:none!important;animation:none!important}}
