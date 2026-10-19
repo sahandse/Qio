@@ -53,22 +53,11 @@ jobs:
             tag="$REF_NAME"
             should_release=true
           else
+            # A push to main is a CI build, not permission to publish a release.
+            # Releases happen only for an explicit version tag or manual dispatch.
             current_version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
-            previous_version=""
-            if git show HEAD^:package.json > /tmp/qio-previous-package.json 2>/dev/null; then
-              previous_version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/qio-previous-package.json','utf8')).version)")
-            fi
-            if [[ "$current_version" != "$previous_version" ]]; then
-              tag="v$current_version"
-              should_release=true
-            else
-              tag="v$current_version"
-              if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
-                should_release=false
-              else
-                should_release=true
-              fi
-            fi
+            tag="v$current_version"
+            should_release=false
           fi
           echo "should_release=$should_release" >> "$GITHUB_OUTPUT"
           echo "tag_name=$tag" >> "$GITHUB_OUTPUT"
