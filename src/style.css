@@ -524,3 +524,29 @@ main{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}
 .qio-shortcut.settings{border-color:#55477d!important}
 @media(max-height:420px){.island.open .qio-stage{flex-basis:62px;height:62px;width:72px;max-width:72px}.panel{padding-top:6px!important}}
 @media(prefers-reduced-motion:reduce){.appearance-controls>button,.theme-options button,.scale-options button{transition:none!important}}
+
+/* Final polish: remove frame completely and align settings controls */
+html,body,#app,.app,.app::before,.app::after,main,.island,.island::before,.island::after{background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important}
+body{margin:0!important;padding:0!important;overflow:hidden!important}
+.app{padding:0!important;gap:0!important;overflow:hidden!important}
+.island.open{padding:0!important;gap:0!important}
+.island.open .tab-bar{margin:0 7px 7px!important;padding:4px!important;border:0!important;border-radius:12px!important;background:rgba(14,23,35,.72)!important;gap:4px!important}
+.island.open .tab{flex:1 1 0!important;min-width:0!important;padding:9px 4px!important;white-space:normal!important;line-height:1.4!important;font-size:10px!important}
+.island.open .panel{margin:0!important;padding:8px 10px 22px!important;background:transparent!important;border:0!important;border-radius:0!important;overscroll-behavior:contain!important}
+.island.open .appearance-controls{gap:10px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.island.open .settings-section-title{margin:16px 1px 5px!important;padding:0 0 7px!important;border-bottom:1px solid #87adc726;font-size:12px!important;color:#a7f3c7!important}
+.island.open .settings-section-title:first-child{margin-top:3px!important}
+.island.open .preference-label{display:block;margin:9px 2px 5px!important;line-height:1.7!important}
+.island.open .theme-options,.island.open .scale-options{gap:7px!important}
+.island.open .theme-options button,.island.open .scale-options button{min-height:39px!important;padding:8px 5px!important;border-radius:11px!important;line-height:1.5!important}
+.island.open .appearance-controls>button:not(.github-refresh){width:100%;min-height:40px!important;padding:10px 12px!important;border-radius:11px!important;line-height:1.6!important}
+.island.open .appearance-controls p{padding:0 2px!important;line-height:1.9!important}
+.island.open .settings-help,.island.open .github-card,.island.open .events-panel,.island.open .ai-chat,.island.open .approvals,.island.open .guide-detail{border-radius:13px!important;box-shadow:none!important}
+.island.open .settings-help{padding:11px!important;gap:9px!important;overflow-wrap:anywhere}
+.island.open .github-card{margin:4px 0 10px!important;padding:11px!important}
+.island.open .github-run{align-items:flex-start!important}
+.island.open input,.island.open select,.island.open textarea{min-width:0!important;max-width:100%!important}
+.island.open .ai-chat{padding:11px!important}
+.island.open .ai-chat button{min-height:38px!important;line-height:1.5!important}
+@media(max-width:360px){.island.open .panel{padding-inline:7px!important}.island.open .tab-bar{margin-inline:4px!important}.island.open .tab{padding-inline:3px!important;font-size:9px!important}}
+@media(max-height:460px){.island.open .qio-stage{flex-basis:54px!important;height:54px!important;width:62px!important;max-width:62px!important}.island.open .tab-bar{margin-bottom:3px!important}.island.open .panel{padding-top:5px!important}}
