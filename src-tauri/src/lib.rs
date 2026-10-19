@@ -142,6 +142,7 @@ fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static st
         "githubmodels" => Some(("GitHub Models","بین‌المللی","https://models.github.ai/inference/chat/completions","GITHUB_TOKEN")),
         "cohere" => Some(("Cohere","بین‌المللی","https://api.cohere.com/compatibility/v1/chat/completions","COHERE_API_KEY")),
         "novita" => Some(("Novita AI","بین‌المللی","https://api.novita.ai/v3/openai/chat/completions","NOVITA_API_KEY")),
+        "anthropic" => Some(("Claude (Anthropic API)","بین‌المللی","https://api.anthropic.com/v1/messages","ANTHROPIC_API_KEY")),
         "mistral" => Some(("Mistral AI","بین‌المللی","https://api.mistral.ai/v1/chat/completions","MISTRAL_API_KEY")),
         "xai" => Some(("xAI Grok","بین‌المللی","https://api.x.ai/v1/chat/completions","XAI_API_KEY")),
         "fireworks" => Some(("Fireworks AI","بین‌المللی","https://api.fireworks.ai/inference/v1/chat/completions","FIREWORKS_API_KEY")),
@@ -159,9 +160,9 @@ fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static st
 }
 #[tauri::command]
 fn ai_providers()->Vec<ProviderInfo>{
-    ["mistral","xai","fireworks","cerebras","hooshgar","gemini","perplexity","sambanova","nvidia","siliconflow","huggingface","githubmodels","cohere","novita","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
+    ["anthropic","mistral","xai","fireworks","cerebras","hooshgar","gemini","perplexity","sambanova","nvidia","siliconflow","huggingface","githubmodels","cohere","novita","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
         .iter().filter_map(|id|provider_details(id).map(|(name,region,_,key)|ProviderInfo {
-            id:match *id {"mistral"=>"mistral","xai"=>"xai","fireworks"=>"fireworks","cerebras"=>"cerebras","hooshgar"=>"hooshgar","gemini"=>"gemini","perplexity"=>"perplexity","sambanova"=>"sambanova","nvidia"=>"nvidia","siliconflow"=>"siliconflow","huggingface"=>"huggingface","githubmodels"=>"githubmodels","cohere"=>"cohere","novita"=>"novita","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
+            id:match *id {"anthropic"=>"anthropic","mistral"=>"mistral","xai"=>"xai","fireworks"=>"fireworks","cerebras"=>"cerebras","hooshgar"=>"hooshgar","gemini"=>"gemini","perplexity"=>"perplexity","sambanova"=>"sambanova","nvidia"=>"nvidia","siliconflow"=>"siliconflow","huggingface"=>"huggingface","githubmodels"=>"githubmodels","cohere"=>"cohere","novita"=>"novita","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
             name,region,key_configured:key.is_empty()||env::var(key).is_ok_and(|v|!v.trim().is_empty())
         })).collect()
 }
@@ -175,21 +176,37 @@ async fn ai_chat(provider:String,model:String,message:String)->Result<String,Str
         .timeout(std::time::Duration::from_secs(70))
         .redirect(reqwest::redirect::Policy::none())
         .build().map_err(|_|"ساخت اتصال ناموفق بود")?;
-    let request=client.post(endpoint).json(&serde_json::json!({
-        "model":model,
-        "stream":false,
-        "messages":[
-            {"role":"system","content":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید."},
-            {"role":"user","content":message}
-        ]
-    }));
-    let request=if key_name.is_empty(){request}else{request.bearer_auth(key)};
+    let request = if provider == "anthropic" {
+        client.post(endpoint)
+            .header("x-api-key", key.as_str())
+            .header("anthropic-version", "2023-06-01")
+            .json(&serde_json::json!({
+                "model":model,
+                "max_tokens":4096,
+                "system":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید.",
+                "messages":[{"role":"user","content":message}]
+            }))
+    } else {
+        let request = client.post(endpoint).json(&serde_json::json!({
+            "model":model,
+            "stream":false,
+            "messages":[
+                {"role":"system","content":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید."},
+                {"role":"user","content":message}
+            ]
+        }));
+        if key_name.is_empty(){request}else{request.bearer_auth(key)}
+    };
     let response=request.send().await.map_err(|_|"ارتباط با سرویس برقرار نشد")?;
     let status=response.status();
     if !status.is_success(){return Err(format!("پاسخ سرویس ناموفق بود (HTTP {})",status.as_u16()));}
     let data:serde_json::Value=response.json().await.map_err(|_|"پاسخ سرویس قابل خواندن نبود")?;
-    data.pointer("/choices/0/message/content").and_then(|v|v.as_str())
-        .map(|s|s.chars().take(30000).collect())
+    let content = if provider == "anthropic" {
+        data.pointer("/content/0/text").and_then(|v|v.as_str())
+    } else {
+        data.pointer("/choices/0/message/content").and_then(|v|v.as_str())
+    };
+    content.map(|s|s.chars().take(30000).collect())
         .ok_or_else(||"این مدل پاسخ متنی قابل‌نمایش برنگرداند".into())
 }
 
