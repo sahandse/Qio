@@ -457,7 +457,7 @@ struct GithubRun { id:u64, name:String, status:String, conclusion:Option<String>
 #[derive(Deserialize)]
 struct GithubRunsResponse { workflow_runs:Vec<GithubRun> }
 #[derive(Serialize)]
-struct SystemSnapshot { cpu_usage_percent:f32, memory_used_bytes:u64, memory_total_bytes:u64, disks:Vec<DiskSnapshot>, network_received_bytes:u64, network_transmitted_bytes:u64 }
+struct SystemSnapshot { cpu_usage_percent:f32, memory_used_bytes:u64, memory_total_bytes:u64, disks:Vec<DiskSnapshot>, network_received_bytes:u64, network_transmitted_bytes:u64, battery_percent:Option<f32>, battery_state:String, battery_supported:bool }
 #[derive(Serialize)]
 struct DiskSnapshot { name:String, total_bytes:u64, available_bytes:u64 }
 #[tauri::command]
@@ -469,7 +469,18 @@ fn system_snapshot() -> Result<SystemSnapshot,String> {
  let networks=sysinfo::Networks::new_with_refreshed_list();
  let network_received_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_received()));
  let network_transmitted_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_transmitted()));
- Ok(SystemSnapshot{cpu_usage_percent,memory_used_bytes,memory_total_bytes,disks,network_received_bytes,network_transmitted_bytes})
+ let (battery_percent,battery_state,battery_supported)=match battery::Manager::new() {
+  Ok(manager)=>match manager.batteries() {
+   Ok(mut batteries)=>match batteries.next() {
+    Some(Ok(b))=>(Some((b.state_of_charge().value*100.0).clamp(0.0,100.0)),format!("{:?}",b.state()),true),
+    Some(Err(_))=>(None,"خطای خواندن باتری".into(),true),
+    None=>(None,"باتری شناسایی نشد".into(),true)
+   },
+   Err(_)=>(None,"خواندن باتری پشتیبانی نمی‌شود".into(),false)
+  },
+  Err(_)=>(None,"API باتری در این سیستم پشتیبانی نمی‌شود".into(),false)
+ };
+ Ok(SystemSnapshot{cpu_usage_percent,memory_used_bytes,memory_total_bytes,disks,network_received_bytes,network_transmitted_bytes,battery_percent,battery_state,battery_supported})
 }
 
 #[tauri::command]

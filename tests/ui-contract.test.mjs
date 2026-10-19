@@ -81,3 +81,6 @@ test('local reminders persist and require a future date',()=>{const ui=readFileS
 test('recurring reminders advance after their due time',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/repeat\?:'none'\|'daily'\|'weekly'/);assert.match(ui,/id="reminder-repeat"/);assert.match(ui,/r\.repeat==='daily'\|\|r\.repeat==='weekly'/);assert.match(ui,/604800000/)});
 
 test('reminder calendar marks scheduled days and supports month navigation',()=>{const ui=readFileSync('src/main.ts','utf8');assert.match(ui,/function renderReminderCalendar\(\)/);assert.match(ui,/id="reminder-calendar"/);assert.match(ui,/id="calendar-prev"/);assert.match(ui,/id="calendar-next"/);assert.match(ui,/data-calendar-day/)});
+
+
+test("system snapshot reports battery only through the platform API",()=>{const rust=readFileSync("src-tauri/src/lib.rs","utf8");const ui=readFileSync("src/main.ts","utf8");assert.match(rust,/battery::Manager::new\(\)/);assert.match(rust,/battery_supported/);assert.match(ui,/battery_percent/)});
