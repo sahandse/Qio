@@ -12,6 +12,9 @@ on:
       - '.github/workflows/macos-release.yml'
   release:
     types: [published]
+  workflow_run:
+    workflows: ["Qio Windows Release"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       release_tag:
@@ -23,12 +26,66 @@ permissions:
   contents: write
 
 concurrency:
-  group: qio-macos-${{ github.event.release.tag_name || inputs.release_tag || github.sha }}
+  group: qio-macos-${{ github.event.release.tag_name || inputs.release_tag || github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: false
 
 jobs:
+  detect-release:
+    name: Decide whether to build and publish
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.detect.outputs.should_build }}
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      tag_name: ${{ steps.detect.outputs.tag_name }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Detect release target
+        id: detect
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+          RELEASE_TAG_EVENT: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          should_build=true
+          should_publish=false
+
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            git fetch --force origin "refs/tags/$tag:refs/tags/$tag" >/dev/null 2>&1 || true
+            tag_sha=$(git rev-parse "$tag^{commit}" 2>/dev/null || true)
+            if [[ -n "$tag_sha" && "$tag_sha" == "$HEAD_SHA" ]]; then
+              should_publish=true
+            else
+              should_build=false
+            fi
+          elif [[ "$EVENT_NAME" == "release" ]]; then
+            tag="$RELEASE_TAG_EVENT"
+            should_publish=true
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ -n "$RELEASE_TAG_INPUT" ]]; then
+              tag="$RELEASE_TAG_INPUT"
+              should_publish=true
+            fi
+          fi
+
+          echo "should_build=$should_build" >> "$GITHUB_OUTPUT"
+          echo "should_publish=$should_publish" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$tag" >> "$GITHUB_OUTPUT"
+          echo "Build: $should_build; publish: $should_publish; tag: $tag"
+
   build:
     name: Build macOS (${{ matrix.target }})
+    needs: detect-release
+    if: needs.detect-release.outputs.should_build == 'true'
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -40,7 +97,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.sha }}
+          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -90,8 +147,8 @@ jobs:
 
   publish-macos-assets:
     name: Attach macOS builds to GitHub Release
-    needs: build
-    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+    needs: [detect-release, build]
+    if: always() && needs.detect-release.outputs.should_publish == 'true' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Download macOS build artifacts
@@ -111,8 +168,8 @@ jobs:
       - name: Publish macOS assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag || github.event.release.tag_name }}
-          name: Qio ${{ inputs.release_tag || github.event.release.tag_name }}
+          tag_name: ${{ needs.detect-release.outputs.tag_name }}
+          name: Qio ${{ needs.detect-release.outputs.tag_name }}
           draft: false
           prerelease: false
           overwrite_files: true
