@@ -1,20 +1,6 @@
 name: Qio macOS Build
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'src-tauri/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/macos-release.yml'
-  release:
-    types: [published]
-  workflow_run:
-    workflows: ["Qio Windows Release"]
-    types: [completed]
   workflow_dispatch:
     inputs:
       release_tag:
