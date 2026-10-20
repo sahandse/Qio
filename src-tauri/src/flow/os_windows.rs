@@ -35,6 +35,7 @@ const VK_LSHIFT: u32 = 0xA0;
 const VK_RSHIFT: u32 = 0xA1;
 const VK_LCONTROL: u32 = 0xA2;
 const VK_RCONTROL: u32 = 0xA3;
+#[allow(dead_code)]
 const VK_LMENU: u32 = 0xA4;
 const VK_RMENU: u32 = 0xA5;
 const VK_LWIN: u32 = 0x5B;
