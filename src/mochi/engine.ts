@@ -69,7 +69,6 @@ const EYE_SP = 0.37;
 const EYE_P = -0.12;
 const BASE_TOP: RGB = [0.96, 0.96, 0.99]; // Pearlescent sleek white
 const BASE_BOTTOM: RGB = [0.72, 0.71, 0.82]; // Cyber soft lavender violet
-const INK = "rgb(26,20,18)"; // #1A1412
 const MINI_INK = "rgb(16,19,26)"; // #10131A
 
 const C = {
@@ -1134,7 +1133,7 @@ export class BotEngine {
   /** Hands sit behind the body — drawn before it, in world coordinates. */
 
   private drawAntenna(x: CanvasRenderingContext2D, R: number, rx: number, ry: number) {
-    if (this.isMini || this.outfit === "witch" || this.outfit === "santa") return;
+    if (this.isMini || this.outfit === "witchHat" || this.outfit === "santaHat") return;
     const topX = Math.sin(this.yaw) * rx * 0.35;
     const topY = -ry * 0.92 + Math.sin(this.pitch) * ry * 0.2;
     const stalkTipX = topX + Math.sin(this.yaw) * R * 0.28 + R * 0.14 + this.physDx * R * 0.12;
