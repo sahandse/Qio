@@ -1,549 +1,989 @@
-use std::{env,fs,path::{Path,PathBuf},time::{SystemTime,UNIX_EPOCH}};
-use tauri::{Manager,PhysicalPosition,LogicalSize,Size};
-use tauri::menu::{Menu,MenuItem};
-use tauri::tray::TrayIconBuilder;
-use serde::{Deserialize,Serialize};
+// Coucou for Windows — app wiring and the commands the island calls.
 
-#[derive(Serialize)]
-struct AgentStatus {
-    name: &'static str,
-    source: &'static str,
-    detected: bool,
-    last_event_unix: Option<u64>,
-    state: &'static str,
-}
-fn newest_file(path: &Path, depth: usize) -> Option<SystemTime> {
-    if depth == 0 || !path.exists() { return None; }
-    let mut latest = None;
-    if path.is_file() { return fs::metadata(path).ok()?.modified().ok(); }
-    for entry in fs::read_dir(path).ok()?.flatten().take(2500) {
-        let item = entry.path();
-        let current = if item.is_dir() { newest_file(&item,depth-1) }
-          else if item.extension().and_then(|x|x.to_str()) == Some("jsonl") { fs::metadata(&item).ok().and_then(|m|m.modified().ok()) } else { None };
-        if let Some(t) = current { if latest.map_or(true,|old|t>old){latest=Some(t);} }
-    }
-    latest
-}
-fn newest_qio_event(home: &Path, agent: &str) -> Option<u64> {
-    let path = home.join(".qio").join("events.jsonl");
-    use std::io::{Read, Seek, SeekFrom};
-    let mut file = fs::File::open(path).ok()?;
-    let length = file.metadata().ok()?.len();
-    const MAX_TAIL_BYTES: u64 = 1_048_576;
-    if length > MAX_TAIL_BYTES {
-        file.seek(SeekFrom::End(-(MAX_TAIL_BYTES as i64))).ok()?;
-    }
-    let mut bytes = Vec::with_capacity(MAX_TAIL_BYTES as usize);
-    file.take(MAX_TAIL_BYTES).read_to_end(&mut bytes).ok()?;
-    // A seek can start in the middle of a UTF-8 character; lossy decoding keeps valid JSON lines usable.
-    let content = String::from_utf8_lossy(&bytes);
-    let mut latest = None;
-    for line in content.lines().rev().take(5000) {
-        if line.len() > 16_384 { continue; }
-        if let Ok(value) = serde_json::from_str::<serde_json::Value>(line) {
-            if value.get("agent").and_then(|v| v.as_str()) == Some(agent) {
-                if let Some(at) = value.get("at").and_then(|v| v.as_u64()) {
-                    let seconds = at / 1000;
-                    if latest.map_or(true, |old| seconds > old) { latest = Some(seconds); }
-                }
-            }
-        }
-    }
-    latest
-}
-#[tauri::command]
-fn local_agent_status() -> Vec<AgentStatus> {
-    let home = env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from);
-    let choices = [
-        ("Codex","~/.codex/sessions",".codex/sessions",None,None),
-        ("Claude Code","~/.claude/projects",".claude/projects",Some(".claude/settings.json"),Some("qio-hook.mjs")),
-        ("Cursor","~/.cursor/hooks.json",".cursor/hooks.json",Some(".cursor/hooks.json"),Some("qio-hook.mjs")),
-        ("Qoder","~/.qoder/settings.json",".qoder/settings.json",Some(".qoder/settings.json"),Some("qio-qoder-hook.mjs")),
-        // These are read-only history discovery for now; do not imply Qio hooks are installed.
-        ("Gemini CLI","~/.gemini/tmp",".gemini/tmp",None,None),
-        ("OpenCode","~/.local/share/opencode/storage",".local/share/opencode/storage",None,None)
-    ];
-    choices.iter().map(|&(name,source,relative,config_relative,marker)|{
-        let path = home.as_ref().map(|h|h.join(relative));
-        let config_path = home.as_ref().and_then(|h|config_relative.map(|r|h.join(r)));
-        let hook_configured = config_path.as_ref().and_then(|p|fs::read_to_string(p).ok())
-            .is_some_and(|contents|marker.is_some_and(|needle|contents.contains(needle)));
-        let path_is_dir = path.as_ref().is_some_and(|p|p.is_dir());
-        let path_is_file = path.as_ref().is_some_and(|p|p.is_file());
-        let history = path.as_ref().filter(|p|p.is_dir()).and_then(|p|newest_file(p,7))
-            .and_then(|t|t.duration_since(UNIX_EPOCH).ok()).map(|d|d.as_secs());
-        let hook_event = home.as_ref().and_then(|h|newest_qio_event(h,name));
-        let last = match (history, hook_event) {
-            (Some(a),Some(b)) => Some(a.max(b)),
-            (Some(a),None) => Some(a),
-            (None,Some(b)) => Some(b),
-            (None,None) => None,
-        };
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).ok().map(|d|d.as_secs()).unwrap_or(0);
-        let age = last.map(|at|now.saturating_sub(at));
-        let detected = last.is_some() || hook_configured || path_is_dir || path_is_file;
-        let state = if age.is_some_and(|seconds|seconds <= 120) {"active-event"}
-            else if age.is_some_and(|seconds|seconds <= 1800) {"recent-event"}
-            else if history.is_some() {"history-found"}
-            else if hook_configured {"hooks-configured"}
-            else if path_is_file {"config-found"}
-            else if path_is_dir {"directory-found"}
-            else {"not-found"};
-        AgentStatus{name,source,detected,last_event_unix:last,state}
-    }).collect()
+mod agent_hooks;
+mod agents;
+mod chat;
+mod claude;
+mod codex_plan;
+mod config_file;
+mod desktop;
+mod files;
+mod flow;
+mod github;
+mod hooks;
+mod i18n;
+mod identity;
+mod integrations;
+mod island;
+mod local_chat;
+mod log;
+mod net;
+mod notes;
+mod openai_compat;
+mod phone_link;
+mod pipe;
+mod platform;
+#[cfg(target_os = "linux")]
+mod portal;
+mod recap;
+mod secrets;
+mod session_window;
+mod settings;
+mod shortcuts;
+mod sounds;
+mod speech;
+mod spotify;
+mod tray;
+mod update;
+mod voice;
+#[cfg(windows)]
+mod webview_drop;
+
+use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+
+use serde::Serialize;
+use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri_plugin_autostart::{ManagerExt, MacosLauncher};
+
+use chat::{Chat, ChatContext, ChatReply, ModelInfo};
+use files::DroppedFile;
+use hooks::{HookPreview, HookStatus};
+use island::{PollGate, ScreenInfo};
+use pipe::Pending;
+use settings::Settings;
+
+pub struct Shared {
+    pub settings: Mutex<Settings>,
+    pub gate: Arc<PollGate>,
 }
 
 #[derive(Serialize)]
-struct RecentEvent {
-    agent: &'static str,
-    kind: String,
-    label: String,
-    observed_at: u64,
-}
-fn find_latest_jsonl(root: &Path, depth: usize, best: &mut Option<(PathBuf,SystemTime)>) {
-    if depth==0 {return}
-    if let Ok(iter)=fs::read_dir(root) {
-        for entry in iter.flatten().take(1500) {
-            let path=entry.path();
-            if path.is_dir(){find_latest_jsonl(&path,depth-1,best)}
-            else if path.extension().and_then(|x|x.to_str())==Some("jsonl") {
-                if let Ok(time)=entry.metadata().and_then(|m|m.modified()){
-                    if best.as_ref().is_none_or(|(_,old)|time>*old){*best=Some((path,time));}
-                }
-            }
-        }
-    }
-}
-fn recent_events_from(root:&Path, agent:&'static str)->Vec<RecentEvent>{
-    let mut latest=None;
-    find_latest_jsonl(root,7,&mut latest);
-    let Some((path,modified))=latest else {return vec![]};
-    let timestamp=modified.duration_since(UNIX_EPOCH).map(|d|d.as_secs()).unwrap_or(0);
-    let Ok(file)=fs::File::open(path) else {return vec![]};
-    use std::io::{BufRead,BufReader};
-    let mut ring=std::collections::VecDeque::with_capacity(25);
-    // Read structured metadata only. Never expose prompts, command arguments or file contents.
-    for line in BufReader::new(file).lines().map_while(Result::ok){
-        if line.len()>1_000_000{continue}
-        if let Ok(value)=serde_json::from_str::<serde_json::Value>(&line){
-            let event_type=value.get("type").and_then(|v|v.as_str()).unwrap_or("");
-            let payload=value.get("payload").unwrap_or(&value);
-            let subtype=payload.get("type").and_then(|v|v.as_str()).unwrap_or("");
-            let (kind,label)=match (agent,event_type,subtype) {
-                (_,"session_meta",_) => ("session","نشست شناسایی شد"),
-                ("Codex","response_item","function_call") => ("tool-start","فراخوانی ابزار ثبت شد"),
-                ("Codex","response_item","function_call_output") => ("tool-result","پاسخ ابزار ثبت شد (نتیجه تأیید نشده)"),
-                ("Codex","event_msg","task_started") => ("thinking","وظیفه شروع شد"),
-                ("Codex","event_msg","task_complete") => ("complete","پایان وظیفه ثبت شد (نه تأیید تست)"),
-                ("Codex","response_item",_) => ("activity","فعالیت مدل ثبت شد"),
-                ("Claude Code","assistant",_) => {
-                    let has_tool=payload.pointer("/message/content").and_then(|v|v.as_array())
-                       .is_some_and(|items|items.iter().any(|v|v.get("type").and_then(|x|x.as_str())==Some("tool_use")));
-                    if has_tool {("tool-start","فراخوانی ابزار ثبت شد")}else{("activity","پاسخ مدل ثبت شد")}
-                },
-                ("Claude Code","user",_) => {
-                    let has_result=payload.pointer("/message/content").and_then(|v|v.as_array())
-                       .is_some_and(|items|items.iter().any(|v|v.get("type").and_then(|x|x.as_str())==Some("tool_result")));
-                    if has_result {("tool-result","نتیجه ابزار دریافت شد (تست تأیید نشده)")}else{continue}
-                },
-                (_,"tool_result",_) => ("tool-result","پاسخ ابزار ثبت شد"),
-                _ => continue,
-            };
-            ring.push_back(RecentEvent{agent,kind:kind.into(),label:label.into(),observed_at:timestamp});
-            if ring.len()>25{ring.pop_front();}
-        }
-    }
-    ring.into_iter().collect()
-}
-#[tauri::command]
-fn recent_agent_events()->Vec<RecentEvent>{
-    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else {return vec![]};
-    let mut events=recent_events_from(&home.join(".codex/sessions"),"Codex");
-    events.extend(recent_events_from(&home.join(".claude/projects"),"Claude Code"));
-    events
+#[serde(rename_all = "camelCase")]
+pub struct BootInfo {
+    settings: Settings,
+    screen: ScreenInfo,
+    version: String,
+    hook_path: String,
+    /// False where the OS has no global cursor (Wayland): the page then reports
+    /// the cursor from its own mouse events.
+    cursor_poll: bool,
 }
 
-
-#[derive(Serialize)]
-struct ProviderInfo {
-    id: &'static str,
-    name: &'static str,
-    region: &'static str,
-    key_configured: bool,
-}
-fn provider_details(id: &str) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
-    match id {
-        "hooshgar" => Some(("هوشگر (ایران)","ایرانی","https://api.hooshgar.ir/v1/chat/completions","HOOSHGAR_API_KEY")),
-        "gemini" => Some(("Google Gemini","بین‌المللی","https://generativelanguage.googleapis.com/v1beta/openai/chat/completions","GEMINI_API_KEY")),
-        "perplexity" => Some(("Perplexity AI","بین‌المللی","https://api.perplexity.ai/chat/completions","PERPLEXITY_API_KEY")),
-        "sambanova" => Some(("SambaNova","بین‌المللی","https://api.sambanova.ai/v1/chat/completions","SAMBANOVA_API_KEY")),
-        "nvidia" => Some(("NVIDIA NIM","بین‌المللی","https://integrate.api.nvidia.com/v1/chat/completions","NVIDIA_API_KEY")),
-        "siliconflow" => Some(("SiliconFlow","بین‌المللی","https://api.siliconflow.com/v1/chat/completions","SILICONFLOW_API_KEY")),
-        "huggingface" => Some(("Hugging Face","بین‌المللی","https://router.huggingface.co/v1/chat/completions","HF_TOKEN")),
-        "githubmodels" => Some(("GitHub Models","بین‌المللی","https://models.github.ai/inference/chat/completions","GITHUB_TOKEN")),
-        "cohere" => Some(("Cohere","بین‌المللی","https://api.cohere.com/compatibility/v1/chat/completions","COHERE_API_KEY")),
-        "novita" => Some(("Novita AI","بین‌المللی","https://api.novita.ai/v3/openai/chat/completions","NOVITA_API_KEY")),
-        "anthropic" => Some(("Claude (Anthropic API)","بین‌المللی","https://api.anthropic.com/v1/messages","ANTHROPIC_API_KEY")),
-        "mistral" => Some(("Mistral AI","بین‌المللی","https://api.mistral.ai/v1/chat/completions","MISTRAL_API_KEY")),
-        "xai" => Some(("xAI Grok","بین‌المللی","https://api.x.ai/v1/chat/completions","XAI_API_KEY")),
-        "fireworks" => Some(("Fireworks AI","بین‌المللی","https://api.fireworks.ai/inference/v1/chat/completions","FIREWORKS_API_KEY")),
-        "cerebras" => Some(("Cerebras","بین‌المللی","https://api.cerebras.ai/v1/chat/completions","CEREBRAS_API_KEY")),
-        "avalai" => Some(("اول‌ای‌آی (ایران)","ایرانی","https://api.avalai.ir/v1/chat/completions","AVALAI_API_KEY")),
-        "openai" => Some(("OpenAI","بین‌المللی","https://api.openai.com/v1/chat/completions","OPENAI_API_KEY")),
-        "openrouter" => Some(("OpenRouter","بین‌المللی","https://openrouter.ai/api/v1/chat/completions","OPENROUTER_API_KEY")),
-        "deepseek" => Some(("DeepSeek","بین‌المللی","https://api.deepseek.com/chat/completions","DEEPSEEK_API_KEY")),
-        "groq" => Some(("Groq","بین‌المللی","https://api.groq.com/openai/v1/chat/completions","GROQ_API_KEY")),
-        "together" => Some(("Together AI","بین‌المللی","https://api.together.xyz/v1/chat/completions","TOGETHER_API_KEY")),
-        "ollama" => Some(("Ollama (آفلاین)","محلی","http://127.0.0.1:11434/v1/chat/completions","")),
-        "lmstudio" => Some(("LM Studio (محلی)","محلی","http://127.0.0.1:1234/v1/chat/completions","")),
-        _ => None
+#[tauri::command]
+fn boot(app: AppHandle, shared: State<Shared>) -> BootInfo {
+    let mut settings = shared.settings.lock().unwrap().clone();
+    // The real state of ~/.claude/settings.json wins over whatever we stored.
+    let hooks_status = hooks::status();
+    settings.hooks_installed = hooks_status.installed;
+    settings.plan_relay_installed = hooks_status.plan_relay_installed;
+    let screen = island::screen_info(&app, &settings.screen);
+    BootInfo {
+        settings,
+        screen,
+        version: env!("CARGO_PKG_VERSION").to_string(),
+        hook_path: settings::hook_exe_path().to_string_lossy().to_string(),
+        cursor_poll: platform::CURSOR_POLL,
     }
 }
+
 #[tauri::command]
-fn ai_providers()->Vec<ProviderInfo>{
-    ["anthropic","mistral","xai","fireworks","cerebras","hooshgar","gemini","perplexity","sambanova","nvidia","siliconflow","huggingface","githubmodels","cohere","novita","avalai","openai","openrouter","deepseek","groq","together","ollama","lmstudio"]
-        .iter().filter_map(|id|provider_details(id).map(|(name,region,_,key)|ProviderInfo {
-            id:match *id {"anthropic"=>"anthropic","mistral"=>"mistral","xai"=>"xai","fireworks"=>"fireworks","cerebras"=>"cerebras","hooshgar"=>"hooshgar","gemini"=>"gemini","perplexity"=>"perplexity","sambanova"=>"sambanova","nvidia"=>"nvidia","siliconflow"=>"siliconflow","huggingface"=>"huggingface","githubmodels"=>"githubmodels","cohere"=>"cohere","novita"=>"novita","avalai"=>"avalai","openai"=>"openai","openrouter"=>"openrouter","deepseek"=>"deepseek","groq"=>"groq","together"=>"together","ollama"=>"ollama",_=>"lmstudio"},
-            name,region,key_configured:key.is_empty()||env::var(key).is_ok_and(|v|!v.trim().is_empty())
-        })).collect()
+fn save_settings(app: AppHandle, shared: State<Shared>, settings: Settings) {
+    let (screen_changed, autostart_changed, shortcuts_changed) = {
+        let mut current = shared.settings.lock().unwrap();
+        let screen_changed = current.screen != settings.screen;
+        let autostart_changed = current.autostart != settings.autostart;
+        let shortcuts_changed = current.shortcuts != settings.shortcuts;
+        // Where Mochi sits on the desktop is desktop.rs's to say, not a webview's.
+        let mut settings = settings.clone();
+        settings.desktop_mochi = current.desktop_mochi.clone();
+        // Same for the phone link: only its own commands turn it on or off.
+        settings.phone_link = current.phone_link;
+        settings.phone_chat = current.phone_chat;
+        settings.phone_details = current.phone_details;
+        settings.phone_answers = current.phone_answers;
+        settings.phone_diffs = current.phone_diffs;
+        settings.phone_usage = current.phone_usage;
+        settings.phone_services = current.phone_services.clone();
+        settings.phone_relay = current.phone_relay;
+        settings.phone_relay_url = current.phone_relay_url.clone();
+        settings.phone_chat_models = current.phone_chat_models.clone();
+        *current = settings;
+        (screen_changed, autostart_changed, shortcuts_changed)
+    };
+    let settings = shared.settings.lock().unwrap().clone();
+    if let Err(err) = settings::save(&settings) {
+        log::line(format!("could not save settings: {err}"));
+    }
+    if autostart_changed {
+        let manager = app.autolaunch();
+        let result = if settings.autostart { manager.enable() } else { manager.disable() };
+        if let Err(err) = result {
+            eprintln!("[coucou] autostart: {err}");
+        }
+    }
+    if screen_changed {
+        let collapsed = shared.gate.collapsed.load(Ordering::Relaxed);
+        island::apply_geometry(&app, &settings.screen, collapsed);
+    }
+    integrations::settings_saved(&app, &settings.active_integrations);
+    spotify::sync(&app, &settings.active_integrations);
+    if shortcuts_changed {
+        shortcuts::apply(&app, &settings.shortcuts);
+    }
+    if i18n::set_picked(&settings.language) {
+        language_changed(&app);
+    }
+    // Keep the other window in step (island ⇄ settings window).
+    let _ = app.emit("settings-changed", settings);
 }
+
+/// The island reports the system's languages at launch, for "System" in
+/// Settings → Language (WebView2 and WebKitGTK know them best).
 #[tauri::command]
-async fn ai_models(provider:String)->Result<Vec<String>,String>{
-    let (_,_,endpoint,key_name)=provider_details(&provider).ok_or("ارائه‌دهنده معتبر نیست")?;
-    let key=if key_name.is_empty(){String::new()}else{env::var(key_name).map_err(|_|format!("متغیر محیطی {} تنظیم نشده است",key_name))?};
-    let models_url=if provider=="anthropic" {"https://api.anthropic.com/v1/models".to_string()}
-    else if let Some(base)=endpoint.strip_suffix("chat/completions"){format!("{}models",base)}
-    else{return Err("فهرست مدل برای این endpoint پشتیبانی نمی‌شود؛ شناسه مدل را دستی وارد کنید".into())};
-    let client=reqwest::Client::builder().timeout(std::time::Duration::from_secs(12))
-        .redirect(reqwest::redirect::Policy::none()).build().map_err(|_|"ساخت اتصال ناموفق بود")?;
-    let mut request=client.get(models_url);
-    if provider=="anthropic" && !key.is_empty(){request=request.header("x-api-key",key.as_str()).header("anthropic-version","2023-06-01");}
-    else if !key.is_empty(){request=request.bearer_auth(key);}
-    let response=request.send().await.map_err(|_|"دریافت فهرست مدل‌ها ناموفق بود؛ سرور و اتصال را بررسی کنید")?;
-    if !response.status().is_success(){return Err(format!("سرویس فهرست مدل‌ها پاسخ ناموفق داد (HTTP {})",response.status().as_u16()))}
-    let data:serde_json::Value=response.json().await.map_err(|_|"پاسخ فهرست مدل‌ها قابل خواندن نیست")?;
-    let items=data.get("data").and_then(|v|v.as_array()).or_else(||data.get("models").and_then(|v|v.as_array()));
-    let mut models:Vec<String>=items.into_iter().flatten().filter_map(|v|{
-        v.get("id").or_else(||v.get("name")).and_then(|x|x.as_str())
-            .map(|s|s.trim().to_string()).filter(|s|!s.is_empty()&&s.len()<=160)
-    }).take(250).collect();
-    models.sort();models.dedup();
-    if models.is_empty(){return Err("سرویس فهرست مدل قابل انتخابی برنگرداند؛ شناسه مدل را دستی وارد کنید".into())}
-    Ok(models)
+fn set_system_languages(app: AppHandle, languages: Vec<String>) {
+    if i18n::set_system(languages) {
+        language_changed(&app);
+    }
 }
+
+/// What Rust labels itself follows the new language: the tray menu and the
+/// settings window's title. The webviews switch on their own.
+fn language_changed(app: &AppHandle) {
+    tray::retitle(app);
+    if let Some(window) = app.get_webview_window(HUB_LABEL) {
+        let _ = window.set_title("Coucou");
+    }
+}
+
+/// Hidden island → shrink the window to the invisible wake strip and park the
+/// cursor poll; anything else → full panel and 60 Hz polling.
 #[tauri::command]
-async fn ai_chat(provider:String,model:String,message:String)->Result<String,String>{
-    let (_,_,endpoint,key_name)=provider_details(&provider).ok_or("ارائه‌دهنده معتبر نیست")?;
-    if model.trim().is_empty() || model.len()>160 {return Err("نام مدل را وارد کنید".into());}
-    if message.trim().is_empty() || message.len()>10000 {return Err("متن پیام باید بین ۱ تا ۱۰۰۰۰ نویسه باشد".into());}
-    let key=if key_name.is_empty(){String::new()}else{env::var(key_name).map_err(|_|format!("متغیر محیطی {} تنظیم نشده است",key_name))?};
-    let client=reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(70))
-        .redirect(reqwest::redirect::Policy::none())
-        .build().map_err(|_|"ساخت اتصال ناموفق بود")?;
-    let request = if provider == "anthropic" {
-        client.post(endpoint)
-            .header("x-api-key", key.as_str())
-            .header("anthropic-version", "2023-06-01")
-            .json(&serde_json::json!({
-                "model":model,
-                "max_tokens":4096,
-                "system":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید.",
-                "messages":[{"role":"user","content":message}]
-            }))
+fn set_collapsed(app: AppHandle, shared: State<Shared>, collapsed: bool) {
+    let pref = shared.settings.lock().unwrap().screen.clone();
+    shared.gate.collapsed.store(collapsed, Ordering::Relaxed);
+    island::apply_geometry(&app, &pref, collapsed);
+    // The wake strip must always take the mouse, and a resize invalidates the flag.
+    island::refresh_click_through(&app, &shared.gate);
+    shared.gate.set_active(!collapsed);
+    platform::set_pointer_watch(!collapsed);
+}
+
+/// The front end pushes the island shape; Rust decides click-through from it.
+#[tauri::command]
+fn set_island_rect(app: AppHandle, shared: State<Shared>, x: f64, y: f64, width: f64, height: f64) {
+    shared.gate.set_rect(island::IslandRect { x, y, w: width, h: height });
+    // Without the cursor poll the input region is the click-through: it follows the island.
+    if !platform::CURSOR_POLL {
+        island::refresh_click_through(&app, &shared.gate);
+    }
+}
+
+#[tauri::command]
+fn focus_window(app: AppHandle, focused: bool) {
+    let Some(win) = island::window(&app) else { return };
+    platform::set_activating(&win, focused);
+    if focused {
+        let _ = win.set_focus();
+    }
+}
+
+#[tauri::command]
+fn reposition(app: AppHandle, shared: State<Shared>) {
+    let pref = shared.settings.lock().unwrap().screen.clone();
+    let collapsed = shared.gate.collapsed.load(Ordering::Relaxed);
+    island::apply_geometry(&app, &pref, collapsed);
+}
+
+/// The panel is laid out in CSS px against the window's own scale. If the webview
+/// reports a different devicePixelRatio (it ends up bigger than the window and gets
+/// cut), correct its zoom so one CSS px is one logical px again.
+#[tauri::command]
+fn fit_zoom(app: AppHandle, dpr: f64) -> bool {
+    let Some(win) = island::window(&app) else { return false };
+    let scale = win.scale_factor().unwrap_or(1.0);
+    static ZOOM: std::sync::Mutex<f64> = std::sync::Mutex::new(1.0);
+    let mut zoom = ZOOM.lock().unwrap();
+    if let Some(new_zoom) = island::calculate_zoom_correction(*zoom, scale, dpr) {
+        *zoom = new_zoom;
+        log::line(format!("webview dpr {dpr} != window scale {scale} — setting zoom {new_zoom:.3}"));
+        let _ = win.set_zoom(new_zoom);
+        true
     } else {
-        let request = client.post(endpoint).json(&serde_json::json!({
-            "model":model,
-            "stream":false,
-            "messages":[
-                {"role":"system","content":"شما کیو، یک دستیار فارسی برای برنامه نویسی هستید. پاسخ‌های دقیق و روشن بدهید و درباره اجرای کاری که واقعاً انجام نداده‌اید ادعا نکنید."},
-                {"role":"user","content":message}
-            ]
-        }));
-        if key_name.is_empty(){request}else{request.bearer_auth(key)}
+        false
+    }
+}
+
+
+/// The displays the island can be pinned to, for Settings.
+#[tauri::command]
+fn list_monitors(app: AppHandle) -> Vec<island::MonitorChoice> {
+    island::monitor_choices(&app)
+}
+
+#[tauri::command]
+fn open_url(url: String) {
+    if !(url.starts_with("http://") || url.starts_with("https://")) {
+        return;
+    }
+    platform::open_url(&url);
+}
+
+/// "Open terminal" opens the working folder in VS Code when `code` is on PATH,
+/// and falls back to the file manager otherwise.
+#[tauri::command]
+fn open_in_vscode(path: Option<String>) -> bool {
+    // No shell anywhere near this. The path is a project folder chosen by
+    // whoever is using Claude Code, and a shell would happily read `&`, `^`, `%`
+    // or `$` in a folder name as syntax. Finding the launcher ourselves and
+    // handing the path over as a separate argument keeps it a path.
+    let path = path.filter(|p| !p.is_empty());
+    // It arrives in a hook payload: only an existing folder, given by its full
+    // path, goes any further. `code` would read `--something` as an option, and
+    // xdg-open would launch a file with whatever handles its type.
+    if let Some(p) = path.as_deref() {
+        let p = std::path::Path::new(p);
+        if !(p.is_absolute() && p.is_dir()) {
+            return false;
+        }
+    }
+    if let Some(code) = platform::find_on_path("code") {
+        let mut cmd = Command::new(code);
+        if let Some(p) = path.as_deref() {
+            cmd.arg(p);
+        }
+        if platform::no_console(&mut cmd).spawn().is_ok() {
+            return true;
+        }
+    }
+    if let Some(p) = path.as_deref() {
+        platform::reveal_folder(p);
+    }
+    false
+}
+
+/// "Open terminal": brings forward the terminal or editor window the session
+/// runs in, when it was found (see session_window.rs); otherwise opens the
+/// folder in VS Code, as before.
+#[tauri::command]
+fn open_session(session_id: Option<String>, path: Option<String>) -> bool {
+    let Some(owners) = session_id.as_deref().and_then(session_window::lookup) else {
+        return open_in_vscode(path);
     };
-    let response=request.send().await.map_err(|_|"ارتباط با سرویس برقرار نشد")?;
-    let status=response.status();
-    if !status.is_success(){return Err(format!("پاسخ سرویس ناموفق بود (HTTP {})",status.as_u16()));}
-    let data:serde_json::Value=response.json().await.map_err(|_|"پاسخ سرویس قابل خواندن نبود")?;
-    let content = if provider == "anthropic" {
-        data.pointer("/content/0/text").and_then(|v|v.as_str())
-    } else {
-        data.pointer("/choices/0/message/content").and_then(|v|v.as_str())
-    };
-    content.map(|s|s.chars().take(30000).collect())
-        .ok_or_else(||"این مدل پاسخ متنی قابل‌نمایش برنگرداند".into())
-}
-
-
-#[tauri::command]
-fn qio_event_logging_enabled()->bool{
-    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return false};
-    match fs::read_to_string(home.join(".qio/settings.json")){
-        Ok(raw)=>serde_json::from_str::<serde_json::Value>(&raw).ok()
-            .and_then(|v|v.get("event_logging_enabled").and_then(|x|x.as_bool())).unwrap_or(true),
-        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>true,
-        Err(_)=>false,
+    let folder = path.as_deref().map(session_window::folder_name).unwrap_or_default().to_string();
+    #[cfg(windows)]
+    {
+        if platform::focus_session_window(&owners, &folder) {
+            return true;
+        }
+        open_in_vscode(path)
     }
-}
-#[tauri::command]
-fn qio_set_event_logging(enabled:bool)->Result<bool,String>{
-    let home=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from).ok_or("پوشه کاربر پیدا نشد")?;
-    let directory=home.join(".qio");
-    fs::create_dir_all(&directory).map_err(|e|e.to_string())?;
-    let path=directory.join("settings.json");
-    let mut settings=match fs::read_to_string(&path){
-        Ok(raw)=>serde_json::from_str::<serde_json::Value>(&raw).map_err(|_|"تنظیمات حریم خصوصی معتبر نیست")?,
-        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>serde_json::json!({}),
-        Err(error)=>return Err(error.to_string()),
-    };
-    if !settings.is_object(){return Err("ساختار تنظیمات معتبر نیست".into())}
-    settings["event_logging_enabled"]=serde_json::json!(enabled);
-    let temp=directory.join("settings.json.tmp");
-    let encoded=serde_json::to_vec_pretty(&settings).map_err(|e|e.to_string())?;
-    fs::write(&temp,encoded).map_err(|e|e.to_string())?;
-    if path.exists(){fs::remove_file(&path).map_err(|e|e.to_string())?}
-    fs::rename(&temp,&path).map_err(|e|e.to_string())?;
-    Ok(enabled)
-}
-
-#[tauri::command]
-fn qio_clear_hook_events()->Result<(),String>{
-    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return Err("پوشه کاربر پیدا نشد".into())};
-    let path=home.join(".qio/events.jsonl");
-    match fs::remove_file(path){
-        Ok(())=>Ok(()),
-        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>Ok(()),
-        Err(error)=>Err(format!("پاک‌کردن تاریخچه انجام نشد: {error}")),
-    }
-}
-#[tauri::command]
-fn qio_hook_events() -> Vec<RecentEvent> {
-    use std::io::{BufRead,BufReader,Seek,SeekFrom};
-    let Some(home)=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from) else{return vec![]};
-    let path=home.join(".qio/events.jsonl");
-    let Ok(mut file)=fs::File::open(path) else{return vec![]};
-    let Ok(size)=file.metadata().map(|m|m.len()) else{return vec![]};
-    let start=size.saturating_sub(262144);
-    if file.seek(SeekFrom::Start(start)).is_err(){return vec![]}
-    let mut lines=BufReader::new(file).lines();
-    if start>0 {let _=lines.next();}
-    let mut events=std::collections::VecDeque::with_capacity(30);
-    for line in lines.map_while(Result::ok).take(3000){
-        if line.len()>4096{continue}
-        let Ok(event)=serde_json::from_str::<serde_json::Value>(&line) else{continue};
-        let kind=event.get("kind").and_then(|v|v.as_str()).unwrap_or("");
-        let agent=match event.get("agent").and_then(|v|v.as_str()).unwrap_or("") {
-            "Claude Code"=>"Claude Code","Codex"=>"Codex","Gemini CLI"=>"Gemini CLI",
-            "OpenCode"=>"OpenCode","Cursor"=>"Cursor","Qoder"=>"Qoder",_=>"Other",
-        };
-        let (kind,label)=match kind {
-            "SessionStart"=>("session","نشست جدید آغاز شد"),
-            "UserPromptSubmit"=>("thinking","درخواست جدید ثبت شد"),
-            "PreToolUse"=>("tool-start","ابزار در حال اجرا"),
-            "PostToolUse"=>("tool-result","ابزار اجرا شد؛ نتیجه تست تأیید نشده"),
-            "PostToolUseFailure"=>("error","اجرای ابزار با خطا مواجه شد"),
-            "Stop"=>("complete","عامل متوقف شد"),
-            "Notification"=>("alert","اعلان عامل ثبت شد"),
-            "SubagentStart"=>("activity","عامل فرعی شروع شد"),
-            "SubagentStop"=>("complete","عامل فرعی پایان یافت"),
-            _=>continue,
-        };
-        let timestamp=event.get("at").and_then(|v|v.as_u64()).unwrap_or(0)/1000;
-        events.push_back(RecentEvent{agent,kind:kind.to_string(),label:label.to_string(),observed_at:timestamp});
-        if events.len()>30{events.pop_front();}
-    }
-    events.into_iter().collect()
-}
-
-
-#[derive(Serialize)]
-struct TestEvidence {
-    status: String,
-    source: String,
-    at: u64,
-    freshness: &'static str,
-}
-#[tauri::command]
-fn latest_test_evidence()->Option<TestEvidence>{
-    use std::io::{BufRead,BufReader,Seek,SeekFrom};
-    let home=env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from)?;
-    let mut file=fs::File::open(home.join(".qio/test-results.jsonl")).ok()?;
-    let length=file.metadata().ok()?.len();
-    let start=length.saturating_sub(32768);
-    file.seek(SeekFrom::Start(start)).ok()?;
-    let mut lines=BufReader::new(file).lines();
-    if start>0{lines.next();}
-    let mut latest=None;
-    for line in lines.map_while(Result::ok).take(500){
-        let Ok(value)=serde_json::from_str::<serde_json::Value>(&line) else {continue};
-        if value.get("source").and_then(|v|v.as_str())!=Some("qio-test-runner"){continue}
-        let exit=value.get("exit_code").and_then(|v|v.as_i64());
-        let status=match exit{Some(0)=>"passed",Some(_)=>"failed",None=>"unclear"};
-        latest=Some(TestEvidence{status:status.into(),source:"qio-test-runner".into(),
-            at:value.get("at").and_then(|v|v.as_u64()).unwrap_or(0),
-            freshness:"not-checked-against-current-code"});
-    }
-    latest
-}
-
-
-#[derive(Serialize)]
-struct PendingApproval {
-    id: String,
-    tool: String,
-    preview: String,
-    diff_preview: Option<String>,
-    expires_at: u64,
-}
-fn qio_root()->Option<PathBuf>{
-    env::var_os("USERPROFILE").or_else(||env::var_os("HOME")).map(PathBuf::from).map(|h|h.join(".qio"))
-}
-#[tauri::command]
-fn qio_heartbeat() -> Result<(),String> {
-    let root=qio_root().ok_or("پوشه کاربر پیدا نشد")?;
-    fs::create_dir_all(&root).map_err(|e|e.to_string())?;
-    let now=SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_secs();
-    fs::write(root.join("heartbeat"),now.to_string()).map_err(|e|e.to_string())
-}
-#[tauri::command]
-fn qio_pending_approvals()->Vec<PendingApproval>{
-    let Some(root)=qio_root() else{return vec![]};
-    let directory=root.join("approvals");
-    let now=SystemTime::now().duration_since(UNIX_EPOCH).map(|d|d.as_millis() as u64).unwrap_or(0);
-    let Ok(entries)=fs::read_dir(directory) else {return vec![]};
-    let mut result=vec![];
-    for item in entries.flatten().take(60){
-        let path=item.path();
-        if !path.file_name().and_then(|x|x.to_str()).is_some_and(|s|s.ends_with(".request.json")){continue}
-        let Ok(raw)=fs::read_to_string(&path) else{continue};
-        if raw.len()>4096{continue}
-        let Ok(v)=serde_json::from_str::<serde_json::Value>(&raw) else{continue};
-        let id=v.get("id").and_then(|x|x.as_str()).unwrap_or("");
-        if id.len()!=36 || !id.bytes().all(|b|b.is_ascii_hexdigit()||b==b'-'){continue}
-        let expires_at=v.get("expires_at").and_then(|x|x.as_u64()).unwrap_or(0);
-        if expires_at<=now{continue}
-        result.push(PendingApproval{
-            id:id.into(),
-            tool:v.get("tool").and_then(|x|x.as_str()).unwrap_or("").chars().take(100).collect(),
-            preview:v.get("preview").and_then(|x|x.as_str()).unwrap_or("").chars().take(450).collect(),
-            diff_preview:v.get("diff_preview").and_then(|x|x.as_str()).map(|s|s.chars().take(1800).collect()),
-            expires_at,
+    // Linux asks the display server, KWin or the terminal, which can take a
+    // moment: never on the UI thread a sync command runs on. VS Code still
+    // opens when none of them could bring the window forward.
+    #[cfg(target_os = "linux")]
+    {
+        std::thread::spawn(move || {
+            if !platform::focus_session_window(&owners, &folder) {
+                open_in_vscode(path);
+            }
         });
+        true
     }
-    result
-}
-#[tauri::command]
-fn qio_decide_approval(id:String,decision:String)->Result<(),String>{
-    if id.len()!=36 || !id.bytes().all(|b|b.is_ascii_hexdigit()||b==b'-'){return Err("شناسه نامعتبر است".into())}
-    if decision!="allow" && decision!="deny"{return Err("تصمیم نامعتبر است".into())}
-    let directory=qio_root().ok_or("پوشه کاربر پیدا نشد")?.join("approvals");
-    let request=directory.join(format!("{id}.request.json"));
-    let raw=fs::read_to_string(&request).map_err(|_|"درخواست دیگر معتبر نیست")?;
-    let v:serde_json::Value=serde_json::from_str(&raw).map_err(|_|"درخواست معتبر نیست")?;
-    if v.get("id").and_then(|x|x.as_str())!=Some(id.as_str()){return Err("شناسه درخواست تطبیق ندارد".into())}
-    let expires_at=v.get("expires_at").and_then(|x|x.as_u64()).unwrap_or(0);
-    let now=SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_millis() as u64;
-    if now>=expires_at{return Err("مهلت درخواست تمام شده".into())}
-    let path=directory.join(format!("{id}.answer.json"));
-    let payload=serde_json::json!({"id":id,"decision":decision});
-    let mut file=fs::OpenOptions::new().create_new(true).write(true).open(path).map_err(|_|"این درخواست قبلاً پاسخ داده شده")?;
-    use std::io::Write;
-    file.write_all(payload.to_string().as_bytes()).map_err(|e|e.to_string())
 }
 
-#[derive(Serialize,Deserialize)]
-struct GithubRun { id:u64, name:String, status:String, conclusion:Option<String>, html_url:String, created_at:String, run_number:u64, head_sha:String }
-#[derive(Deserialize)]
-struct GithubRunsResponse { workflow_runs:Vec<GithubRun> }
-#[derive(Serialize)]
-struct SystemSnapshot { cpu_usage_percent:f32, memory_used_bytes:u64, memory_total_bytes:u64, disks:Vec<DiskSnapshot>, network_received_bytes:u64, network_transmitted_bytes:u64, battery_percent:Option<f32>, battery_state:String, battery_supported:bool }
-#[derive(Serialize)]
-struct DiskSnapshot { name:String, total_bytes:u64, available_bytes:u64 }
+/// The Claude Desktop pill's target: the Claude app (Windows only — it has no
+/// Linux build).
 #[tauri::command]
-fn system_snapshot() -> Result<SystemSnapshot,String> {
- let mut system=sysinfo::System::new(); system.refresh_cpu_usage(); system.refresh_memory();
- let cpu_usage_percent=system.global_cpu_usage().clamp(0.0,100.0);
- let memory_total_bytes=system.total_memory(); let memory_used_bytes=system.used_memory();
- let disks=sysinfo::Disks::new_with_refreshed_list().iter().take(32).map(|d|DiskSnapshot{name:d.name().to_string_lossy().chars().take(120).collect(),total_bytes:d.total_space(),available_bytes:d.available_space()}).collect();
- let networks=sysinfo::Networks::new_with_refreshed_list();
- let network_received_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_received()));
- let network_transmitted_bytes=networks.iter().fold(0_u64,|sum,(_,n)|sum.saturating_add(n.total_transmitted()));
- let (battery_percent,battery_state,battery_supported)=match battery::Manager::new() {
-  Ok(manager)=>match manager.batteries() {
-   Ok(mut batteries)=>match batteries.next() {
-    Some(Ok(b))=>(Some((b.state_of_charge().value*100.0).clamp(0.0,100.0)),format!("{:?}",b.state()),true),
-    Some(Err(_))=>(None,"خطای خواندن باتری".into(),true),
-    None=>(None,"باتری شناسایی نشد".into(),true)
-   },
-   Err(_)=>(None,"خواندن باتری پشتیبانی نمی‌شود".into(),false)
-  },
-  Err(_)=>(None,"API باتری در این سیستم پشتیبانی نمی‌شود".into(),false)
- };
- Ok(SystemSnapshot{cpu_usage_percent,memory_used_bytes,memory_total_bytes,disks,network_received_bytes,network_transmitted_bytes,battery_percent,battery_state,battery_supported})
+fn open_claude_desktop() -> bool {
+    platform::open_claude_desktop()
+}
+
+/// The file behind a live diff, if it may be handed to the editor: an existing
+/// regular file given by its full path. Anything else — a relative path, a
+/// folder, a path `code` could read as an option — goes no further.
+fn diff_file(path: &str) -> Option<&std::path::Path> {
+    let p = std::path::Path::new(path);
+    (p.is_absolute() && p.is_file()).then_some(p)
+}
+
+/// The diff card's ↗: opens the edited file in VS Code when `code` is on PATH,
+/// otherwise shows its folder. The file itself is never opened by its type —
+/// xdg-open or Explorer would run a script that Claude just wrote.
+#[tauri::command]
+fn open_file_in_vscode(path: String) -> bool {
+    let Some(file) = diff_file(&path) else { return false };
+    if let Some(code) = platform::find_on_path("code") {
+        let mut cmd = Command::new(code);
+        cmd.arg(file);
+        if platform::no_console(&mut cmd).spawn().is_ok() {
+            return true;
+        }
+    }
+    if let Some(folder) = file.parent().filter(|d| d.is_dir()) {
+        platform::reveal_folder(&folder.to_string_lossy());
+    }
+    false
 }
 
 #[tauri::command]
-async fn github_actions_status()->Result<Vec<GithubRun>,String>{
- let client=reqwest::Client::builder().user_agent("Qio-Desktop-App").timeout(std::time::Duration::from_secs(12)).build().map_err(|e|e.to_string())?;
- let response=client.get("https://api.github.com/repos/sahandse/Qio/actions/runs?per_page=8").header("Accept","application/vnd.github+json").send().await.map_err(|e|format!("اتصال به GitHub برقرار نشد: {e}"))?;
- if !response.status().is_success(){return Err(format!("GitHub API پاسخ {} داد؛ کمی بعد دوباره تلاش کن.",response.status()));}
- let payload=response.json::<GithubRunsResponse>().await.map_err(|e|format!("پاسخ GitHub قابل‌خواندن نبود: {e}"))?;
- Ok(payload.workflow_runs)
+fn quit_app(app: AppHandle) {
+    app.exit(0);
 }
+
+/// Tray → Pause. Paused means paused: the pollers stop talking to the network,
+/// not just the island stopping showing things.
 #[tauri::command]
-fn set_island_expanded(window: tauri::Window,expanded: bool)->Result<(),String>{
-    // Preserve the position chosen by the user. Only change the content size.
-    let (w,h)=if expanded{(390.0,610.0)}else{(300.0,240.0)};
-    window.set_size(Size::Logical(LogicalSize::new(w,h))).map_err(|e|e.to_string())?;
-    window.set_always_on_top(true).map_err(|e|e.to_string())?;
+fn set_paused(paused: bool) {
+    integrations::set_paused(paused);
+}
+
+// ── Claude Code hooks ─────────────────────────────────────────────────────────
+
+#[tauri::command]
+fn hooks_status() -> HookStatus {
+    hooks::status()
+}
+
+/// Pill ID → whether that agent's hooks reach Coucou. Read-only.
+#[tauri::command]
+fn agent_hooks_status() -> std::collections::HashMap<String, bool> {
+    agent_hooks::status()
+}
+
+/// Returns the diff the user has to look at before anything is written.
+#[tauri::command]
+fn hooks_preview(install: bool) -> Result<HookPreview, String> {
+    hooks::preview(install)
+}
+
+/// Only ever called from an explicit click in the settings window.
+#[tauri::command]
+fn hooks_apply(
+    app: AppHandle,
+    shared: State<Shared>,
+    install: bool,
+    fingerprint: String,
+) -> Result<String, String> {
+    // The fingerprint comes from the preview the user actually looked at, so a
+    // settings.json that changed in between is refused rather than overwritten.
+    let backup = hooks::write(install, &fingerprint)?;
+    let updated = {
+        let mut current = shared.settings.lock().unwrap();
+        current.hooks_installed = install;
+        if let Err(err) = settings::save(&current) {
+            log::line(format!("could not save settings: {err}"));
+        }
+        current.clone()
+    };
+    let _ = app.emit("settings-changed", updated);
+    Ok(backup)
+}
+
+// ── Other agents' hooks and plugins ──────────────────────────────────────────
+
+#[tauri::command]
+fn agent_hooks_list() -> Vec<agents::AgentStatus> {
+    agents::list()
+}
+
+/// The diff the user has to look at before anything is written.
+#[tauri::command]
+fn agent_hooks_preview(agent: String, install: bool) -> Result<config_file::Plan, String> {
+    agents::preview(&agent, install)
+}
+
+/// Only ever called from an explicit click in the settings window, with the
+/// fingerprint of the preview the user looked at.
+#[tauri::command]
+fn agent_hooks_apply(agent: String, install: bool, fingerprint: String) -> Result<String, String> {
+    let backups = agents::apply(&agent, install, &fingerprint)?;
+    let done = if install { "installed" } else { "removed" };
+    log::line(format!("agent hooks {done} for {agent}"));
+    Ok(backups)
+}
+
+// ── Plan usage ────────────────────────────────────────────────────────────────
+
+/// The diff of putting the plan usage relay into (or taking it out of) the
+/// status line, before anything is written.
+#[tauri::command]
+fn status_line_preview(install: bool) -> Result<HookPreview, String> {
+    hooks::status_line_preview(install)
+}
+
+/// Only ever called from an explicit click in the settings window.
+#[tauri::command]
+fn status_line_apply(
+    app: AppHandle,
+    shared: State<Shared>,
+    install: bool,
+    fingerprint: String,
+) -> Result<String, String> {
+    let backup = hooks::status_line_write(install, &fingerprint)?;
+    let updated = {
+        let mut current = shared.settings.lock().unwrap();
+        current.plan_relay_installed = install;
+        // As on the Mac: taking the relay out turns the pill off with it.
+        if !install {
+            current.show_plan_in_notch = false;
+        }
+        if let Err(err) = settings::save(&current) {
+            log::line(format!("could not save settings: {err}"));
+        }
+        current.clone()
+    };
+    let _ = app.emit("settings-changed", updated);
+    Ok(backup)
+}
+
+/// Codex plan usage, asked of the Codex CLI (`codex app-server`) when its pill
+/// shows. Off the main thread: it can take a few seconds.
+#[tauri::command]
+async fn codex_plan_usage() -> Option<serde_json::Value> {
+    tauri::async_runtime::spawn_blocking(codex_plan::read).await.ok().flatten()
+}
+
+#[tauri::command]
+fn approval_decision(app: AppHandle, request_id: String, decision: String) {
+    recap::record_decision(&app, &request_id, &decision);
+    pipe::answer(&app, &request_id, &decision);
+}
+
+/// An option picked on the island for a question Claude Code asked.
+#[tauri::command]
+fn approval_answer(
+    app: AppHandle,
+    request_id: String,
+    answers: std::collections::HashMap<String, serde_json::Value>,
+) {
+    // An answered question is not an Allow / Deny: nothing for the recap.
+    recap::forget_request(&app, &request_id);
+    pipe::answer_question(&app, &request_id, &answers);
+}
+
+/// The island has the card on screen, so the long wait for a human may begin.
+/// Until this arrives the relay only waits a few hundred milliseconds, which is
+/// what stops a paused or unresponsive island from freezing Claude Code.
+#[tauri::command]
+fn approval_ack(app: AppHandle, request_id: String) {
+    pipe::acknowledge(&app, &request_id);
+}
+
+/// Nobody can act on this request — the island is paused, or another card is
+/// already up. Claude Code falls back to asking in the terminal immediately.
+#[tauri::command]
+fn approval_decline(app: AppHandle, request_id: String) {
+    recap::forget_request(&app, &request_id);
+    pipe::decline(&app, &request_id);
+}
+
+// ── Chat, files and secrets ───────────────────────────────────────────────────
+
+/// One chat turn with the provider picked in the chat view. API keys and any
+/// file bytes stay on the Rust side.
+#[tauri::command]
+async fn chat_send(
+    app: AppHandle,
+    shared: State<'_, Shared>,
+    chat: State<'_, Chat>,
+    query: String,
+    context: Option<ChatContext>,
+) -> Result<ChatReply, String> {
+    let settings = shared.settings.lock().unwrap().clone();
+    chat::send(&app, &chat, &settings, query, context).await
+}
+
+/// The models a provider offers, for the picker in the chat view. Only asked
+/// once the user picked that provider, and only with its key or address.
+#[tauri::command]
+async fn chat_models(shared: State<'_, Shared>, provider: String) -> Result<Vec<ModelInfo>, String> {
+    let settings = shared.settings.lock().unwrap().clone();
+    chat::models(&settings, &provider).await
+}
+
+/// Settings → Local models → Connect: does the server answer, and with which models?
+#[tauri::command]
+async fn local_connect(provider: String, url: String) -> Result<local_chat::Connected, String> {
+    local_chat::connect(&provider, &url).await
+}
+
+/// Stores the custom server's key for the address typed next to it; it is only
+/// ever sent to that address.
+#[tauri::command]
+fn local_set_key(url: String, key: String) -> Result<(), String> {
+    local_chat::set_custom_key(&url, &key)
+}
+
+#[tauri::command]
+fn chat_reset(chat: State<Chat>) {
+    chat.reset();
+}
+
+/// Copies a dropped file into the inbox and reports its name back.
+#[tauri::command]
+fn ingest_file(path: String) -> Result<DroppedFile, String> {
+    files::ingest(&path)
+}
+
+/// The island may only ask whether a key exists — never read it.
+#[tauri::command]
+fn secret_present(key: String) -> bool {
+    secrets::present(&key)
+}
+
+#[tauri::command]
+fn secret_set(app: AppHandle, key: String, value: String) -> Result<(), String> {
+    // Bound to its server's address: only local_set_key may store it.
+    if key == local_chat::CUSTOM_KEY {
+        return Err("use local_set_key".into());
+    }
+    let before = (key == "github-token").then(|| secrets::get(&key));
+    secrets::set(&key, &value)?;
+    if key == claude::KEY {
+        voice::sync(&app);
+    }
+    if let Some(before) = before {
+        if secrets::get(&key) != before {
+            integrations::github_token_changed(&app);
+        }
+    }
     Ok(())
 }
+
 #[tauri::command]
-fn set_mini_mode(window: tauri::Window, enabled: bool) -> Result<(), String> {
-    let (w,h) = if enabled {(150.0,165.0)} else {(300.0,240.0)};
-    window.set_size(Size::Logical(LogicalSize::new(w,h))).map_err(|e|e.to_string())?;
-    window.set_always_on_top(true).map_err(|e|e.to_string())
+fn secret_clear(app: AppHandle, key: String) -> Result<(), String> {
+    let had = key == "github-token" && secrets::present(&key);
+    secrets::clear(&key)?;
+    if key == claude::KEY {
+        voice::sync(&app);
+    }
+    if had {
+        integrations::github_token_changed(&app);
+    }
+    Ok(())
 }
+
+/// Opens the configured n8n instance — the URL lives in the Credential Manager.
 #[tauri::command]
-fn drag_island(window:tauri::Window)->Result<(),String>{window.start_dragging().map_err(|e|e.to_string())}
+fn open_n8n() {
+    if let Some(url) = secrets::get("n8n-url") {
+        open_url(url);
+    }
+}
+
+/// Refresh buttons in the integration cards.
 #[tauri::command]
-fn quit_qio(app:tauri::AppHandle){app.exit(0);}
-#[cfg_attr(mobile,tauri::mobile_entry_point)]
-pub fn run(){
-    tauri::Builder::default()
-      .plugin(tauri_plugin_notification::init())
-      .plugin(tauri_plugin_opener::init())
-      .invoke_handler(tauri::generate_handler![set_island_expanded,set_mini_mode,drag_island,quit_qio,local_agent_status,recent_agent_events,qio_hook_events,latest_test_evidence,qio_heartbeat,qio_clear_hook_events,qio_pending_approvals,qio_decide_approval,qio_event_logging_enabled,qio_set_event_logging,ai_providers,ai_models,ai_chat,github_actions_status,system_snapshot])
-      .setup(|app|{
-         let show=MenuItem::with_id(app,"show","نمایش کیو",true,None::<&str>)?;
-         let hide=MenuItem::with_id(app,"hide","پنهان کردن",true,None::<&str>)?;
-         let quit=MenuItem::with_id(app,"quit","خروج",true,None::<&str>)?;
-         let menu=Menu::with_items(app,&[&show,&hide,&quit])?;
-         let mut tray=TrayIconBuilder::new().menu(&menu).show_menu_on_left_click(false)
-           .on_menu_event(|app,event|{
-               match event.id.as_ref(){
-                   "quit"=>app.exit(0),
-                   "show"=>{if let Some(w)=app.get_webview_window("main"){let _=w.show();let _=w.set_focus();}},
-                   "hide"=>{if let Some(w)=app.get_webview_window("main"){let _=w.hide();}},
-                   _=>{}
-               }
-           });
-         if let Some(icon)=app.default_window_icon(){tray=tray.icon(icon.clone());}
-         tray.build(app)?;
-         let window=app.get_webview_window("main").expect("main window missing");
-         window.set_always_on_top(true)?;
-         if let Some(monitor)=window.current_monitor()? {
-             let size=monitor.size();
-             let pos=monitor.position();
-             let width=(300.0 * monitor.scale_factor()).round() as i32;
-             window.set_position(PhysicalPosition::new(
-                 pos.x+(size.width as i32-width)/2,
-                 pos.y+12
-             ))?;
-         }
-         Ok(())
-      })
-      .run(tauri::generate_context!())
-      .expect("failed to start Qio");
+async fn refresh_integration(app: AppHandle, id: String) {
+    integrations::poll_once(app, &id).await;
+}
+
+/// The GitHub card was opened: refetch its `section` ("pulse" or "activity")
+/// if it is stale. The pollers still decline while the pill is off or paused.
+#[tauri::command]
+fn github_refresh(section: String) {
+    integrations::github_refresh_if_stale(&section);
+}
+
+/// Lets the island write to the same log as the Rust side.
+#[tauri::command]
+fn log_line(message: String) {
+    log::line(format!("ui  {message}"));
+}
+
+// ── Global shortcuts ──────────────────────────────────────────────────────────
+
+/// How each global shortcut went: registered, taken by another app, and so on.
+#[tauri::command]
+fn shortcuts_status(app: AppHandle) -> shortcuts::Report {
+    shortcuts::status(&app)
+}
+
+/// Settings is recording a new combination: let go of ours meanwhile, so the
+/// keys reach the recorder instead of running an action. `false` takes them back.
+#[tauri::command]
+fn shortcuts_suspend(app: AppHandle, shared: State<Shared>, suspended: bool) {
+    if suspended {
+        shortcuts::suspend(&app);
+    } else {
+        let stored = shared.settings.lock().unwrap().shortcuts.clone();
+        shortcuts::apply(&app, &stored);
+    }
+}
+
+// ── Settings window ───────────────────────────────────────────────────────────
+
+/// WebView2 allows exactly one browser environment per app, and its options are
+/// fixed by whichever webview is created first. Every window must therefore ask
+/// for the *same* arguments as the island (see `additionalBrowserArgs` in
+/// tauri.conf.json) — a mismatch makes the second window come up blank, with no
+/// error anywhere.
+pub(crate) const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required";
+
+/// In a dev build the pages are served by Vite, so the second window needs the
+/// absolute dev URL; a bundled build resolves it inside the app bundle.
+fn settings_page_url(app: &AppHandle) -> WebviewUrl {
+    #[cfg(dev)]
+    if let Some(mut base) = app.config().build.dev_url.clone() {
+        base.set_path("/settings.html");
+        return WebviewUrl::External(base);
+    }
+    let _ = app;
+    WebviewUrl::App("settings.html".into())
+}
+
+/// The Coucou window (Flow dictation, the Notetaker and every setting of the
+/// island), labelled "settings" since it grew out of the settings window.
+pub const HUB_LABEL: &str = "settings";
+
+/// The Coucou window is created hidden at launch and only ever shown and
+/// hidden afterwards. A WebView2 window created later — on the main thread or
+/// not — silently comes up blank in this app, so the window that works is the
+/// one that exists before the island's webview does.
+fn create_settings_window(app: &AppHandle) {
+    let url = settings_page_url(app);
+    match WebviewWindowBuilder::new(app, HUB_LABEL, url)
+        .additional_browser_args(BROWSER_ARGS)
+        .title("Coucou")
+        .inner_size(1100.0, 720.0)
+        .min_inner_size(820.0, 560.0)
+        .resizable(true)
+        .visible(false)
+        .center()
+        .build()
+    {
+        Ok(win) => {
+            let this = win.clone();
+            win.on_window_event(move |event| match event {
+                // Closing it must only hide it, or it could never be reopened.
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    let _ = this.hide();
+                    set_hub_shown(&this, false);
+                }
+                // Minimised (a 0×0 resize on Windows) or back from it.
+                tauri::WindowEvent::Resized(_) | tauri::WindowEvent::Focused(true) => {
+                    let on = this.is_visible().unwrap_or(false) && !this.is_minimized().unwrap_or(false);
+                    set_hub_shown(&this, on);
+                }
+                _ => {}
+            });
+        }
+        Err(err) => log::line(format!("Coucou window failed: {err}")),
+    }
+}
+
+/// Whether the Coucou window is on screen (shown and not minimised). Its page
+/// animates its canvases only then (hub/hero.ts): WebKitGTK can keep
+/// `document.visibilityState` at "visible" for a hidden window, and its
+/// animation loop then kept a core busy with the window closed (#792).
+static HUB_SHOWN: AtomicBool = AtomicBool::new(false);
+
+fn set_hub_shown(win: &tauri::WebviewWindow, shown: bool) {
+    if HUB_SHOWN.swap(shown, Ordering::Relaxed) != shown {
+        let _ = win.emit_to(HUB_LABEL, "hub-visible", shown);
+    }
+}
+
+/// The page asks once at load, in case it missed the event.
+#[tauri::command]
+fn hub_shown() -> bool {
+    HUB_SHOWN.load(Ordering::Relaxed)
+}
+
+pub fn show_settings_window(app: &AppHandle) {
+    show_hub(app, Some("general"));
+}
+
+/// Shows the Coucou window, on `page` when given ("dictation", "notes",
+/// "settings", "general", "shortcuts"…).
+pub fn show_hub(app: &AppHandle, page: Option<&str>) {
+    let Some(win) = app.get_webview_window(HUB_LABEL) else {
+        log::line("Coucou window missing");
+        return;
+    };
+    if let Some(page) = page {
+        let _ = win.emit("hub-page", page.to_string());
+    }
+    let _ = win.unminimize();
+    let _ = win.show();
+    let _ = win.set_focus();
+    set_hub_shown(&win, true);
+}
+
+/// The argument the login item starts Coucou with.
+const AUTOSTART_ARG: &str = "--autostart";
+
+/// Coucou started with the computer, not opened by the user: the window stays hidden.
+pub fn launched_at_login() -> bool {
+    std::env::args().any(|a| a == AUTOSTART_ARG)
+}
+
+#[tauri::command]
+fn open_settings_window(app: AppHandle, page: Option<String>) {
+    show_hub(&app, Some(page.as_deref().unwrap_or("general")));
+}
+
+pub fn run() {
+    platform::prepare_environment();
+    let loaded = settings::load();
+    i18n::set_picked(&loaded.language);
+    let gate = Arc::new(PollGate::new());
+
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            // `coucou --shortcut <action>`: what a desktop's own keyboard
+            // settings run where we can't listen for keys ourselves (Wayland).
+            match shortcuts::from_args(&argv) {
+                Some(action) => shortcuts::dispatch(app, action),
+                // Opening Coucou again (its shortcut, the Start menu) shows its window.
+                None => show_hub(app, None),
+            }
+        }))
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![AUTOSTART_ARG])));
+    // Where no global shortcut can work, the plugin isn't even started.
+    if platform::global_shortcuts_blocked().is_none() {
+        builder = builder.plugin(shortcuts::plugin());
+    }
+
+    builder
+        .manage(Shared {
+            settings: Mutex::new(loaded.clone()),
+            gate: gate.clone(),
+        })
+        .manage(Pending::default())
+        .manage(Chat::default())
+        .manage(shortcuts::Registry::default())
+        .manage(recap::load())
+        .invoke_handler(tauri::generate_handler![
+            boot,
+            save_settings,
+            set_system_languages,
+            set_collapsed,
+            set_island_rect,
+            focus_window,
+            reposition,
+            fit_zoom,
+            hub_shown,
+            list_monitors,
+            open_url,
+            open_in_vscode,
+            open_session,
+            open_claude_desktop,
+            open_file_in_vscode,
+            quit_app,
+            hooks_status,
+            agent_hooks_status,
+            hooks_preview,
+            hooks_apply,
+            agent_hooks_list,
+            agent_hooks_preview,
+            agent_hooks_apply,
+            status_line_preview,
+            status_line_apply,
+            codex_plan_usage,
+            approval_decision,
+            approval_answer,
+            approval_ack,
+            approval_decline,
+            log_line,
+            chat_send,
+            chat_models,
+            local_connect,
+            local_set_key,
+            chat_reset,
+            ingest_file,
+            secret_present,
+            secret_set,
+            secret_clear,
+            refresh_integration,
+            github_refresh,
+            open_n8n,
+            open_settings_window,
+            set_paused,
+            shortcuts_status,
+            shortcuts_suspend,
+            phone_link::phone_link_status,
+            phone_link::phone_link_set_enabled,
+            phone_link::phone_link_pairing,
+            phone_link::phone_link_new_pairing,
+            phone_link::phone_link_publish,
+            phone_link::phone_link_publish_question,
+            phone_link::phone_link_publish_prefs,
+            phone_link::phone_answers_status,
+            phone_link::phone_answers_set_enabled,
+            phone_link::phone_diffs_status,
+            phone_link::phone_diffs_set_enabled,
+            phone_link::phone_link_send_diff,
+            phone_link::phone_usage_status,
+            phone_link::phone_usage_set_enabled,
+            phone_link::phone_relay_status,
+            phone_link::phone_relay_set,
+            phone_link::phone_relay_set_access,
+            phone_link::phone_link_publish_usage,
+            phone_link::phone_services_status,
+            phone_link::phone_services_set,
+            phone_link::phone_link_publish_services,
+            phone_link::phone_details_status,
+            phone_link::phone_details_set_enabled,
+            phone_link::phone_chat_status,
+            phone_link::phone_chat_set_enabled,
+            phone_link::phone_chat_set_models,
+            recap::recap_history,
+            recap::recap_prefs,
+            recap::recap_set_enabled,
+            recap::recap_set_hide_projects,
+            recap::recap_mark_shown,
+            recap::recap_clear,
+            recap::recap_save_png,
+            recap::recap_reveal_saved,
+            desktop::desktop_mochi_info,
+            desktop::desktop_mochi_pick_up,
+            desktop::desktop_mochi_carry,
+            desktop::desktop_mochi_carry_end,
+            desktop::desktop_mochi_drag_begin,
+            desktop::desktop_mochi_drag_move,
+            desktop::desktop_mochi_drag_end,
+            desktop::desktop_mochi_fly_out,
+            desktop::desktop_mochi_fly_home,
+            desktop::desktop_mochi_set_asleep,
+            sounds::custom_sounds,
+            sounds::custom_sound,
+            sounds::reveal_sounds_folder,
+            sounds::reload_sounds,
+            spotify::spotify_refresh,
+            spotify::spotify_control,
+            spotify::spotify_open,
+            spotify::spotify_installed,
+            flow::flow_status,
+            flow::flow_set_prefs,
+            flow::flow_history,
+            flow::flow_delete,
+            flow::flow_clear,
+            flow::flow_stats,
+            flow::flow_words,
+            flow::flow_set_words,
+            flow::flow_snippets,
+            flow::flow_set_snippets,
+            flow::flow_styles,
+            flow::flow_set_styles,
+            flow::flow_running_apps,
+            flow::flow_copy,
+            flow::flow_paste_again,
+            flow::flow_models_download,
+            flow::flow_models_remove,
+            flow::pill_state,
+            flow::pill_hot,
+            flow::pill_hover,
+            flow::pill_action,
+            notes::notes_state,
+            notes::notes_start,
+            notes::notes_stop,
+            notes::notes_rename,
+            notes::notes_rename_speaker,
+            notes::notes_toggle_todo,
+            notes::notes_delete,
+            notes::notes_summarize,
+            notes::notes_retry,
+            notes::notes_markdown,
+            notes::notes_export,
+            voice::voice_done,
+            voice::voice_say_native,
+            update::update_status,
+            update::update_set_consent,
+            update::update_check,
+            update::update_shown,
+            update::update_show,
+            update::update_later,
+            update::update_dismiss,
+            update::update_install,
+            update::update_open_page,
+        ])
+        .setup(move |app| {
+            let handle = app.handle().clone();
+            app.manage(phone_link::PhoneLink::new(handle.clone()));
+            tray::build(&handle)?;
+            // Before the island: see create_settings_window.
+            create_settings_window(&handle);
+            // Same rule for Mochi's desktop window and the dictation pill.
+            desktop::setup(&handle);
+            flow::setup(&handle);
+            notes::setup(&handle);
+
+            if let Some(win) = island::window(&handle) {
+                // Where Tauri takes the drop itself (Linux), its paths are the
+                // ones ingest_file may copy (files.rs).
+                win.on_window_event(|event| {
+                    if let tauri::WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) = event {
+                        files::allow_dropped(paths.iter().map(|p| p.to_string_lossy().to_string()));
+                    }
+                });
+                platform::make_non_activating(&win);
+                #[cfg(windows)]
+                webview_drop::install(&handle);
+                island::apply_geometry(&handle, &loaded.screen, false);
+                let _ = win.show();
+            }
+            gate.collapsed.store(false, Ordering::Relaxed);
+            // Nothing drawn yet, so nothing takes the mouse until the page
+            // reports the island's shape.
+            if !platform::CURSOR_POLL {
+                island::refresh_click_through(&handle, &gate);
+            }
+            gate.set_active(true);
+            island::spawn_cursor_poll(handle.clone(), gate.clone());
+
+            log::line(format!("--- Coucou {} started ---", env!("CARGO_PKG_VERSION")));
+            hooks::ensure_hook_exe(&handle);
+            pipe::start(handle.clone());
+            phone_link::start_if_enabled(&handle);
+            integrations::start(handle.clone());
+            spotify::sync(&handle, &loaded.active_integrations);
+            shortcuts::apply(&handle, &loaded.shortcuts);
+            // New versions: nothing goes to GitHub until the user agrees (update.rs).
+            update::start(handle.clone());
+            if loaded.autostart {
+                // Login items written before 0.5 start Coucou without --autostart:
+                // writing it again adds it, so the window stays hidden at login.
+                let _ = handle.autolaunch().enable();
+            }
+            let open_window = flow::get(&handle).map(|f| f.store.lock().unwrap().prefs.open_at_launch).unwrap_or(true);
+            if open_window && !launched_at_login() {
+                show_hub(&handle, None);
+            }
+            Ok(())
+        })
+        .build(tauri::generate_context!())
+        .expect("error while building Coucou")
+        .run(|app, event| {
+            // Withdraw the phone link's announcement on the local network before the process ends.
+            if let tauri::RunEvent::Exit = event {
+                phone_link::stop_on_exit(app);
+                notes::shutdown(app);
+            }
+        });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::diff_file;
+
+    #[test]
+    fn only_an_existing_file_by_its_full_path_reaches_the_editor() {
+        let dir = std::env::temp_dir().join(format!("coucou-diff-file-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("edited.ts");
+        std::fs::write(&file, "x").unwrap();
+
+        assert!(diff_file(&file.to_string_lossy()).is_some());
+        // A folder, a missing file, a relative path or an option never pass.
+        assert!(diff_file(&dir.to_string_lossy()).is_none());
+        assert!(diff_file(&dir.join("missing.ts").to_string_lossy()).is_none());
+        assert!(diff_file("edited.ts").is_none());
+        assert!(diff_file("--help").is_none());
+        assert!(diff_file("").is_none());
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

@@ -1,12 +1,7 @@
 {
-  "identifier": "main-capability",
-  "description": "Qio app core and notification permissions",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "core:default",
-    "notification:default",
-    "opener:default"
-  ]
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "What Coucou's windows are allowed to do. Everything that touches the OS goes through Coucou's own commands.",
+  "windows": ["island", "settings", "mochi", "pill"],
+  "permissions": ["core:default", "autostart:default"]
 }

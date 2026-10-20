@@ -1,146 +1,147 @@
 <div align="center">
 
-<img src="public/qio-guide-hero.svg" alt="Qio — همراه هوشمند دسکتاپ با کاراکتر اختصاصی" width="100%" />
+<img src="assets/qio.svg" width="112" alt="Qio icon">
 
 # Qio / کیو
 
-### یک همراه هوشمند؛ همیشه کنار دستت.
+**A tiny smart companion that lives at the top of your screen — or in your Mac's notch — and keeps an eye on your AI coding agent sessions.**
 
-رابطی جمع‌وجور برای کار با ابزارهای هوش مصنوعی و Agentهای برنامه‌نویسی؛ با کاراکتر اختصاصی Canvas، پنجرهٔ شناور و تجربهٔ فارسی و انگلیسی.
+**یک همراه هوشمند دسکتاپ که بالای صفحه یا در ناچ مک شما زندگی می‌کند و بر فعالیت‌های Agentهای کدنویسی نظارت می‌کند.**
 
 <p>
-  <a href="https://github.com/sahandse/Qio/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sahandse/Qio?style=flat-square&label=نسخهٔ منتشرشده&color=8B5CF6"></a>
-  <a href="https://github.com/sahandse/Qio/actions"><img alt="GitHub Actions" src="https://img.shields.io/github/actions/workflow/status/sahandse/Qio/ui-check.yml?style=flat-square&label=Build%20%26%20Tests"></a>
-  <a href="https://github.com/sahandse/Qio/actions/workflows/macos-release.yml"><img alt="macOS build" src="https://img.shields.io/github/actions/workflow/status/sahandse/Qio/macos-release.yml?style=flat-square&label=macOS"></a>
-  <img alt="Windows" src="https://img.shields.io/badge/Windows-10%2F11-22C55E?style=flat-square&logo=windows&logoColor=white">
-  <img alt="Persian + English" src="https://img.shields.io/badge/FA-EN-06B6D4?style=flat-square">
+  <a href="https://github.com/sahandse/Qio/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sahandse/Qio?style=flat-square&label=version&color=8B5CF6"></a>
+  <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%2F11-0078D4?style=flat-square&logo=windows&logoColor=white">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-12%2B-black?style=flat-square&logo=apple">
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-AppImage%20%7C%20deb%20%7C%20rpm-FCC624?style=flat-square&logo=linux&logoColor=black">
   <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?style=flat-square&logo=tauri&logoColor=white">
+  <img alt="Rust" src="https://img.shields.io/badge/Rust-backend-black?style=flat-square&logo=rust">
+  <img alt="Persian + English" src="https://img.shields.io/badge/FA-EN-06B6D4?style=flat-square">
+  <img alt="Code: MIT" src="https://img.shields.io/badge/license-MIT-green?style=flat-square">
 </p>
 
-[دانلود آخرین نسخه](https://github.com/sahandse/Qio/releases/latest) · [وضعیت ساخت و Deploy](https://github.com/sahandse/Qio/actions) · [راهنمای فارسی](docs/DESKTOP_SETUP_FA.md) · [راهنمای AI](docs/AI_PROVIDERS_FA.md) · [گزارش مشکل](https://github.com/sahandse/Qio/issues)
+[دانلود آخرین نسخه](https://github.com/sahandse/Qio/releases/latest) · [راهنمای فارسی](docs/DESKTOP_SETUP_FA.md) · [English Guide](docs/DESKTOP_SETUP_EN.md) · [گزارش مشکل](https://github.com/sahandse/Qio/issues)
 
 </div>
 
 ---
 
-## ✦ دربارهٔ Qio
+## ✨ دربارهٔ کیو | About Qio
 
-Qio یک همراه دسکتاپ با هویت بصری اختصاصی است؛ کاراکتر آن با **Canvas** رسم می‌شود و از فایل تصویر آماده استفاده نمی‌کند. رابط در حالت جمع‌شده روی کاراکتر تمرکز دارد و میان‌برهای چت و تنظیمات در دسترس‌اند.
+**کیو (Qio)** یک همراه هوشمند دسکتاپ بر پایهٔ معماری یکپارچهٔ **Tauri 2** و **Rust** است. کیو بالای صفحه‌نمایش شما (یا داخل ناچ مک) می‌نشیند و رویدادهای زندهٔ ابزارهای هوش مصنوعی و عامل‌های برنامه‌نویسی مانند **Claude Code، Cursor، Codex، Gemini CLI، Antigravity و Qoder** را نمایش می‌دهد.
 
-هدف Qio این است که وضعیت فعالیت‌های پشتیبانی‌شده را روشن و قابل‌فهم نشان دهد، بدون اینکه وجود تاریخچه را با اتصال زنده اشتباه بگیرد.
+بدون نیاز به ترک محیط کار یا جابه‌جایی بین پنجره‌های مختلف:
+* مجوزها و درخواست‌های دسترسی ابزارها را با یک کلیک تأیید یا رد کنید (**Allow / Deny / Always**).
+* پاسخ سوالات عامل‌ها (`AskUserQuestion`) را مستقیماً از بالای صفحه انتخاب کنید.
+* تغییرات فایل‌ها و Diff زنده را مشاهده کنید.
+* با مدل‌های هوش مصنوعی (Claude, OpenAI, Gemini, DeepSeek, Qwen, Ollama, LM Studio) گفتگو کنید.
+* فایل‌ها را روی کیو بکشید (Drag & Drop) تا آن‌ها را تحلیل کند.
+* کیو را روی دسکتاپ رها کنید تا به عنوان یک کاراکتر شناور و تعاملی در کنارتان باشد.
 
-## ✨ امکانات اصلی
+Meet **Qio**: an expressive cybernetic robot sidekick with a glowing neon visor, interactive antenna, audio badge, and 3D physics that tracks your cursor, blinks, reacts to coding agent operations, gets dizzy if poked, and jumps with joy when your tasks succeed.
 
-| قابلیت | توضیح |
+---
+
+## 🎭 امکانات کاراکتر کیو | Character Features
+
+| ویژگی | توضیح |
 |---|---|
-| **کاراکتر زنده** | کاراکتر اختصاصی با حال‌وهوای سبز نئونی و بنفش، حالت‌های واکنشی و پشتیبانی از کاهش حرکت |
-| **پنجرهٔ شناور** | رابط جمع‌وجور، حالت بزرگ و کوچک و دسترسی از System Tray |
-| **فارسی و انگلیسی** | پشتیبانی از راست‌چین و چپ‌چین |
-| **وضعیت GitHub Actions** | نمایش اجراهای اخیر، وضعیت موفق/درحال‌اجرا/خطا و لینک مستقیم هر اجرا در بخش تنظیمات |
-| **Agentها و Hookها** | نمایش رویدادهای محلی و راهنمای راه‌اندازی ابزارهای پشتیبانی‌شده |
-| **گفت‌وگوی AI** | اتصال به ارائه‌دهندگان تعریف‌شده در برنامه، با کلید API و مدل معتبر |
-| **اعلان‌های اختیاری** | کنترل اعلان‌ها از داخل برنامه |
-| **حریم خصوصی** | امکان خاموش‌کردن ثبت فرادادهٔ رویدادهای محلی |
+| **انیمیشن و فیزیک سه‌بعدی** | حرکت سر، چرخش در زاویه‌های مختلف (Yaw, Pitch, Roll)، پلک‌زدن و تعقیب نرم نشانگر ماوس |
+| **صفحهٔ نمایش و وایزر نئونی** | نمایشگر با تم سایبرنتیک و چشمان ال‌ای‌دی سبز نئونی و بنفش با قابلیت تغییر حالت (خوشحال، ستاره‌ای، قلبی، گیج، خواب، هشدار، خطا) |
+| **آنتن واکنشی** | آنتن دارای فیزیک جهنده با گوی نورانی در رأس آن که نسبت به اتفاقات و هشدارهای سیستم واکنش نشان می‌دهد |
+| **کمد لباس (Wardrobe)** | لباس‌ها و کلاه‌های متنوع (کلاه جادوگر هالووین، کلاه کریسمس، عینک آفتابی، گوش خرگوش عید و تغییر فصلی خودکار) با راست‌کلیک روی کیو |
+| **کیو روی دسکتاپ** | امکان کشیدن کاراکتر از جزیرهٔ بالا به روی صفحهٔ دسکتاپ؛ همراهی آزاد، تعقیب ماوس و بازگشت خودکار هنگام رخداد هشدارها |
+| **افکت‌های صوتی اختصاصی** | ۲۹ صدای منحصربه‌فرد برای باز شدن، بسته شدن، خستگی، خوابیدن، تأیید درخواست، بلعیدن فایل، خطاها و احوال‌پرسی |
 
-> **شفافیت وضعیت:** پیدا شدن پوشه، وجود تاریخچه، تنظیم‌شدن Hook و اتصال واقعی به سرویس، چهار وضعیت متفاوت‌اند. Qio نباید یکی را به‌جای دیگری گزارش کند.
+---
 
-## 📥 دانلود و نصب
+## 🚀 امکانات اصلی برنامه | Core Capabilities
 
-از [صفحهٔ آخرین انتشار](https://github.com/sahandse/Qio/releases/latest) فایل‌های موجود در بخش **Assets** را دریافت کن.
+* 🤖 **نظارت بر Agentهای کدنویسی به صورت زنده:** پشتیبانی کامل از Claude Code، Cursor، Codex، Gemini CLI، Antigravity، Copilot CLI و Qoder.
+* ⚡ **رلهٔ محلی بدون تاخیر (`qio-hook`):** ارتباط بر بستر Named Pipe در ویندوز و Unix Domain Socket در لینوکس و مک؛ بدون ارسال کد یا پرامپت‌ها به بیرون از سیستم.
+* 💬 **چت چندمدله:** اتصال به ارائه‌دهندگان ابری (Claude، OpenAI، Gemini، DeepSeek، Qwen) با کلید اختصاصی شما یا مدل‌های کاملاً محلی (Ollama و LM Studio).
+* 📁 **کشیدن و رها کردن فایل‌ها (Drop Zone):** رها کردن فایل روی کیو برای بلعیدن، ارسال یا پرسش دربارهٔ محتوای آن.
+* 🔍 **نمایش زندهٔ Diff:** بازبینی تغییرات خطوط کد و نام فایل‌های تغییریافته در همان نوار بالایی.
+* 📱 **لینک موبایل (Phone Link):** هماهنگی امن روی شبکهٔ Wi-Fi محلی با گوشی‌های اندروید و آیفون جهت دریافت اعلانات و تأیید درخواست‌ها با اثر انگشت.
+* ⌨️ **کلیدهای میانبر سراسری:** کنترل سریع چت، تأیید دسترسی‌ها، فوکوس روی پنجرهٔ ترمینال مربوطه و بردن کیو به دسکتاپ.
+* 📊 **خلاصهٔ هفتگی (Weekly Recap):** دوشنبه‌ها خلاصه‌ای از زمان کدنویسی، پروژه‌ها و آمار فایل‌های تغییریافته را مشاهده کنید.
+* 🌍 **پشتیبانی دوزبانه و چندزبانه:** زبان فارسی (FA) و انگلیسی (EN) به همراه فرانسوی، آلمانی، اسپانیایی، چینی، عربی و غیره.
+* 🔒 **حریم خصوصی اولویت اول:** بدون تله‌متری، بدون تبلیغات و ذخیره‌سازی کلیدها در مدیریت اعتبار سیستم (Windows Credential Manager / Keychain).
 
-| سیستم‌عامل | بسته | نکته |
-|---|---|---|
-| Windows 10/11 | EXE یا MSI، در صورت وجود در Release | هش فایل‌ها را با `SHA256SUMS.txt` مقایسه کن |
-| macOS Intel | DMG، در صورت انتشار | امضا و notarization را در یادداشت همان نسخه بررسی کن |
-| macOS Apple Silicon | DMG، در صورت انتشار | فقط فایل‌های موجود در Release رسمی را دریافت کن |
-| Linux | [راهنمای نصب از سورس](docs/INSTALL_LINUX_FA.md) | آزمایشی |
-| Android / iOS | فعلاً بستهٔ قابل‌نصب منتشر نشده | — |
+---
 
-**وضعیت انتشار را حدس نزن:** نسخه و فایل‌های نصب فقط وقتی منتشرشده محسوب می‌شوند که در صفحهٔ Release واقعاً موجود باشند. برای دیدن اجرای ساخت، [GitHub Actions](https://github.com/sahandse/Qio/actions) را باز کن.
+## ⌨️ کلیدهای میانبر پیش‌فرض | Default Shortcuts
 
-## 🔌 ابزارها و ارائه‌دهندگان
+| میانبر | عملکرد |
+|---|---|
+| `Ctrl + Alt + Space` | باز کردن پنجرهٔ گفت‌وگو (Chat) از هر برنامه‌ای |
+| `Ctrl + Alt + A` | رفتن مستقیم به کارت تأیید یا سوال منتظر پاسخ |
+| `Ctrl + Alt + T` | آوردن ترمینال جلسهٔ جاری به جلو (Open terminal) |
+| `Ctrl + Alt + D` | فرستادن کیو به روی دسکتاپ یا بازگرداندن آن به جزیره |
+| `Ctrl + Alt + G` | باز کردن کمد لباس (Wardrobe) کیو |
+| `Ctrl + Alt + S` | قطع یا وصل کردن صداهای کیو (Mute/Unmute) |
+| `Ctrl + Alt + →` / `←` | رفتن به ابزار یا ادغام بعدی / قبلی |
+| `Esc` | بستن سریع جزیرهٔ بازشده |
 
-### Agentها
-راهنماها و اسکریپت‌های راه‌اندازی موجود در مخزن برای ابزارهایی مثل **Claude Code، Cursor و Qoder** هستند:
+---
 
-- Claude Code: `npm run setup:claude`
-- Cursor: `npm run setup:cursor`
-- Qoder: `npm run setup:qoder`
+## 🔌 راه‌اندازی Hook در Agentها | Agent Setup
 
-این دستورها را از پوشهٔ پروژه اجرا کن و راهنمای [راه‌اندازی دسکتاپ](docs/DESKTOP_SETUP_FA.md) را بخوان. امکانات هر ابزار به نسخه و تنظیمات محلی آن بستگی دارد.
+جهت اتصال Agentها به کیو، اسکریپت رلهٔ `qio-hook` در مسیر برنامه قرار می‌گیرد:
 
-### گفت‌وگوی مستقیم با مدل‌ها
-سورس Qio شامل تنظیمات ارائه‌دهندگان ابری و محلی از جمله OpenAI، Gemini، OpenRouter، DeepSeek، Groq، Mistral، xAI، GitHub Models، Ollama و LM Studio است. دسترسی واقعی نیازمند کلید معتبر یا سرور محلی فعال و مدل در دسترس است.
+### Claude Code
+```bash
+npm run setup:claude
+```
+یا اضافه کردن دستور `qio-hook` در تنظیمات `~/.claude/settings.json`.
 
-- [راهنمای ارائه‌دهندگان AI](docs/AI_PROVIDERS_FA.md)
-- [راهنمای دسکتاپ](docs/DESKTOP_SETUP_FA.md)
-- [راهنمای انگلیسی](docs/DESKTOP_SETUP_EN.md)
+### Cursor
+```bash
+npm run setup:cursor
+```
 
-## 🧪 اجرا از سورس
+### Qoder & Other Agents
+```bash
+npm run setup:qoder
+```
+برای سایر عامل‌ها کافی است متغیر رویداد را با تگ `--agent <name>` به `qio-hook` پاس دهید.
+
+---
+
+## 🛠️ ساخت و اجرا از سورس | Build & Development
 
 ### پیش‌نیازها
-- Node.js 22
-- Rust toolchain
-- پیش‌نیازهای سیستم‌عامل برای [Tauri 2](https://v2.tauri.app/start/prerequisites/)
+* **Node.js** نسخهٔ 20 یا بالاتر
+* **Rust Toolchain** و پیش‌نیازهای [Tauri 2](https://v2.tauri.app/start/prerequisites/)
 
-### راه‌اندازی
+### مراحل اجرا
 
+1. دریافت مخزن و نصب وابستگی‌ها:
 ```bash
 git clone https://github.com/sahandse/Qio.git
 cd Qio
 npm install
+```
+
+2. اجرای تست‌های خودکار:
+```bash
 npm test
+```
+
+3. اجرای برنامه در حالت توسعه (Development):
+```bash
+npm run dev
+# یا با تائوری:
 npm run tauri dev
 ```
 
-ساخت نسخهٔ دسکتاپ روی سیستم سازگار:
-
+4. بیلد نهایی و ساخت بستهٔ نصبی:
 ```bash
 npm run build
 npm run tauri build
 ```
 
-## 🛡️ امنیت و حریم خصوصی
-
-- کلیدهای API را در سورس، README، Issue یا اسکرین‌شات قرار نده.
-- برای رویدادهای Hook، تاریخچه و اتصال زنده را جداگانه بررسی کن.
-- درخواست‌های Permission نباید بدون تصمیم کاربر تأیید شوند.
-- قبل از اجرای اسکریپت‌ها، محتوای آن‌ها را مرور کن و از راهنمای ابزار مربوط پیروی کن.
-- داده‌های محلی و سازگاری هر Agent ممکن است بر اساس محیط و نسخه متفاوت باشند.
-
-## 🗺️ نقشهٔ راه و مشارکت
-
-- [نقشهٔ راه فارسی](docs/ROADMAP_FA.md)
-- [Roadmap in English](docs/ROADMAP_EN.md)
-- [وضعیت پروژه](docs/STATUS.md)
-- [ثبت باگ یا پیشنهاد](https://github.com/sahandse/Qio/issues)
-- [پشتیبانی](https://t.me/sahandse)
-
-برای گزارش باگ، نسخهٔ Qio، سیستم‌عامل، مراحل بازتولید و لاگ مرتبط را اضافه کن؛ اطلاعات محرمانه و کلید API را منتشر نکن.
-
 ---
 
-<div align="center">
+## 📄 لایسنس | License
 
-### کوچولو، هوشمند و همیشه کنار دستت. 💜🟩
-
-**TypeScript · Rust · Tauri 2 · Canvas**
-
-<sub>وضعیت ساخت و فایل‌های انتشار را در GitHub Actions و صفحهٔ Releases بررسی کن.</sub>
-
-</div>
-
----
-
-## English
-
-**Qio is a compact desktop AI companion** with an original Canvas-drawn character, a floating window, Persian/English UI, optional notifications, local agent-event views, and a GitHub Actions status panel.
-
-- **Download:** [Latest release and available assets](https://github.com/sahandse/Qio/releases/latest)
-- **Build & deploy status:** [GitHub Actions](https://github.com/sahandse/Qio/actions)
-- **AI providers:** [Provider guide](docs/AI_PROVIDERS_FA.md)
-- **Agent setup:** [Desktop setup guide](docs/DESKTOP_SETUP_EN.md)
-- **Roadmap:** [English roadmap](docs/ROADMAP_EN.md)
-- **Issues:** [Report a bug or request a feature](https://github.com/sahandse/Qio/issues)
-
-Qio distinguishes local history, hook configuration, and live service connectivity. A detected folder or a listed provider does not by itself mean that an agent or API is currently connected. Only assets actually attached to a GitHub Release should be considered downloadable release builds.
+کدهای برنامه تحت لایسنس **MIT** منتشر شده‌اند. هویت بصری و طراحی کاراکتر کیو متعلق به **سهند رضوان (Sahand Rezvan)** می‌باشد.

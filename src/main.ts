@@ -1,338 +1,172 @@
-import './style.css';
-import {providerGuides} from './providerGuides';
-import {aiCharacters} from './aiCharacters';
-import { invoke } from '@tauri-apps/api/core';
-import {openUrl} from '@tauri-apps/plugin-opener';
-import {isPermissionGranted,requestPermission,sendNotification} from '@tauri-apps/plugin-notification';
-type Mood = 'idle' | 'thinking' | 'working' | 'happy' | 'alert' | 'error' | 'sleep';
-let mood: Mood = 'idle';
-const moodText: Record<Mood,string> = {idle:'منتظر کار بعدی',thinking:'در حال فکر کردن',working:'در حال کار',happy:'آفرین! انجام شد',alert:'نیازمند توجه',error:'مشکلی پیش آمد',sleep:'در حال استراحت'};
-let lastHistory = 0;
-let lastApprovalCount=0;
-let notificationsEnabled=localStorage.getItem('qio-notifications')==='yes';
-let eventNotificationsEnabled=localStorage.getItem('qio-event-notifications')!=='no';
-let approvalNotificationsEnabled=localStorage.getItem('qio-approval-notifications')!=='no';
-let notificationQuietUntil=0;
-const notificationDedupe=new Map<string,number>();
-type GithubRun={id:number;name:string;status:string;conclusion:string|null;html_url:string;created_at:string;run_number:number;head_sha:string};
-let githubRuns:GithubRun[]=[];let githubLoading=false;let githubError='';
-type SystemSnapshot={cpu_usage_percent:number;memory_used_bytes:number;memory_total_bytes:number;disks:{name:string;total_bytes:number;available_bytes:number}[];network_received_bytes:number;network_transmitted_bytes:number;battery_percent:number|null;battery_state:string;battery_supported:boolean};
-let systemSnapshot:SystemSnapshot|null=null;let systemLoading=false;let systemError='';let systemLastUpdated=0;
-type FocusTimerState={durationSeconds:number;remainingSeconds:number;running:boolean;endsAt:number|null;mode:'focus'|'break';completedSessions:number};
-const loadFocusTimer=():FocusTimerState=>{try{const p=JSON.parse(localStorage.getItem('qio-focus-timer')||'null') as Partial<FocusTimerState>|null;if(p&&[1500,300,600,900,1800,2700,3600].includes(Number(p.durationSeconds))&&typeof p.remainingSeconds==='number'&&['focus','break'].includes(String(p.mode))){const running=p.running===true&&typeof p.endsAt==='number';return {durationSeconds:Number(p.durationSeconds),remainingSeconds:running?Math.max(0,Math.ceil((p.endsAt!-Date.now())/1000)):Math.max(0,Math.min(Number(p.remainingSeconds),Number(p.durationSeconds))),running,endsAt:running?Number(p.endsAt):null,mode:p.mode as 'focus'|'break',completedSessions:Math.max(0,Math.floor(Number(p.completedSessions)||0))}}}catch{}return {durationSeconds:1500,remainingSeconds:1500,running:false,endsAt:null,mode:'focus',completedSessions:0}};
-type LocalReminder={id:string;title:string;at:number;notified:boolean;repeat?:'none'|'daily'|'weekly'};
-const loadLocalReminders=():LocalReminder[]=>{try{const v=JSON.parse(localStorage.getItem('qio-local-reminders')||'[]');if(Array.isArray(v))return v.filter((r):r is LocalReminder=>r&&typeof r.id==='string'&&typeof r.title==='string'&&Number.isFinite(r.at)&&typeof r.notified==='boolean').map(r=>({...r,repeat:(r.repeat==='daily'?'daily':r.repeat==='weekly'?'weekly':'none') as 'none'|'daily'|'weekly'})).slice(-30)}catch{}return []};
-let localReminders=loadLocalReminders();
-function persistLocalReminders(){localStorage.setItem('qio-local-reminders',JSON.stringify(localReminders))}
-let calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
-function renderReminderCalendar(){const root=document.querySelector<HTMLElement>('#reminder-calendar');if(!root)return;const y=calendarMonth.getFullYear(),m=calendarMonth.getMonth();const first=new Date(y,m,1).getDay();const days=new Date(y,m+1,0).getDate();const offset=(first+6)%7;const labels=language==='fa'?['د','س','چ','پ','ج','ش','ی']:['M','T','W','T','F','S','S'];const monthName=calendarMonth.toLocaleDateString(language==='fa'?'fa-IR':'en-US',{month:'long',year:'numeric'});let html='<div class="reminder-calendar-head"><button id="calendar-prev" type="button" aria-label="ماه قبل">‹</button><strong>'+escapeHtml(monthName)+'</strong><button id="calendar-next" type="button" aria-label="ماه بعد">›</button></div><div class="reminder-calendar-grid">'+labels.map(x=>'<span class="calendar-weekday">'+x+'</span>').join('');for(let i=0;i<offset;i++)html+='<span class="calendar-empty"></span>';for(let day=1;day<=days;day++){const start=new Date(y,m,day).setHours(0,0,0,0);const end=start+86400000;const count=localReminders.filter(r=>r.at>=start&&r.at<end).length;const today=new Date().toDateString()===new Date(y,m,day).toDateString();html+='<button type="button" class="calendar-day'+(today?' today':'')+(count?' has-reminder':'')+'" data-calendar-day="'+day+'" aria-label="'+day+'، '+count+' یادآوری">'+day+(count?'<i>'+count+'</i>':'')+'</button>'}html+='</div><small>روی یک روز بزن تا زمان یادآوری روی ساعت ۹ صبح همان روز تنظیم شود.</small>';root.innerHTML=html;root.querySelector('#calendar-prev')?.addEventListener('click',()=>{calendarMonth=new Date(y,m-1,1);renderReminderCalendar()});root.querySelector('#calendar-next')?.addEventListener('click',()=>{calendarMonth=new Date(y,m+1,1);renderReminderCalendar()});root.querySelectorAll<HTMLButtonElement>('[data-calendar-day]').forEach(b=>b.addEventListener('click',()=>{const day=Number(b.dataset.calendarDay);const date=new Date(y,m,day,9,0,0,0);const input=document.querySelector<HTMLInputElement>('#reminder-at');if(input){const local=new Date(date.getTime()-date.getTimezoneOffset()*60000);input.value=local.toISOString().slice(0,16)}if(date.getTime()<=Date.now())alert('این روز گذشته است یا زمان انتخاب‌شده گذشته؛ روز دیگری انتخاب کن.');else document.querySelector<HTMLInputElement>('#reminder-title')?.focus()}))}
-function renderLocalReminders(){const list=document.querySelector<HTMLElement>('#local-reminders-list');if(!list)return;if(!localReminders.length){list.innerHTML='<p class="reminder-empty">یادآوری‌ای ثبت نشده است.</p>';return}list.innerHTML=localReminders.slice().sort((a,b)=>a.at-b.at).map(r=>'<div class="local-reminder-row"><div><strong>'+escapeHtml(r.title)+'</strong><span>'+escapeHtml(new Date(r.at).toLocaleString(language==='fa'?'fa-IR':'en-US'))+((r.repeat==='daily'?' · هر روز':r.repeat==='weekly'?' · هر هفته':'')+(r.notified?' · اعلان ارسال شد':''))+'</span></div><button type="button" data-reminder-delete="'+escapeHtml(r.id)+'" aria-label="حذف یادآوری">حذف</button></div>').join('');list.querySelectorAll<HTMLButtonElement>('[data-reminder-delete]').forEach(b=>b.addEventListener('click',()=>{localReminders=localReminders.filter(r=>r.id!==b.dataset.reminderDelete);persistLocalReminders();renderLocalReminders();renderReminderCalendar()}))}
-function addLocalReminder(){const titleInput=document.querySelector<HTMLInputElement>('#reminder-title');const dateInput=document.querySelector<HTMLInputElement>('#reminder-at');const title=titleInput?.value.trim()||'';const at=dateInput?.value?new Date(dateInput.value).getTime():NaN;if(!title||!Number.isFinite(at)||at<=Date.now()){alert('عنوان و زمان آینده را وارد کن.');return}if(localReminders.length>=30){alert('حداکثر ۳۰ یادآوری ذخیره می‌شود؛ ابتدا یکی را حذف کن.');return}const repeatInput=document.querySelector<HTMLSelectElement>('#reminder-repeat');const repeat=repeatInput?.value==='daily'?'daily':repeatInput?.value==='weekly'?'weekly':'none';localReminders.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),title:title.slice(0,100),at,notified:false,repeat});persistLocalReminders();renderReminderCalendar();if(titleInput)titleInput.value='';if(dateInput)dateInput.value='';renderLocalReminders()}
-function checkLocalReminders(){const now=Date.now();const due=localReminders.filter(r=>!r.notified&&r.at<=now);if(!due.length)return;localReminders=localReminders.flatMap(r=>{if(r.at>now)return [r];if(r.repeat==='daily'||r.repeat==='weekly'){const interval=r.repeat==='daily'?86400000:604800000;let next=r.at;while(next<=now)next+=interval;return [{...r,at:next,notified:false}]}return [{...r,notified:true}]});persistLocalReminders();renderReminderCalendar();for(const r of due){void notifyIfEnabled('یادآوری: '+r.title,'event');}renderLocalReminders()}
-let focusTimer=loadFocusTimer();
-function persistFocusTimer(){localStorage.setItem('qio-focus-timer',JSON.stringify(focusTimer))}
-function timerRemaining(){return focusTimer.running&&focusTimer.endsAt?Math.max(0,Math.ceil((focusTimer.endsAt-Date.now())/1000)):focusTimer.remainingSeconds}
-function formatTimer(seconds:number){const n=Math.max(0,Math.floor(seconds));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
-function syncFocusTimerUI(){const d=document.querySelector<HTMLElement>('#focus-timer-time');if(d)d.textContent=formatTimer(timerRemaining());const s=document.querySelector<HTMLElement>('#focus-timer-status');if(s)s.textContent=focusTimer.running?'در حال اجرا':focusTimer.mode==='break'?'زمان استراحت':'آماده';const b=document.querySelector<HTMLButtonElement>('#focus-timer-toggle');if(b)b.textContent=focusTimer.running?'مکث':'شروع';const c=document.querySelector<HTMLElement>('#focus-timer-sessions');if(c)c.textContent=String(focusTimer.completedSessions);const sel=document.querySelector<HTMLSelectElement>('#focus-timer-duration');if(sel)sel.disabled=focusTimer.running}
-function completeFocusTimer(){focusTimer.running=false;focusTimer.endsAt=null;focusTimer.remainingSeconds=0;if(focusTimer.mode==='focus'){focusTimer.completedSessions++;mood='happy'}persistFocusTimer();syncFocusTimerUI();void notifyIfEnabled(focusTimer.mode==='focus'?'زمان تمرکز تمام شد؛ کمی استراحت کن.':'زمان استراحت تمام شد؛ هر وقت آماده‌ای ادامه بده.','event')}
-function tickFocusTimer(){if(!focusTimer.running)return;if(timerRemaining()<=0){completeFocusTimer();return}syncFocusTimerUI()}
-function setFocusDuration(value:number){if(focusTimer.running||![1500,300,600,900,1800,2700,3600].includes(value))return;focusTimer.durationSeconds=value;focusTimer.remainingSeconds=value;focusTimer.mode='focus';focusTimer.endsAt=null;persistFocusTimer();syncFocusTimerUI()}
-function toggleFocusTimer(){if(focusTimer.running){focusTimer.remainingSeconds=timerRemaining();focusTimer.running=false;focusTimer.endsAt=null}else{if(focusTimer.remainingSeconds<=0)focusTimer.remainingSeconds=focusTimer.durationSeconds;focusTimer.running=true;focusTimer.endsAt=Date.now()+focusTimer.remainingSeconds*1000}persistFocusTimer();syncFocusTimerUI()}
-function resetFocusTimer(){focusTimer.running=false;focusTimer.endsAt=null;focusTimer.mode='focus';focusTimer.remainingSeconds=focusTimer.durationSeconds;persistFocusTimer();syncFocusTimerUI()}
-function startFocusBreak(){focusTimer.running=false;focusTimer.endsAt=null;focusTimer.mode='break';focusTimer.remainingSeconds=300;focusTimer.running=true;focusTimer.endsAt=Date.now()+300000;persistFocusTimer();syncFocusTimerUI()}
-const formatBytes=(bytes:number)=>{if(!Number.isFinite(bytes)||bytes<0)return '—';const units=['B','KB','MB','GB','TB'];let value=bytes,index=0;while(value>=1024&&index<units.length-1){value/=1024;index++}return value.toLocaleString(language==='fa'?'fa-IR':'en-US',{maximumFractionDigits:1})+' '+units[index]};
-async function refreshSystemSnapshot(){if(!('__TAURI_INTERNALS__' in window)||systemLoading)return;systemLoading=true;systemError='';try{systemSnapshot=await invoke<SystemSnapshot>('system_snapshot');systemLastUpdated=Date.now()}catch(error){systemError=String(error)}finally{systemLoading=false;if(expanded&&panelTab==='settings'&&!document.activeElement?.matches('input,textarea,select'))render()}}
-const renderSystemSnapshot=()=>{if(systemError)return '<p class="system-error">دریافت اطلاعات سیستم ناموفق بود: '+escapeHtml(systemError)+'</p>';if(!systemSnapshot)return '<p>برای دریافت شاخص‌های واقعی سیستم، «بروزرسانی» را بزن.</p>';const s=systemSnapshot;const memoryPct=s.memory_total_bytes?Math.min(100,s.memory_used_bytes/s.memory_total_bytes*100):0;return `<div class="system-metrics"><div class="system-metric"><span>باتری</span><strong>${s.battery_percent===null?(s.battery_supported?escapeHtml(s.battery_state):"پشتیبانی نمی‌شود"):s.battery_percent.toLocaleString(language==="fa"?"fa-IR":"en-US",{maximumFractionDigits:1})+"% · "+escapeHtml(s.battery_state)}</strong></div><div class="system-metric"><span>پردازنده</span><strong>${s.cpu_usage_percent.toLocaleString(language==='fa'?'fa-IR':'en-US',{maximumFractionDigits:1})}%</strong><div class="metric-track"><i style="width:${s.cpu_usage_percent}%"></i></div></div><div class="system-metric"><span>حافظه</span><strong>${formatBytes(s.memory_used_bytes)} / ${formatBytes(s.memory_total_bytes)}</strong><div class="metric-track"><i style="width:${memoryPct}%"></i></div></div><div class="system-metric"><span>دریافت شبکه (تجمعی)</span><strong>${formatBytes(s.network_received_bytes)}</strong></div><div class="system-metric"><span>ارسال شبکه (تجمعی)</span><strong>${formatBytes(s.network_transmitted_bytes)}</strong></div></div><div class="system-disks">${s.disks.length?s.disks.map(d=>{const used=Math.max(0,d.total_bytes-d.available_bytes);const pct=d.total_bytes?Math.min(100,used/d.total_bytes*100):0;return `<div class="system-disk"><div><strong>${escapeHtml(d.name||'Disk')}</strong><span>${formatBytes(d.available_bytes)} آزاد از ${formatBytes(d.total_bytes)}</span></div><div class="metric-track"><i style="width:${pct}%"></i></div></div>`}).join(''):'<p>دیسکی توسط سیستم گزارش نشد.</p>'}</div><small>آخرین بروزرسانی: ${new Date(systemLastUpdated).toLocaleTimeString(language==='fa'?'fa-IR':'en-US')}</small>`;};
-async function refreshGithubActions(){if(!('__TAURI_INTERNALS__' in window)||githubLoading)return;githubLoading=true;githubError='';try{githubRuns=await invoke<GithubRun[]>('github_actions_status')}catch(error){githubError=String(error)}finally{githubLoading=false;if(expanded&&panelTab==='settings'&&!document.activeElement?.matches('input,textarea,select'))render()}}
-const githubStateLabel=(r:GithubRun)=>r.status==='completed'?(r.conclusion==='success'?'موفق':r.conclusion==='failure'?'خطا':r.conclusion==='cancelled'?'لغو شد':r.conclusion==='skipped'?'رد شد':r.conclusion||'پایان‌یافته'):r.status==='in_progress'?'در حال اجرا':r.status==='queued'?'در صف':r.status==='waiting'?'منتظر اجرا':r.status;
-const githubStateClass=(r:GithubRun)=>r.status!=='completed'?'running':r.conclusion==='success'?'success':r.conclusion==='failure'?'failure':'neutral';
+// Entry point: boot the bridge, wire the island, start the greeting.
 
-let eventLoggingEnabled=true;
-async function enableNotifications(){if(!('__TAURI_INTERNALS__' in window))return;if(notificationsEnabled){notificationsEnabled=false;localStorage.setItem('qio-notifications','no');render();return;}try{notificationsEnabled=await isPermissionGranted()||(await requestPermission())==='granted';localStorage.setItem('qio-notifications',notificationsEnabled?'yes':'no');if(notificationsEnabled)sendNotification({title:'کیو',body:'اعلان‌ها فعال شدند'});render()}catch(e){notificationsEnabled=false;localStorage.setItem('qio-notifications','no');console.warn('Notifications unavailable',e);render()}}
-async function notifyIfEnabled(body:string,kind:'event'|'approval'='event'){if(!notificationsEnabled||!('__TAURI_INTERNALS__' in window))return;if(kind==='event'&&!eventNotificationsEnabled)return;if(kind==='approval'&&!approvalNotificationsEnabled)return;const now=Date.now();if(now<notificationQuietUntil)return;const previous=notificationDedupe.get(body)||0;if(now-previous<60000)return;notificationDedupe.set(body,now);for(const [key,at] of notificationDedupe){if(now-at>10*60*1000)notificationDedupe.delete(key)}try{if(await isPermissionGranted())sendNotification({title:'کیو',body});else{notificationsEnabled=false;localStorage.setItem('qio-notifications','no');render()}}catch(e){console.warn('Notification delivery unavailable',e)}}
-let expanded = false;
-type PanelTab = 'chat'|'agents'|'guide'|'settings'|'characters';
-let panelTab:PanelTab='chat';
-let scrollTop=0;
-function openTab(tab:PanelTab){panelTab=tab;guideOpen=tab==='guide';scrollTop=0;render();document.querySelector<HTMLElement>('.app')?.scrollTo(0,0);}
-type SourceStatus = {name:string;detected:boolean;last_event_unix:number|null;state:string};
-let sources: SourceStatus[] = [];
-type AgentEvent={agent:string;kind:string;label:string;observed_at:number};
-let events:AgentEvent[]=[];
-let hookEvents:AgentEvent[]=[];
-let eventSearch='';
-let eventFilter='all';
-type PendingApproval={id:string;tool:string;preview:string;diff_preview?:string|null;expires_at:number};
-let pendingApprovals:PendingApproval[]=[];
-type TestEvidence={status:string;source:string;at:number;freshness:string};
-let testEvidence:TestEvidence|null=null;
-type AIProvider={id:string;name:string;region:string;key_configured:boolean};
-let providers:AIProvider[]=[];
-let availableModels:string[]=[];let modelLoading=false;let modelListError='';
-let guideOpen=true;let guideCategory='همه';let selectedGuide='avalai';let characterRegion='همه';
-let language: 'fa'|'en' = localStorage.getItem('qio-language')==='en'?'en':'fa';
-let soundEnabled=localStorage.getItem('qio-sounds')==='yes';
-let miniMode=false;
-let providerId='avalai';let modelId='';let promptText='';let aiResponse='';let aiBusy=false;let aiError='';
-let showHelp=false;
-let idleHide=localStorage.getItem('qio-idle-hide')==='yes';
-let lastActivityAt=Date.now();
-let eventError='';
-const escapeHtml=(s:string)=>s.replace(/[&<>"']/g,ch=>( {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'} as Record<string,string> )[ch]??'');
-async function refreshAgents(){ if (!('__TAURI_INTERNALS__' in window)) return; try {await invoke('qio_heartbeat');eventLoggingEnabled=await invoke<boolean>('qio_event_logging_enabled');pendingApprovals=await invoke<PendingApproval[]>('qio_pending_approvals');if(pendingApprovals.length)lastActivityAt=Date.now(); sources=await invoke<SourceStatus[]>('local_agent_status'); events=await invoke<AgentEvent[]>('recent_agent_events'); hookEvents=await invoke<AgentEvent[]>('qio_hook_events');if(hookEvents.length)lastActivityAt=Math.max(lastActivityAt,hookEvents[hookEvents.length-1].observed_at*1000);testEvidence=await invoke<TestEvidence|null>('latest_test_evidence'); eventError=''; const newest=Math.max(0,...hookEvents.map(e=>e.observed_at||0));if(newest>lastHistory && lastHistory>0 && newest*1000>Date.now()-120000){chime('alert');void notifyIfEnabled('رویداد تازهٔ Agent ثبت شد: '+(hookEvents[hookEvents.length-1]?.label||'فعالیت محلی'),'event');}lastHistory=newest; if (!document.activeElement?.matches('input,textarea,select')) render(); } catch(error){ eventError='خواندن رویدادهای محلی در دسترس نیست'; console.warn('Could not read local agent status',error); if (!document.activeElement?.matches('input,textarea,select')) render(); } }
+import "./style.css";
+import { Bridge, IS_TAURI, onEvent } from "./core/bridge";
+import { Sound } from "./core/sound";
+import { State, type Settings } from "./core/state";
+import { Island } from "./island/island";
+import { registerHookHandlers } from "./island/hooks";
+import { registerPhoneLink } from "./island/phone-link";
+import { registerIntegrationHandlers, refreshConfigured } from "./island/integrations";
+import { registerShortcutHandlers } from "./island/shortcuts";
+import { registerVoiceHandlers } from "./island/voice";
+import { applySpotify, registerSpotifyHandlers } from "./island/spotify";
+import { SPOTIFY_ID } from "./core/spotify";
+import { Recap } from "./recap/recap";
+import { Updates } from "./island/update";
+import { onLanguageChange, resolveLanguage, setLanguage, systemLanguages } from "./i18n/i18n";
 
-async function fetchProviders(){if(!('__TAURI_INTERNALS__' in window))return;try{providers=await invoke<AIProvider[]>('ai_providers');render()}catch(e){console.warn(e)}}
-function chime(type:'success'|'alert'='success'){if(!soundEnabled)return;try{const AudioCtx=window.AudioContext;const ctx=new AudioCtx();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(type==='success'?660:440,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(type==='success'?880:520,ctx.currentTime+.13);gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.065,ctx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.21);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.22);osc.onended=()=>{void ctx.close().catch(()=>{})};}catch{}}
-async function loadAIModels(){
- if(modelLoading||!('__TAURI_INTERNALS__' in window))return;
- modelLoading=true;modelListError='';render();
- try{availableModels=await invoke<string[]>('ai_models',{provider:providerId});modelListError='';}
- catch(error){availableModels=[];modelListError=String(error)}
- finally{modelLoading=false;render()}
+/** Shows the language Settings asks for ("" = the system's, when Coucou has it). */
+function applyLanguage() {
+  setLanguage(resolveLanguage(State.settings.language, systemLanguages()));
 }
-async function sendChat(){if(aiBusy||!modelId.trim()||!promptText.trim()||!('__TAURI_INTERNALS__' in window))return;aiBusy=true;aiError='';render();try{aiResponse=await invoke<string>('ai_chat',{provider:providerId,model:modelId,message:promptText});mood='happy';chime()}catch(error){aiError=String(error)}finally{aiBusy=false;render()}}
-async function decideApproval(id:string,decision:'allow'|'deny'){try{await invoke('qio_decide_approval',{id,decision});pendingApprovals=pendingApprovals.filter(p=>p.id!==id);render()}catch(e){alert('پاسخ درخواست ثبت نشد: '+String(e))}}
-let reducedMotion = localStorage.getItem('qio-reduced-motion') === 'yes' || (localStorage.getItem('qio-reduced-motion')===null && matchMedia('(prefers-reduced-motion: reduce)').matches);
-let lightTheme = localStorage.getItem('qio-theme')==='light';
-let accentTheme: 'default'|'emerald'|'violet' = (['default','emerald','violet'].includes(localStorage.getItem('qio-accent-theme')||'') ? localStorage.getItem('qio-accent-theme') as 'default'|'emerald'|'violet' : 'default');
-let characterScale: 'small'|'normal'|'large' = (['small','normal','large'].includes(localStorage.getItem('qio-character-scale')||'') ? localStorage.getItem('qio-character-scale') as 'small'|'normal'|'large' : 'normal');
-const app = document.querySelector<HTMLDivElement>('#app')!;
-const agentIcon=(name:string)=>name==='Claude Code'?'C':name==='Codex'?'◉':name==='Cursor'?'C':name==='Qoder'?'Q':name==='Gemini CLI'?'✧':name==='OpenCode'?'⌘':'✦';
-const sourceStatusLabel=(s:SourceStatus)=>s.state==='active-event'
-  ? (language==='fa'?'رویداد واقعی در ۲ دقیقه اخیر':'Real event in the last 2 minutes')
-  : s.state==='recent-event'
-  ? (language==='fa'?'رویداد اخیر: ':'Recent event: ')+new Date((s.last_event_unix||0)*1000).toLocaleString(language==='fa'?'fa-IR':'en-US')
-  : s.last_event_unix
-  ? (language==='fa'?'آخرین تاریخچه: ':'Last history: ')+new Date(s.last_event_unix*1000).toLocaleString(language==='fa'?'fa-IR':'en-US')
-  : s.state==='hooks-configured'?(language==='fa'?'Hook کیو تنظیم شده؛ هنوز رویدادی ثبت نشده':'Qio hook configured; no event recorded yet')
-  : s.state==='config-found'?(language==='fa'?'تنظیمات پیدا شد؛ Hook کیو فعال نیست':'Settings found; Qio hook is not configured')
-  : (language==='fa'?'پوشه شناسایی شده':'Folder detected');
-function renderActivityRows(list:AgentEvent[],emptyFa:string,emptyEn:string){
-  const needle=eventSearch.trim().toLocaleLowerCase();
-  const filtered=list.filter(e=>(eventFilter==='all'||e.agent===eventFilter)&&(!needle||`${e.agent} ${e.kind} ${e.label}`.toLocaleLowerCase().includes(needle)));
-  if(!filtered.length)return `<p>${list.length?(language==='fa'?'رویدادی با این جست‌وجو یا فیلتر پیدا نشد':'No events match this search or filter'):(language==='fa'?emptyFa:emptyEn)}</p>`;
-  return filtered.slice(-8).reverse().map(e=>`<div class="event-row"><span>${escapeHtml(e.agent)}</span><span>${escapeHtml(e.label)}</span></div>`).join('');
-}
-const latestHook=()=>hookEvents.filter(e=>e.observed_at>0&&Date.now()-e.observed_at*1000<120000).sort((a,b)=>b.observed_at-a.observed_at)[0];
-const displayMood=():Mood=>pendingApprovals.length?'alert':aiBusy?'thinking':latestHook()?.kind==='tool-start'?'working':mood==='happy'?'happy':'idle';
-function characterHead(c:typeof aiCharacters[number]) {
-  return `<span class="pixel-head" style="--char-accent:${c.accent};--char-skin:${c.skin};--char-hair:${c.hair};--char-eyes:${c.eyes}" aria-hidden="true"><i class="pixel-hair"></i><i class="pixel-ear left"></i><i class="pixel-ear right"></i><i class="pixel-face"><b class="pixel-eye left"></b><b class="pixel-eye right"></b><b class="pixel-nose"></b><b class="pixel-mouth"></b></i><i class="pixel-neck"></i><i class="pixel-glint">${escapeHtml(c.symbol)}</i></span>`;
-}
-function mascot() {
-  const currentMood=displayMood();
-  const bubbleText=currentMood==='happy'&&aiResponse.trim()?aiResponse.trim().slice(0,110):moodText[currentMood];
-  return `<div class="qio-stage mood-${currentMood}" title="${language==='fa'?'برای جابه‌جایی، کاراکتر را بکشید':'Drag the character to move it'}">
-    <div class="qio-speech" role="status"><span class="qio-speech-dot"></span><span>${escapeHtml(bubbleText)}</span></div>
-    <canvas id="qio-character" width="360" height="380" role="img" aria-label="${language==="fa"?"کاراکتر هوشمند کیو":"Qio AI character"}"></canvas>
-    <div class="qio-shortcuts">
-      <button class="qio-shortcut" id="quick-chat" title="${language==="fa"?"گفت‌وگو":"Chat"}" aria-label="${language==="fa"?"گفت‌وگو":"Chat"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2 1-5a7.5 7.5 0 1 1 16-4.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></button>
-      <button class="qio-shortcut settings" id="quick-settings" title="${language==="fa"?"تنظیمات":"Settings"}" aria-label="${language==="fa"?"تنظیمات":"Settings"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1.9-1.2 2.1-1.4-.5a7.7 7.7 0 0 1-1.7 1l-.2 1.5h-2.4l-.3-1.5a7.7 7.7 0 0 1-1.8-.7l-1.3.7-1.5-1.9 1-1.2a7.8 7.8 0 0 1-.3-1.9l-1.3-.7.7-2.3 1.5.1a7.7 7.7 0 0 1 1.3-1.4l-.1-1.5 2.3-.7.8 1.3a7.8 7.8 0 0 1 1.9.2l1-1.1 2 1.3-.5 1.4a7.8 7.8 0 0 1 .8 1.7l1.5.3v2.4Z"/></svg></button>
-    </div>
-  </div>`;
-}
-let qioCanvasFrame=0;
-let qioLookX=0,qioLookY=0,qioSquishUntil=0;
-let qioPointerX:number|null=null,qioPointerY:number|null=null;
-function drawQioCharacter(){
-  if(qioCanvasFrame)cancelAnimationFrame(qioCanvasFrame);
-  const canvas=document.querySelector<HTMLCanvasElement>('#qio-character');if(!canvas)return;
-  const ctx=canvas.getContext('2d');if(!ctx)return;
-  const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const stage=canvas.closest<HTMLElement>('.qio-stage');
-  if(stage){
-    stage.onpointermove=(event)=>{const r=stage.getBoundingClientRect();qioPointerX=((event.clientX-r.left)/Math.max(1,r.width)-.5)*2;qioPointerY=((event.clientY-r.top)/Math.max(1,r.height)-.5)*2;};
-    stage.onpointerleave=()=>{qioPointerX=null;qioPointerY=null;};
+
+async function main() {
+  const root = document.getElementById("root");
+  if (!root) return;
+
+  void Sound.preload();
+
+  // Before the island exists: its canvases size their bitmaps from the pixel
+  // ratio once, so the zoom correction has to land first. If zoom was adjusted,
+  // wait until the ratio updates (or up to 500ms) so nothing is sized against
+  // the stale value.
+  const dprBefore = window.devicePixelRatio || 1;
+  const zoomChanged = await Bridge.fitZoom(dprBefore);
+  if (zoomChanged) {
+    for (let i = 0; i < 20 && window.devicePixelRatio === dprBefore; i++) {
+      await new Promise((r) => setTimeout(r, 25));
+    }
   }
-  const moodNow=displayMood();
-  const draw=(ms:number)=>{
-    const t=ms/1000, w=360,h=380, bounce=reduced?0:Math.sin(t*2)*4;
-    const targetX=qioPointerX===null?0:qioPointerX*5,targetY=qioPointerY===null?0:qioPointerY*4;
-    qioLookX+=(targetX-qioLookX)*.12;qioLookY+=(targetY-qioLookY)*.12;
-    const blink=!reduced && (t%5.8>5.65 && t%5.8<5.78);
-    const squish=Date.now()<qioSquishUntil&&!reduced;
-    ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(0,bounce);
-    if(squish){ctx.translate(180,270);ctx.scale(1.08,.88);ctx.translate(-180,-270);}
-    const glow=ctx.createRadialGradient(180,185,15,180,185,145);
-    glow.addColorStop(0,moodNow==='alert'?'#ff9f4338':'#55f7b42c');glow.addColorStop(1,'#11182700');
-    ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
-    ctx.fillStyle='#0008';ctx.beginPath();ctx.ellipse(180,326,69,10,0,0,Math.PI*2);ctx.fill();
-    ctx.save();ctx.shadowColor='#56f5b8';ctx.shadowBlur=22;
-    const body=ctx.createLinearGradient(105,215,250,320);body.addColorStop(0,'#f3f2ff');body.addColorStop(.55,'#c5c6df');body.addColorStop(1,'#7168a9');
-    ctx.fillStyle=body;ctx.beginPath();ctx.roundRect(125,220,110,95,32);ctx.fill();ctx.restore();
-    ctx.fillStyle='#a9a9c9';ctx.beginPath();ctx.roundRect(88,83,184,165,46);ctx.fill();
-    const shell=ctx.createLinearGradient(90,80,270,245);shell.addColorStop(0,'#ffffff');shell.addColorStop(.45,'#d9d9f2');shell.addColorStop(1,'#8278c5');
-    ctx.fillStyle=shell;ctx.beginPath();ctx.roundRect(82,73,196,173,48);ctx.fill();
-    ctx.strokeStyle='#ffffffa8';ctx.lineWidth=2;ctx.stroke();
-    ctx.fillStyle='#100f22';ctx.beginPath();ctx.roundRect(98,91,164,137,38);ctx.fill();
-    const eyeY=moodNow==='sleep'?158:150;
-    for(const ex of [145,215]){
-      ctx.save();ctx.translate(qioLookX,qioLookY);
-      ctx.shadowColor=moodNow==='alert'?'#ffb454':'#61ffac';ctx.shadowBlur=18;
-      ctx.fillStyle=moodNow==='error'?'#ff6688':'#68ffad';
-      if(moodNow==='sleep'){ctx.strokeStyle='#68ffad';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ex,eyeY,11,Math.PI,Math.PI*2);ctx.stroke();}
-      else if(moodNow==='error'){ctx.strokeStyle='#ff6688';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(ex-8,eyeY-8);ctx.lineTo(ex+8,eyeY+8);ctx.moveTo(ex+8,eyeY-8);ctx.lineTo(ex-8,eyeY+8);ctx.stroke();}
-      else {const eyeHeight=blink?3:(moodNow==='working'&&!reduced?26+Math.sin(t*8)*4:34);ctx.beginPath();ctx.roundRect(ex-10,eyeY-eyeHeight/2,20,eyeHeight,10);ctx.fill();}
-      ctx.restore();
-    }
-    ctx.fillStyle='#8b5cff';ctx.beginPath();ctx.arc(88,159,28,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6af7b5';ctx.font='bold 25px sans-serif';ctx.textAlign='center';ctx.fillText('Q',88,168);
-    ctx.strokeStyle='#8b5cff';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(180,76);ctx.quadraticCurveTo(172,45,195,34);ctx.stroke();
-    ctx.save();ctx.shadowColor='#6affb4';ctx.shadowBlur=18;ctx.fillStyle='#6affb4';ctx.beginPath();ctx.ellipse(199,31,12,7,-.6,0,Math.PI*2);ctx.fill();ctx.restore();
-    ctx.fillStyle='#ffffff80';ctx.beginPath();ctx.ellipse(130,104,22,7,-.6,0,Math.PI*2);ctx.fill();
-    // A visible, friendly smile; keep the face expressive in every normal state.
-    if(moodNow!=='error'&&moodNow!=='sleep'){
-      ctx.save();
-      ctx.strokeStyle=moodNow==='alert'?'#ffc36b':'#72ffc0';
-      ctx.lineWidth=4;
-      ctx.lineCap='round';
-      ctx.shadowColor=ctx.strokeStyle;
-      ctx.shadowBlur=8;
-      ctx.beginPath();
-      ctx.arc(180,177,15,0.18,Math.PI-0.18,false);
-      ctx.stroke();
-      ctx.restore();
-    }
-    if(moodNow==='working'&&!reduced){ctx.fillStyle='#9a7cff';for(let i=0;i<3;i++){ctx.globalAlpha=.45+.55*Math.sin(t*7+i);ctx.beginPath();ctx.arc(253+i*9,70-i*12,3+i,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;}
-    if(moodNow==='alert'){ctx.fillStyle='#ffb454';ctx.beginPath();ctx.arc(274,105,14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#24162b';ctx.font='bold 20px sans-serif';ctx.fillText('!',274,112);}
-    ctx.restore();
-    if(!reduced)qioCanvasFrame=requestAnimationFrame(draw);
-  };
-  draw(performance.now());
-}
-function applyLanguage(){
-  const root=document.querySelector<HTMLElement>('.app');if(!root)return;
-  root.dir=language==='fa'?'rtl':'ltr';root.lang=language;document.documentElement.lang=language;document.documentElement.dir=language==='fa'?'rtl':'ltr';
-  if(language==='fa')return;
-  const dictionary:Record<string,string>={
-    'گفت‌وگوی مستقیم با مدل‌های Claude از API رسمی Anthropic؛ جدا از اتصال Hookهای Claude Code.':'Direct chat with Claude models through the official Anthropic API; separate from Claude Code hooks.',
-'در کنسول رسمی Anthropic دسترسی API و صورتحساب را بررسی کن.':'Check API access and billing in the official Anthropic Console.',
-'یک API key بساز و آن را در متغیر محیطی ANTHROPIC_API_KEY سیستم قرار بده؛ کلید را داخل کد یا مخزن ذخیره نکن.':'Create an API key and set it as the ANTHROPIC_API_KEY environment variable; never store the key in code or the repository.',
-'کیو را دوباره اجرا کن، Claude (Anthropic API) را انتخاب کن و شناسه مدل مجاز حساب خودت را وارد کن.':'Restart Qio, choose Claude (Anthropic API), and enter a model ID available to your account.',
-'یک پیام کوتاه بفرست تا پاسخ API را آزمایش کنی.':'Send a short message to test the API response.',
-'اشتراک Claude و اعتبار API یکسان نیستند. نام مدل‌ها، دسترسی و هزینه را از مستندات رسمی بررسی کن.':'A Claude subscription and API credits are separate. Check model names, access, and pricing in the official documentation.',
-'اعلان‌ها: روشن':'Notifications: on','اعلان‌ها: خاموش':'Notifications: off','کیو':'Qio','به کیو خوش اومدی!':'Welcome to Qio!','کنارت هستم ✨':'Your pixel sidekick ✨','نمایش فعالیت‌ها':'Open dashboard','کوچک‌کردن':'Minimize','گفت‌وگو':'Chat','شخصیت‌ها':'Characters','فعالیت‌ها':'Activity','راهنما':'Guides','تنظیمات':'Settings','همه':'All','جهانی':'Global','ایرانی':'Iranian','چینی':'Chinese','انتخاب شخصیت':'Choose character','جهان شخصیت‌های هوش مصنوعی':'AI Character Universe',[`${aiCharacters.length} شخصیت مکعبی؛ هرکدام با حال‌وهوا و تخصص مخصوص خودش. فقط سرِ پیکسلی، الهام‌گرفته از بازی‌های بلوکی و با طراحی اختصاصی کیو.`]:'Meet a universe of voxel characters, each with a distinct personality and specialty.','درخواست تأیید منتظر شماست':'An approval request is waiting','در حال دریافت پاسخ':'Getting a response…','رویداد اخیر Agent':'Recent agent event','منتظر رویداد واقعی':'Waiting for a live event','آخرین تاریخچه:':'Last activity:','آخرین اجرای تست:':'Latest test run:','پاسخ درخواست ثبت نشد:':'Could not submit decision:','هنوز Agent محلی شناسایی نشده. راهنمای اتصال رو ببین.':'No local agent detected yet. Check the setup guides.','انتخاب در کیو':'Use in Qio','وب‌سایت رسمی ↗':'Official website ↗','راهنمای اتصال هوش مصنوعی‌ها':'AI setup guides','آموزش اختصاصی با تصویر برای هر سرویس':'Step-by-step setup for each service','راهنمای سریع سرویس‌های اصلی':'Quick guides to the main tools','Qoder':'Qoder','اتصال واقعی رویدادهای Qoder به داشبورد Qio از طریق Hook رسمی؛ ثبت فراداده رویدادها بدون انتقال متن گفتگو یا کد.':'Connect Qoder Agent events to the Qio dashboard through official hooks. Only event metadata is recorded; prompts and source code are not sent.','ابتدا Qoder IDE را از سایت رسمی نصب کن و یک‌بار اجرا کن.':'Install Qoder IDE from its official site and launch it once.','در Qio پوشه پروژه را باز کن و دستور npm run setup:qoder را در ترمینال اجرا کن؛ اسکریپت تنظیمات موجود را حفظ می‌کند و قبل از تغییر، نسخه پشتیبان می‌سازد.':'Open the Qio project folder and run npm run setup:qoder in a terminal. The installer preserves existing settings and creates a backup first.','اسکریپت Hook کیو فقط نام عامل، نوع رویداد و نام ابزار را در فایل محلی ~/.qio/events.jsonl ثبت می‌کند؛ متن prompt و کد ذخیره نمی‌شود.':'Qio records only the agent name, event type, and tool name in the local ~/.qio/events.jsonl file. Prompts and code are not stored.','Qoder را کامل ببند و دوباره باز کن تا Hookها بارگذاری شوند. سپس یک پیام آزمایشی به Agent بده و صفحه فعالیت‌های Qio را بررسی کن.':'Fully restart Qoder to load the hooks. Send a test prompt to its Agent, then check Qio Activity.','این اتصال برای رویدادهای Qoder است، نه اتصال خودکار مدل Qoder به گفت‌وگوی مستقل Qio. برای استفاده از مدل داخل چت Qio باید API جداگانه‌ای پشتیبانی شود.':'This integration streams Qoder events; it does not automatically make Qoder models available in Qio chat. Direct model access requires a separately supported API.','مستندات رسمی Hook: https://docs.qoder.com/extensions/hooks — اگر رویدادی دیده نشد، نسخه Qoder، Node.js و مسیر نصب را بررسی کن.':'Official hook docs: https://docs.qoder.com/extensions/hooks. If events do not appear, check Qoder, Node.js, and installation paths.','از صفحه رسمی Cursor نسخه مناسب Windows یا macOS را دانلود و نصب کن.':'Download and install Cursor for Windows or macOS from the official site.','Cursor را باز کن و وارد حساب خودت شو یا حساب بساز.':'Open Cursor and sign in or create an account.','برای استفاده از مدل‌های داخلی Cursor، بخش Settings را باز کن و قسمت Models را بررسی کن؛ مدل‌ها و امکانات بر اساس حساب و پلن فرق می‌کنند.':'To use Cursor built-in models, open Settings and check Models. Availability depends on your account and plan.','برای استفاده از کلید API شخصی، در تنظیمات Models ارائه‌دهندهٔ پشتیبانی‌شده را فعال و کلید را در همان برنامه وارد کن.':'To use your own API key, enable a supported provider under Models and enter the key in Cursor.','اگر می‌خواهی از Cursor به‌عنوان ابزار کدنویسی کنار Qio استفاده کنی، هر دو برنامه را جداگانه اجرا کن؛ نصب Cursor به‌تنهایی آن را به موتور گفت‌وگوی Qio تبدیل نمی‌کند.':'You can use Cursor alongside Qio, but installing Cursor does not make it Qio’s chat engine.','برای برنامه دسکتاپ، نسخه رسمی سیستم‌عاملت را از صفحه دانلود Claude دریافت و نصب کن؛ برای گفت‌وگوی وب می‌توانی از claude.ai استفاده کنی.':'Download and install Claude Desktop from the official page, or use claude.ai on the web.','با حساب Anthropic وارد شو و بررسی کن که سرویس در منطقه و پلن حساب تو در دسترس باشد.':'Sign in with your Anthropic account and check regional and plan availability.','اگر منظورت Claude Code است، راهنمای رسمی نصب را از مستندات Claude Code دنبال کن؛ پیش‌نیازها و روش ورود ممکن است با برنامه دسکتاپ متفاوت باشد.':'For Claude Code, follow its official installation documentation; requirements and sign-in differ from the desktop app.','برای اتصال مستقیم به Qio، کلید Anthropic API و پشتیبانی از API در نسخه Qio لازم است؛ اشتراک Claude به‌خودی‌خود کلید API نیست.':'Direct Qio API access requires an Anthropic API key and compatible Qio support; a Claude subscription is not an API key.','بعد از تنظیم دسترسی معتبر، اتصال را با یک پیام کوتاه آزمایش کن و هرگز کلید را برای دیگران ارسال نکن.':'After configuring valid access, test with a short message and never share your API key.','نسخه رسمی ChatGPT را از صفحه دانلود OpenAI برای سیستم‌عاملت دریافت کن یا از chatgpt.com استفاده کن.':'Download the official ChatGPT app for your operating system or use chatgpt.com.','برنامه را نصب کن و با حساب خودت وارد شو.':'Install the app and sign in to your account.','برای استفاده از ChatGPT داخل خود برنامه، نیازی به واردکردن کلید API در Qio نداری؛ برنامه ChatGPT و Qio مستقل هستند.':'You do not need an API key in Qio to use the ChatGPT app. ChatGPT and Qio are separate apps.','اگر می‌خواهی Qio مستقیماً از مدل‌های OpenAI پاسخ بگیرد، در platform.openai.com حساب API بساز و از بخش API keys کلید ایجاد کن.':'For direct OpenAI responses inside Qio, set up API access at platform.openai.com and create an API key.','کلید API را فقط در محل امن و تنظیمات پشتیبانی‌شده قرار بده؛ اشتراک ChatGPT و اعتبار API صورتحساب جداگانه دارند. سپس در Qio ارائه‌دهنده OpenAI و شناسه مدل معتبر را انتخاب و آزمایش کن.':'Keep the API key in a secure supported setting. ChatGPT subscriptions and API billing are separate. Then choose OpenAI and a valid model ID in Qio.','این اتصال به API است و به حساب شبکه اجتماعی متکی نیست.':'This uses the API and does not rely on a social media account.','نصب و اتصال':'Install & connect','نصب و API':'Install & API','نصب و OpenAI API':'Install & OpenAI API','روی ! بزن':'Tap ! for help','بستن راهنما':'Hide guides','مشاهده راهنما':'Show guides','عامل‌های هوش مصنوعی':'AI agents','وضعیت اتصال محلی':'Local connection status','گفت‌وگو با کیو':'Chat with Qio','دستیار مستقیم و مستقل':'Standalone assistant','پاک‌کردن':'Clear','ارائه‌دهنده':'Provider','شناسه مدل':'Model ID','شناسه دقیق مدل را وارد کنید':'Enter the exact model ID','پیام':'Message','از کیو سؤال بپرس...':'Ask Qio something...','ارسال پیام':'Send message','در حال دریافت پاسخ...':'Thinking…','کپی پاسخ':'Copy response','درخواست‌های تأیید':'Approval requests','همه‌چیز آرومه':'All clear','درخواستی در انتظار نیست.':'No pending requests.','تأیید همین درخواست':'Approve request','رد درخواست':'Deny request','ظاهر و رفتار کیو':'Qio appearance & behavior','حالت همراه کوچک':'Compact companion mode','راهنما و ارتباط':'Help & support','! راهنما و رفع مشکل':'! Help & troubleshooting','راهنمای کیو':'Qio help','راهنمای کامل ↗':'Full guide ↗','صدا و رنگ‌بندی':'Sound & theme','فعال‌کردن صدا 🔔':'Enable sound 🔔','تم تاریک 🌙':'Dark theme 🌙','تم روشن ☀️':'Light theme ☀️','تم و انیمیشن‌ها برای همین دستگاه ذخیره می‌شوند.':'Theme and animation preferences are saved on this device.','تم رابط':'Interface theme','انتخاب تم':'Choose theme','نیمه‌شب':'Midnight','روشن':'Light','آبی':'Blue','زمردی':'Emerald','بنفش':'Violet','اندازهٔ کاراکتر':'Character size','اندازه کاراکتر':'Character size','کوچک':'Small','معمولی':'Normal','بزرگ':'Large','تم، اندازهٔ کاراکتر و انیمیشن‌ها فقط روی همین دستگاه ذخیره می‌شوند.':'Theme, character size and animation preferences are saved on this device.','رویدادهای مستقل کیو':'Qio hook events','Hookهای متصل، بدون متن مکالمه یا محتوای فایل':'Connected hooks; no chat text or file contents','پاک‌کردن تاریخچهٔ Hook':'Clear hook history','فقط تاریخچهٔ رویدادهای Hook محلی پاک شود؟':'Clear only the local hook event history?','پاک‌کردن تاریخچه ناموفق بود: ':'Could not clear history: ','اعلان‌ها':'Notifications','خروج':'Quit','نسخه اولیه رابط کاربری':'Early access','کاهش حرکت':'Reduce motion','فعال‌کردن انیمیشن':'Enable animations','Cursor':'Cursor','Claude':'Claude','ChatGPT':'ChatGPT','پوشه شناسایی شده':'Folder detected','سبز: تاریخچه یا رویداد شناسایی شده؛ به معنی اتصال زنده قطعی نیست. برای رویدادهای زنده Hook مخصوص Agent لازم است.':'A detected event does not guarantee a live connection. Live events require an agent hook.','بدون مدل محلی یا API معتبر، پاسخ هوش مصنوعی ارائه نمی‌شود. وضعیت تست فقط از اجرای واقعی خوانده می‌شود.':'Responses require a valid local model or API. Test status is based on recorded runs.','برای مشکلات نصب و اتصال، راهنمای فارسی مخزن را ببین.':'For setup help, open the repository documentation.',
-    '🌙 نیمه‌شب':'🌙 Midnight','☀️ روشن':'☀️ Light','🧊 آبی':'🧊 Blue','🟢 زمردی':'🟢 Emerald','🟣 بنفش':'🟣 Violet',
-    'اتصال رویدادهای محلی Cursor به داشبورد Qio از طریق Hookهای رسمی؛ فقط فراداده ثبت می‌شود و گفت‌وگو، فرمان‌ها یا محتوای فایل منتقل نمی‌شود.':'Connect Cursor events to the Qio dashboard through official hooks. Only metadata is stored; chat text, commands and file contents are not saved.',
-    'Cursor را از وب‌سایت رسمی نصب و یک‌بار اجرا کن.':'Install Cursor from its official website and launch it once.',
-    'در پوشه پروژه Qio، دستور npm run setup:cursor را اجرا کن؛ تنظیمات فعلی hooks.json حفظ می‌شود و پیش از تغییر نسخه پشتیبان ساخته می‌شود.':'From the Qio project folder, run npm run setup:cursor. Existing hooks.json settings are preserved and backed up before changes.',
-    'Cursor از فایل کاربر ~/.cursor/hooks.json استفاده می‌کند؛ اسکریپت Qio رویدادهای پشتیبانی‌شده را به ثبت محلی ~/.qio/events.jsonl متصل می‌کند.':'Cursor uses ~/.cursor/hooks.json. Qio records supported events locally in ~/.qio/events.jsonl.',
-    'Cursor را باز نگه دار و یک کار کم‌خطر انجام بده؛ سپس بخش فعالیت‌های Qio را بررسی کن. اگر رویدادی نیامد، مسیر Settings → Hooks یا مستندات رسمی را ببین.':'Keep Cursor open and perform a low-risk task, then check Qio Activity. If no event appears, check Settings → Hooks or the official docs.',
-    'این اتصال رویدادهای Cursor را ثبت می‌کند؛ به‌معنی دسترسی Qio به متن گفتگو، فایل‌ها، فرمان‌های کامل یا مدل‌های داخلی Cursor نیست.':'This records Cursor events only; it does not give Qio access to chat text, files, full commands, or Cursor internal models.',
-    'مستندات رسمی: https://cursor.com/docs/hooks — برای حذف اتصال، hookهای دارای --agent=Cursor را از ~/.cursor/hooks.json بردار.':'Official docs: https://cursor.com/docs/hooks. To disconnect, remove hooks with --agent=Cursor from ~/.cursor/hooks.json.'
-  };
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes:Text[]=[];while(walker.nextNode())nodes.push(walker.currentNode as Text);
-  for(const node of nodes){const value=node.nodeValue?.trim();if(value&&dictionary[value])node.nodeValue=node.nodeValue!.replace(value,dictionary[value]);}
-  root.querySelectorAll<HTMLElement>('[placeholder]').forEach(el=>{const p=el.getAttribute('placeholder');if(p&&dictionary[p])el.setAttribute('placeholder',dictionary[p]);});
-  root.querySelectorAll<HTMLElement>('[title]').forEach(el=>{const p=el.getAttribute('title');if(p&&dictionary[p])el.setAttribute('title',dictionary[p]);});
-}
 
-function render() {
-  const prev=document.querySelector<HTMLElement>('.app');
-  const lastScroll=prev?.scrollTop??scrollTop;
-  app.innerHTML = `<div class="app">
-  <header class="topbar" id="drag-region" title="برای جابه‌جایی بکشید"><span class="brand"><span class="brand-signal"></span><span class="brand-fa">کیو</span><small>Qio</small></span><div class="topbar-tools"><button class="lang-toggle" id="lang-toggle" title="Switch language">${language==='fa'?'EN':'فا'}</button><button class="circle" id="collapse" title="${expanded?'بستن پنل':'بازکردن پنل'}" aria-label="${expanded?'بستن پنل':'بازکردن پنل'}">${expanded?'−':'+'}</button></div></header>
-  <main><section class="island ${expanded?'open':''} mood-${displayMood()}" aria-label="جزیره کیو">
-    ${mascot()}<p class="status">${expanded?'به کیو خوش اومدی!':''}</p>
-    <span class="substatus" ${expanded?'':'hidden'}><span class="mood-dot"></span>${pendingApprovals.length?'درخواست تأیید منتظر شماست':aiBusy?'در حال دریافت پاسخ':latestHook()?'رویداد اخیر Agent':'منتظر رویداد واقعی'}</span>
-    ${!expanded&&latestHook()?`<div class="compact-live"><span class="live-led"></span>${escapeHtml(latestHook()!.agent)} · ${escapeHtml(latestHook()!.label)}</div>`:''}
-    <div class="actions"><button id="toggle"> ${expanded?'کوچک‌کردن':'نمایش فعالیت‌ها'} </button></div>
-  </section>
-  ${expanded ? `<nav class="tab-bar" aria-label="بخش‌های کیو">${([["chat","گفت‌وگو"],["characters","شخصیت‌ها"],["agents","فعالیت‌ها"],["guide","راهنما"],["settings","تنظیمات"]] as const).map(([id,title])=>`<button class="tab ${panelTab===id?"active":""}" data-tab="${id}" aria-current="${panelTab===id?"page":"false"}">${title}</button>`).join("")}</nav><section class="panel">${panelTab==="characters"?`<section class="characters-page"><div class="characters-hero"><div><span class="eyebrow">QIO · AI DIRECTORY</span><h2>شخصیت‌ها و سرویس‌ها</h2><p>سرویس را انتخاب کن تا نقش و کاربردش را سریع ببینی. ظاهر یکپارچه و ساده، بدون سرهای پیکسلی قدیمی.</p></div></div><div class="character-filters" role="group" aria-label="فیلتر سرویس‌ها">${['همه','جهانی','ایرانی','چینی'].map(region=>`<button class="${characterRegion===region?'active':''}" data-character-region="${region}">${region}<span>${region==='همه'?aiCharacters.length:aiCharacters.filter(c=>c.region===region).length}</span></button>`).join('')}</div><div class="character-grid">${aiCharacters.filter(c=>characterRegion==='همه'||c.region===characterRegion).map((c,i)=>`<article class="character-card" style="--char-accent:${c.accent};--card-index:${i}"><div class="character-card-top"><span class="character-region">${c.region}</span><span class="character-status-dot"></span></div><div class="character-art"><span class="service-orb" aria-hidden="true"><span>${escapeHtml(c.symbol)}</span></span><span class="service-orbit"></span></div><div class="character-info"><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.role)}</p><span class="character-tag">${escapeHtml(c.tag)}</span></div><button class="character-pick" data-character-pick="${c.id}">جزئیات و انتخاب <span>↗</span></button></article>`).join('')}</div><p class="characters-note">نمایش یک سرویس به معنی فعال بودن API یا اتصال آن نیست.</p></section>`:``}${panelTab==="agents"?`<div class="heading"><h2>عامل‌های هوش مصنوعی</h2><span class="muted">وضعیت اتصال محلی</span></div>
-  <div class="agents">${sources.filter(s=>s.detected).map(s=>`<div class="agent"><span class="agent-icon">${agentIcon(s.name)}</span><span class="agent-title">${escapeHtml(s.name)}</span><span class="agent-status"><span class="agent-led \${s.state==='active-event'?'active':s.state==='recent-event'?'recent':s.state==='hooks-configured'?'configured':'detected'}"></span>\${sourceStatusLabel(s)}</span></div>`).join("")||'<div class="empty-state">هنوز Agent محلی شناسایی نشده. راهنمای اتصال رو ببین.</div>'}</div>
-   `:``}${panelTab==="guide"?`<section class="guide-section"><div class="guide-head"><div><strong>راهنمای اتصال هوش مصنوعی‌ها</strong><small>آموزش اختصاصی با تصویر برای هر سرویس</small></div><button id="guide-toggle" class="guide-toggle">${guideOpen?'بستن راهنما':'مشاهده راهنما'}</button></div><div class="featured-guides"><div class="featured-guides-title">از اینجا شروع کن <span>۱ سرویس را انتخاب کن</span></div><div class="featured-guide-grid">${[{id:"cursor",name:"Cursor",symbol:"C",caption:"نصب و اتصال"},{id:"claude",name:"Claude",symbol:"✳",caption:"نصب و API"},{id:"chatgpt",name:"ChatGPT",symbol:"◎",caption:"نصب و OpenAI API"}].map(g=>`<article class="featured-guide"><span class="featured-guide-symbol">${g.symbol}</span><span class="featured-guide-copy"><b>${g.name}</b><small>${g.caption}</small></span><button type="button" class="guide-help-bang" data-feature-guide="${g.id}" aria-label="آموزش ${g.name}" title="آموزش نصب و اتصال ${g.name}">!</button></article>`).join("")}</div></div>${guideOpen?`<div class="guide-filter">${['همه','ایرانی','جهانی','آفلاین'].map(label=>`<button data-guide-category="${label}" class="${guideCategory===label?'active':''}">${label}</button>`).join('')}</div><div class="guide-gallery">${providerGuides.filter(g=>guideCategory==='همه'||g.category===guideCategory).map(g=>`<button class="guide-card ${selectedGuide===g.id?'chosen':''}" data-guide-id="${g.id}"><span class="guide-illustration" style="--guide-color:${g.accent}"><span class="guide-orbit"></span><b>${escapeHtml(g.symbol)}</b></span><b>${escapeHtml(g.name)}</b><small>${g.category}</small></button>`).join('')}</div>${(()=>{const g=providerGuides.find(x=>x.id===selectedGuide)||providerGuides[0];return `<article class="guide-detail"><div class="guide-detail-head"><span class="guide-illustration large" style="--guide-color:${g.accent}"><span class="guide-orbit"></span><b>${escapeHtml(g.symbol)}</b></span><div><strong>${escapeHtml(g.name)}</strong><p>${escapeHtml(g.description)}</p></div></div><ol>${g.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol>${g.env?`<p class="guide-env">نام متغیر محیطی: <code dir="ltr">${escapeHtml(g.env)}</code></p>`:''}<p class="guide-tip">💡 ${escapeHtml(g.tips)}</p><div class="guide-links"><button data-guide-select="${g.id}">${providers.some(p=>p.id===g.id)?'انتخاب در کیو':'بازکردن صفحه رسمی ↗'}</button><a href="${g.url}" target="_blank" rel="noreferrer noopener">وب‌سایت رسمی ↗</a></div></article>`})()}</div>`:''}</section>`:``}${panelTab==="chat"?`<div class="ai-chat"><div class="chat-heading"><span class="chat-avatar">✧</span><div><strong>گفت‌وگو با کیو</strong><small>دستیار مستقیم و مستقل</small></div><button id="clear-chat" type="button" title="پاک‌کردن پاسخ">پاک‌کردن</button></div><label>ارائه‌دهنده<select id="ai-provider">${providers.map(x=>`<option value="${x.id}" ${providerId===x.id?'selected':''}>${escapeHtml(x.name)} — ${x.id==='ollama'||x.id==='lmstudio'?'نیازمند سرور محلی':x.key_configured?'کلید تنظیم شده':'کلید تنظیم نشده'}</option>`).join('')}</select></label><label>شناسه مدل<input id="ai-model" list="ai-model-options" placeholder="شناسه دقیق مدل را وارد کنید" value="${escapeHtml(modelId)}"><datalist id="ai-model-options">${availableModels.map(x=>`<option value="${escapeHtml(x)}"></option>`).join('')}</datalist></label><button id="ai-models-refresh" type="button" ${modelLoading?'disabled':''}>${modelLoading?'در حال دریافت مدل‌ها…':'دریافت مدل‌های واقعی سرویس'}</button>${modelListError?`<p class="ai-error">${escapeHtml(modelListError)}</p>`:'' }<label>پیام<textarea id="ai-prompt" rows="3" placeholder="از کیو سؤال بپرس...">${escapeHtml(promptText)}</textarea></label><button id="ai-send" class="send-glow" ${aiBusy||!modelId.trim()||!promptText.trim()?'disabled':''}>${aiBusy?'در حال دریافت پاسخ...':'ارسال پیام'}</button>${aiError?`<p class="ai-error">${escapeHtml(aiError)}</p>`:''}${aiResponse?`<div class="ai-answer" role="status">${escapeHtml(aiResponse)}<button type="button" id="copy-answer" class="copy-answer">کپی پاسخ</button></div>`:''}</div>`:``}${panelTab==="agents"?`<div class="approvals"><div class="approval-heading"><span>✦</span><strong>درخواست‌های تأیید</strong><small>${pendingApprovals.length?`${pendingApprovals.length} درخواست منتظر`: "همه‌چیز آرومه"}</small></div>${pendingApprovals.length?pendingApprovals.map(a=>`<div class="approval-card"><b>${escapeHtml(a.tool)}</b><p dir="auto">${escapeHtml(a.preview)||'بدون جزئیات قابل نمایش'}</p>${a.diff_preview?`<details class="approval-diff"><summary>${language==='fa'?'مشاهده تغییرات پیشنهادی':'Review proposed changes'}</summary><pre dir="auto">${escapeHtml(a.diff_preview)}</pre></details>`:''}<div class="approval-actions"><button data-approve="${a.id}">تأیید همین درخواست</button><button class="deny" data-deny="${a.id}">رد درخواست</button></div></div>`).join(''):'<small>درخواستی در انتظار نیست.</small>'}</div><div class="events-panel"><div class="events-title-row"><div><strong>رویدادهای مستقل کیو</strong><small>Hookهای متصل، بدون متن مکالمه یا محتوای فایل</small></div><button id="clear-hook-history" type="button" class="clear-history">پاک‌کردن تاریخچهٔ Hook</button></div><div class="event-tools"><form id="event-search-form" class="event-search"><input id="event-search" type="search" value="${escapeHtml(eventSearch)}" placeholder="${language==='fa'?'جست‌وجوی رویدادها':'Search events'}" aria-label="${language==='fa'?'جست‌وجوی رویدادها':'Search events'}"><button type="submit">${language==='fa'?'جست‌وجو':'Search'}</button></form><select id="event-agent-filter" aria-label="${language==='fa'?'فیلتر عامل':'Filter agent'}"><option value="all" ${eventFilter==='all'?'selected':''}>${language==='fa'?'همهٔ عامل‌ها':'All agents'}</option><option value="Cursor" ${eventFilter==='Cursor'?'selected':''}>Cursor</option><option value="Claude Code" ${eventFilter==='Claude Code'?'selected':''}>Claude Code</option><option value="Qoder" ${eventFilter==='Qoder'?'selected':''}>Qoder</option><option value="Codex" ${eventFilter==='Codex'?'selected':''}>Codex</option><option value="Gemini CLI" ${eventFilter==='Gemini CLI'?'selected':''}>Gemini CLI</option><option value="OpenCode" ${eventFilter==='OpenCode'?'selected':''}>OpenCode</option></select><button id="event-search-clear" type="button">${language==='fa'?'پاک‌کردن فیلتر':'Clear filter'}</button></div>${renderActivityRows(hookEvents,'برای دریافت زنده، Hook مربوط به Agent را فعال کنید.','Enable the relevant agent hook to receive live events.')}<strong>تاریخچه نشست‌ها</strong><small>${language==='fa'?'فقط فراداده؛ بدون متن مکالمه یا کد':'Metadata only; no prompts or code'}</small>${eventError?`<p>${escapeHtml(eventError)}</p>`:renderActivityRows(events,'رویدادی پیدا نشد','No session events found')}<p class="test-warning">${testEvidence?`آخرین اجرای تست: ${testEvidence.status==='passed'?'کد خروج ۰':testEvidence.status==='failed'?'ناموفق':'نامشخص'}؛ تطابق با آخرین تغییرات کد بررسی نشده است.`:'هیچ شاهد اجرایی از تست‌ها ثبت نشده است.'}</p></div>`:``}${panelTab==="settings"?`<div class="appearance-controls"><label class="settings-search-label" for="settings-search">جست‌وجو در تنظیمات <span>Ctrl + ,</span></label><input id="settings-search" type="search" placeholder="مثلاً اعلان، ظاهر، حریم خصوصی…"><p id="settings-search-status" aria-live="polite">برای فیلترکردن گزینه‌ها، عبارت بنویس.</p><div class="settings-section-title">تمرکز و پومودورو</div><section class="focus-timer" aria-label="تایمر تمرکز"><div class="focus-timer-head"><div><span id="focus-timer-status">آماده</span><strong id="focus-timer-time">25:00</strong></div><label for="focus-timer-duration">مدت تمرکز</label><select id="focus-timer-duration"><option value="1500">۲۵ دقیقه</option><option value="1800">۳۰ دقیقه</option><option value="2700">۴۵ دقیقه</option><option value="3600">۶۰ دقیقه</option></select></div><div class="focus-timer-actions"><button id="focus-timer-toggle" type="button">شروع</button><button id="focus-timer-reset" type="button">بازنشانی</button><button id="focus-timer-break" type="button">استراحت ۵ دقیقه‌ای</button></div><p>جلسه‌های کامل‌شده: <strong id="focus-timer-sessions">0</strong></p><small>تایمر روی همین دستگاه ذخیره می‌شود؛ برای اعلان پایان، اجازهٔ اعلان‌های کیو را فعال کن.</small></section><div class="settings-section-title">یادآورهای محلی</div><section class="local-reminders"><p>یادآورها فقط روی همین دستگاه ذخیره می‌شوند؛ برای اعلان در زمان مقرر، کیو باید در حال اجرا باشد و اعلان‌ها مجاز باشند.</p><label for="reminder-title">عنوان</label><input id="reminder-title" maxlength="100" placeholder="مثلاً استراحت کوتاه"><label for="reminder-at">زمان</label><input id="reminder-at" type="datetime-local"><label for="reminder-repeat">تکرار</label><select id="reminder-repeat"><option value="none">فقط یک‌بار</option><option value="daily">هر روز</option><option value="weekly">هر هفته</option></select><button id="reminder-add" type="button">افزودن یادآوری</button><div id="local-reminders-list"></div><div class="settings-section-title">تقویم یادآورها</div><div id="reminder-calendar" class="reminder-calendar"></div></section><div class="settings-section-title">وضعیت سیستم</div><section class="system-dashboard" aria-label="شاخص‌های سیستم"><div class="system-dashboard-head"><p>اطلاعات واقعی سیستم؛ فقط خواندنی و محلی</p><button id="system-refresh" type="button" ${systemLoading?'disabled':''}>${systemLoading?'در حال دریافت…':'بروزرسانی'}</button></div><div id="system-snapshot-content">${renderSystemSnapshot()}</div></section><div class="settings-shortcuts"><strong>میان‌برها</strong><span><kbd>Ctrl</kbd> + <kbd>,</kbd> تنظیمات</span><span><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd> باز/بسته‌کردن کیو</span><span><kbd>Esc</kbd> بستن پنل (وقتی داخل فیلد تایپ نمی‌کنی)</span></div><div class="settings-section-title">حریم خصوصی</div><div class="settings-section-title">اعلان‌های هوشمند</div><p>اعلان‌ها فقط برای رخدادهای واقعی و با اجازهٔ سیستم ارسال می‌شوند؛ تکرار یک پیام تا ۶۰ ثانیه حذف می‌شود.</p><button id="event-notifications-toggle" type="button" aria-pressed="${eventNotificationsEnabled}">${eventNotificationsEnabled?'اعلان رویدادهای Agent: روشن':'اعلان رویدادهای Agent: خاموش'}</button><button id="approval-notifications-toggle" type="button" aria-pressed="${approvalNotificationsEnabled}">${approvalNotificationsEnabled?'اعلان درخواست تأیید: روشن':'اعلان درخواست تأیید: خاموش'}</button><button id="notification-snooze" type="button">سکوت اعلان‌ها برای ۳۰ دقیقه</button><button id="event-logging-toggle" type="button" aria-pressed="${eventLoggingEnabled}">${language==='fa'?(eventLoggingEnabled?'ثبت فراداده: روشن':'ثبت فراداده: خاموش'):(eventLoggingEnabled?'Local metadata logging: on':'Local metadata logging: off')}</button><p>${language==='fa'?'با خاموش‌کردن، Hookها رویداد جدید ذخیره نمی‌کنند؛ تاریخچهٔ قبلی باقی می‌ماند.':'When off, hooks stop saving new events; existing history remains.'}</p><div class="settings-section-title">✦ ظاهر و رفتار کیو</div><button id="mini-toggle" type="button">حالت همراه کوچک</button><button id="idle-toggle" type="button">${idleHide?'غیرفعال‌کردن آرامش خودکار':'فعال‌کردن آرامش خودکار'}</button><div class="github-card"><div class="github-card-head"><div><strong>GitHub Actions</strong><small>وضعیت Deploy و ساخت نسخه Qio</small></div><button id="github-refresh" class="github-refresh" ${githubLoading?'disabled':''}>${githubLoading?'در حال بررسی…':'↻ بروزرسانی'}</button></div>
-<div class="github-summary"><span class="github-led ${githubRuns.some(r=>r.status==='in_progress'||r.status==='queued')?'busy':githubRuns.some(r=>r.conclusion==='failure')?'bad':githubRuns.length&&githubRuns.every(r=>r.status==='completed'&&r.conclusion==='success')?'good':''}"></span><span>${githubLoading?'در حال دریافت وضعیت…':githubError?'اتصال ناموفق':githubRuns.some(r=>r.status==='in_progress'||r.status==='queued')?'فرایند در حال اجراست':githubRuns.some(r=>r.conclusion==='failure')?'حداقل یک فرایند خطا دارد':githubRuns.length&&githubRuns.every(r=>r.status==='completed'&&r.conclusion==='success')?'همه فرایندهای اخیر موفق‌اند':'آخرین وضعیت‌های مخزن'}</span></div>
-${githubError?`<p class="github-error">${escapeHtml(githubError)}</p>`:githubRuns.length?`<div class="github-runs">${githubRuns.map(run=>`<article class="github-run"><span class="github-state ${githubStateClass(run)}"></span><div class="github-run-info"><strong>${escapeHtml(run.name)}</strong><small>#${run.run_number} · ${new Date(run.created_at).toLocaleString(language==='fa'?'fa-IR':'en-US')}</small></div><span class="github-result ${githubStateClass(run)}">${escapeHtml(githubStateLabel(run))}</span><a href="${escapeHtml(run.html_url)}" title="مشاهده در GitHub" aria-label="مشاهده اجرا در GitHub">↗</a></article>`).join('')}</div>`:`<p class="github-empty">برای دیدن وضعیت اجراها، بروزرسانی را بزن.</p>`}
-<div class="github-card-foot"><span>بررسی خودکار هر ۳۰ ثانیه هنگام باز بودن تنظیمات</span><a href="https://github.com/sahandse/Qio/actions" target="_blank" rel="noopener noreferrer">بازکردن GitHub ↗</a></div></div><div class="settings-section-title">❕ راهنما و ارتباط</div><button id="help-toggle" type="button" aria-expanded="${showHelp}">! راهنما و رفع مشکل</button>${showHelp?`<div class="settings-help"><strong>راهنمای کیو</strong><p>سبز: تاریخچه یا رویداد شناسایی شده؛ به معنی اتصال زنده قطعی نیست. برای رویدادهای زنده Hook مخصوص Agent لازم است.</p><p>بدون مدل محلی یا API معتبر، پاسخ هوش مصنوعی ارائه نمی‌شود. وضعیت تست فقط از اجرای واقعی خوانده می‌شود.</p><p>برای مشکلات نصب و اتصال، راهنمای فارسی مخزن را ببین.</p><a href="https://github.com/sahandse/Qio/blob/main/docs/DESKTOP_SETUP_FA.md" target="_blank" rel="noopener noreferrer">راهنمای کامل ↗</a><a class="telegram-link" href="https://t.me/sahandse" target="_blank" rel="noopener noreferrer"><span>✈</span> تلگرام و پشتیبانی · @sahandse</a></div>`:''}<div class="settings-section-title">♫ صدا و رنگ‌بندی</div><button id="sound-toggle" type="button">${soundEnabled?"قطع صدا 🔈":"فعال‌کردن صدا 🔔"}</button><div class="preference-label">تم رابط</div><div class="theme-options" role="group" aria-label="انتخاب تم"><button type="button" data-theme-choice="dark" class="${!lightTheme?'selected':''}">🌙 نیمه‌شب</button><button type="button" data-theme-choice="light" class="${lightTheme?'selected':''}">☀️ روشن</button><button type="button" data-theme-accent="default" class="${accentTheme==='default'?'selected':''}">🧊 آبی</button><button type="button" data-theme-accent="emerald" class="${accentTheme==='emerald'?'selected':''}">🟢 زمردی</button><button type="button" data-theme-accent="violet" class="${accentTheme==='violet'?'selected':''}">🟣 بنفش</button></div><div class="preference-label">اندازهٔ کاراکتر</div><div class="scale-options" role="group" aria-label="اندازه کاراکتر"><button type="button" data-character-scale="small" class="${characterScale==='small'?'selected':''}">کوچک</button><button type="button" data-character-scale="normal" class="${characterScale==='normal'?'selected':''}">معمولی</button><button type="button" data-character-scale="large" class="${characterScale==='large'?'selected':''}">بزرگ</button></div><p>تم، اندازهٔ کاراکتر و انیمیشن‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p></div><div class="notice" role="status">کیو در حالت توسعه است؛ تاریخچه Agentها و نتیجه تست‌ها فقط بر اساس داده ثبت‌شده گزارش می‌شوند.</div>`:``}
-  </section>` : ''}
-  </main><footer><button id="notifications" class="text-button" aria-pressed="${notificationsEnabled}">${notificationsEnabled?'اعلان‌ها: روشن':'اعلان‌ها: خاموش'}</button><button id="quit" class="text-button" title="خروج از کیو">خروج</button><span class="dot"></span> نسخه اولیه رابط کاربری <button id="motion" class="text-button">${reducedMotion?'فعال‌کردن انیمیشن':'کاهش حرکت'}</button></footer>
-  </div>`;
+  const island = new Island(root);
+
+  const boot = await Bridge.boot();
+  if (boot) {
+    State.settings = { ...State.settings, ...boot.settings };
+  }
+  // A language change redraws the island in place: the texts given as tl(…)
+  // relabel themselves (views/dom.ts) and the views redraw the rest on this
+  // sync. Nothing is rebuilt, so tasks, steps and the chat stay as they are.
+  onLanguageChange(() => State.notify());
   applyLanguage();
-  document.querySelector('#lang-toggle')?.addEventListener('click',()=>{language=language==='fa'?'en':'fa';localStorage.setItem('qio-language',language);render();});
-  document.querySelector('#drag-region')?.addEventListener('pointerdown',e=>{if ((e.target as HTMLElement).closest('button'))return;if ('__TAURI_INTERNALS__' in window) {void invoke('drag_island').catch(console.error);}});
-  document.querySelector('#notifications')?.addEventListener('click',()=>void enableNotifications());
-  document.querySelector('#quit')?.addEventListener('click',()=>{if ('__TAURI_INTERNALS__' in window) {void invoke('quit_qio');} else {alert('خروج در نسخه دسکتاپ فعال است.');}});
+  // Rust shows the tray and its errors in the same language as the webview.
+  void Bridge.setSystemLanguages(systemLanguages());
+  island.applySettings();
+  State.loadIntegrationTasks();
+  if (boot && !boot.cursorPoll) island.followPageCursor();
+  await island.desktop.init();
 
-  document.querySelector('#guide-toggle')?.addEventListener('click',()=>{guideOpen=!guideOpen;render()});
-  document.querySelector('#event-search-form')?.addEventListener('submit',(event)=>{event.preventDefault();eventSearch=document.querySelector<HTMLInputElement>('#event-search')?.value.trim()??'';render();const input=document.querySelector<HTMLInputElement>('#event-search');input?.focus();input?.setSelectionRange(input.value.length,input.value.length);});
-  document.querySelector('#event-agent-filter')?.addEventListener('change',(event)=>{eventFilter=(event.target as HTMLSelectElement).value;render();});
-  document.querySelector('#event-search-clear')?.addEventListener('click',()=>{eventSearch='';eventFilter='all';render();});
-  document.querySelector('#clear-hook-history')?.addEventListener('click',()=>{if(!confirm(language==='fa'?'فقط تاریخچهٔ رویدادهای Hook محلی پاک شود؟':'Clear only the local hook event history?'))return;void invoke('qio_clear_hook_events').then(()=>{hookEvents=[];render()}).catch(error=>alert((language==='fa'?'پاک‌کردن تاریخچه ناموفق بود: ':'Could not clear history: ')+String(error)));});
-  document.querySelectorAll<HTMLElement>('[data-character-region]').forEach(b=>b.addEventListener('click',()=>{characterRegion=b.dataset.characterRegion||'همه';render()}));
-  document.querySelectorAll<HTMLElement>('[data-character-pick]').forEach(b=>b.addEventListener('click',()=>{const c=aiCharacters.find(x=>x.id===b.dataset.characterPick);if(!c)return;const guide=providerGuides.find(g=>g.id===c.id);if(guide){selectedGuide=guide.id;guideCategory=guide.category;openTab('guide')}else if(providers.some(p=>p.id===c.id)){providerId=c.id;openTab('chat')}else{alert(c.name+' در این صفحه به‌صورت شخصیت نمایشی معرفی شده؛ اتصال API آن هنوز در کیو فعال نیست.')}}));
-  document.querySelectorAll<HTMLElement>('[data-guide-category]').forEach(b=>b.addEventListener('click',()=>{guideCategory=b.dataset.guideCategory||'همه';const visible=providerGuides.filter(g=>guideCategory==='همه'||g.category===guideCategory);if(!visible.some(g=>g.id===selectedGuide))selectedGuide=visible[0]?.id??selectedGuide;render()}));
-  document.querySelectorAll<HTMLElement>('[data-guide-id]').forEach(b=>b.addEventListener('click',()=>{selectedGuide=b.dataset.guideId||'avalai';render()}));
-  document.querySelectorAll<HTMLElement>('[data-feature-guide]').forEach(b=>b.addEventListener('click',()=>{selectedGuide=b.dataset.featureGuide||'chatgpt';guideCategory='همه';guideOpen=true;render();document.querySelector('.guide-detail')?.scrollIntoView({behavior:reducedMotion?'auto':'smooth',block:'nearest'});}));
-  document.querySelectorAll<HTMLElement>('[data-guide-select]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.guideSelect||selectedGuide;if(providers.some(p=>p.id===id)){providerId=id;openTab('chat')}else{const g=providerGuides.find(x=>x.id===id);if(g)void openUrl(g.url).catch(console.error);}}));
-  document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab as PanelTab)));
-  const syncChatSendButton=()=>{const button=document.querySelector<HTMLButtonElement>('#ai-send');if(button)button.disabled=aiBusy||!modelId.trim()||!promptText.trim();};
-  document.querySelector<HTMLSelectElement>('#ai-provider')?.addEventListener('change',e=>{providerId=(e.target as HTMLSelectElement).value;availableModels=[];modelListError='';});
-  document.querySelector<HTMLButtonElement>('#ai-models-refresh')?.addEventListener('click',()=>void loadAIModels());
-  document.querySelector<HTMLInputElement>('#ai-model')?.addEventListener('input',e=>{modelId=(e.target as HTMLInputElement).value;syncChatSendButton();});
-  document.querySelector<HTMLTextAreaElement>('#ai-prompt')?.addEventListener('input',e=>{promptText=(e.target as HTMLTextAreaElement).value;syncChatSendButton();});
-  document.querySelector('#ai-send')?.addEventListener('click',()=>void sendChat());
-  document.querySelector('#clear-chat')?.addEventListener('click',()=>{aiResponse='';aiError='';render()});
-  document.querySelector('#copy-answer')?.addEventListener('click',()=>{void navigator.clipboard.writeText(aiResponse).catch(console.warn)});
-  document.querySelector('#sound-toggle')?.addEventListener('click',()=>{soundEnabled=!soundEnabled;localStorage.setItem('qio-sounds',soundEnabled?'yes':'no');if(soundEnabled)chime();render()});
-  document.querySelectorAll<HTMLAnchorElement>('a.telegram-link').forEach(link=>link.addEventListener('click',event=>{if(!('__TAURI_INTERNALS__' in window))return;event.preventDefault();void openUrl('https://t.me/sahandse').catch(console.error)}));
-  document.querySelector('#help-toggle')?.addEventListener('click',()=>{showHelp=!showHelp;render()});
-  document.querySelector('#github-refresh')?.addEventListener('click',()=>void refreshGithubActions());
-  document.querySelector('#idle-toggle')?.addEventListener('click',()=>{idleHide=!idleHide;localStorage.setItem('qio-idle-hide',idleHide?'yes':'no');render()});
-  document.querySelector('#mini-toggle')?.addEventListener('click',()=>{miniMode=!miniMode;expanded=false;document.documentElement.classList.toggle('qio-mini',miniMode);render();if('__TAURI_INTERNALS__' in window)void invoke('set_mini_mode',{enabled:miniMode}).catch(console.error)});
-  document.querySelectorAll<HTMLElement>('[data-approve]').forEach(b=>b.addEventListener('click',()=>void decideApproval(b.dataset.approve!,'allow')));
-  document.querySelectorAll<HTMLElement>('[data-deny]').forEach(b=>b.addEventListener('click',()=>void decideApproval(b.dataset.deny!,'deny')));
-  document.querySelector('#collapse')?.addEventListener('click',toggle);
-  document.querySelector('#toggle')?.addEventListener('click',toggle);
+  await onEvent<{ x: number; y: number }>("cursor", ({ x, y }) => island.onCursor(x, y));
+  await onEvent<boolean>("pointer-inside", (inside) => island.setPointerInside(inside));
 
-  document.querySelector<HTMLInputElement>('#settings-search')?.addEventListener('input',e=>{const query=(e.target as HTMLInputElement).value.trim().toLocaleLowerCase();const panel=document.querySelector<HTMLElement>('.appearance-controls');if(!panel)return;let shown=0;for(const child of Array.from(panel.children) as HTMLElement[]){if(child.id==='settings-search'||child.id==='settings-search-status'||child.classList.contains('settings-search-label')||child.classList.contains('settings-shortcuts'))continue;const matches=!query||child.innerText.toLocaleLowerCase().includes(query);child.hidden=!matches;if(matches)shown++;}const status=document.querySelector<HTMLElement>('#settings-search-status');if(status)status.textContent=query?(shown?String(shown)+' مورد مطابق پیدا شد.':'موردی پیدا نشد.'):'برای فیلترکردن گزینه‌ها، عبارت بنویس.';});
-  document.querySelector('#system-refresh')?.addEventListener('click',()=>void refreshSystemSnapshot());
-  renderLocalReminders();
-  renderReminderCalendar();
-  document.querySelector('#reminder-add')?.addEventListener('click',addLocalReminder);
-  document.querySelector<HTMLSelectElement>('#focus-timer-duration')?.addEventListener('change',e=>setFocusDuration(Number((e.target as HTMLSelectElement).value)));
-  document.querySelector('#focus-timer-toggle')?.addEventListener('click',toggleFocusTimer);
-  document.querySelector('#focus-timer-reset')?.addEventListener('click',resetFocusTimer);
-  document.querySelector('#focus-timer-break')?.addEventListener('click',startFocusBreak);
-  syncFocusTimerUI();
-  document.querySelector('#event-notifications-toggle')?.addEventListener('click',()=>{eventNotificationsEnabled=!eventNotificationsEnabled;localStorage.setItem('qio-event-notifications',eventNotificationsEnabled?'yes':'no');render()});
-  document.querySelector('#approval-notifications-toggle')?.addEventListener('click',()=>{approvalNotificationsEnabled=!approvalNotificationsEnabled;localStorage.setItem('qio-approval-notifications',approvalNotificationsEnabled?'yes':'no');render()});
-  document.querySelector('#notification-snooze')?.addEventListener('click',()=>{notificationQuietUntil=Date.now()+30*60*1000;alert('اعلان‌ها تا ۳۰ دقیقه بی‌صدا هستند.');});
-  document.querySelector('#event-logging-toggle')?.addEventListener('click',async()=>{try{eventLoggingEnabled=await invoke<boolean>('qio_set_event_logging',{enabled:!eventLoggingEnabled});render()}catch(error){alert((language==='fa'?'تغییر تنظیم حریم خصوصی ناموفق بود: ':'Could not update privacy setting: ')+String(error))}});
-  document.querySelector('#motion')?.addEventListener('click',()=>{reducedMotion=!reducedMotion; localStorage.setItem('qio-reduced-motion',reducedMotion?'yes':'no');document.documentElement.classList.toggle('reduced',reducedMotion);render();});
-  document.querySelectorAll<HTMLElement>('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>{lightTheme=b.dataset.themeChoice==='light';localStorage.setItem('qio-theme',lightTheme?'light':'dark');document.documentElement.classList.toggle('light-theme',lightTheme);render();}));
-  document.querySelectorAll<HTMLElement>('[data-theme-accent]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.themeAccent;if(next!=='default'&&next!=='emerald'&&next!=='violet')return;accentTheme=next;localStorage.setItem('qio-accent-theme',accentTheme);document.documentElement.classList.remove('accent-emerald','accent-violet');if(accentTheme!=='default')document.documentElement.classList.add('accent-'+accentTheme);render();}));
-  document.querySelectorAll<HTMLElement>('[data-character-scale]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.characterScale;if(next!=='small'&&next!=='normal'&&next!=='large')return;characterScale=next;localStorage.setItem('qio-character-scale',characterScale);document.documentElement.classList.remove('character-scale-small','character-scale-normal','character-scale-large');document.documentElement.classList.add('character-scale-'+characterScale);render();}));
-  document.querySelector<HTMLElement>('.app')?.classList.toggle('quiet-island',idleHide&&!expanded&&pendingApprovals.length===0&&(Date.now()-lastActivityAt)>60000);
-  const scroll=document.querySelector<HTMLElement>('.app'); if(scroll)scroll.scrollTop=lastScroll;
-  drawQioCharacter();
-  const dragSurface=document.querySelector<HTMLElement>('.qio-stage');
-  dragSurface?.addEventListener('pointerdown',(event)=>{
-    if((event.target as HTMLElement).closest('button'))return;
-    qioSquishUntil=Date.now()+180;
-    if('__TAURI_INTERNALS__' in window)void invoke('drag_island').catch(error=>console.warn('Could not drag Qio window',error));
+  /** Pause has to reach Rust too, or the pollers keep calling out. */
+  const setPaused = (on: boolean) => {
+    if (State.paused === on) return;
+    State.paused = on;
+    void Bridge.setPaused(on);
+  };
+
+  await onEvent<string>("tray", (what) => {
+    switch (what) {
+      case "settings":
+        setPaused(false);
+        island.alert("settings");
+        break;
+      case "open":
+        setPaused(false);
+        island.alert(State.defaultView());
+        break;
+      case "recap":
+        setPaused(false);
+        void Recap.open(island);
+        break;
+      case "wardrobe":
+        setPaused(false);
+        island.alert("wardrobe");
+        break;
+      // "Update Coucou to X…", only in the menu while a new version is out.
+      case "update":
+        setPaused(false);
+        Updates.show();
+        break;
+      case "pause":
+        setPaused(!State.paused);
+        if (State.paused) island.fsm.forceHidden();
+        else island.reveal();
+        break;
+    }
   });
-  document.querySelector('#quick-chat')?.addEventListener('click',()=>{expanded=true;openTab('chat');});
-  document.querySelector('#quick-settings')?.addEventListener('click',()=>{expanded=true;openTab('settings');});
+
+  const checkZoom = async () => {
+    const dpr = window.devicePixelRatio || 1;
+    await Bridge.fitZoom(dpr);
+  };
+
+  await onEvent<null>("screen-changed", async () => {
+    await checkZoom();
+    void Bridge.reposition();
+  });
+
+  const mediaQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+  mediaQuery.addEventListener?.("change", () => void checkZoom());
+
+  window.addEventListener(
+    "wheel",
+    (e) => {
+      if (e.ctrlKey) e.preventDefault();
+    },
+    { passive: false }
+  );
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && (e.key === "+" || e.key === "-" || e.key === "=" || e.key === "0")) {
+      e.preventDefault();
+    }
+  });
+
+  // Settings → Reload sounds: read the sounds folder again, and let them hear it.
+  await onEvent<null>("sounds-changed", () => {
+    void Sound.reload().then(() => Sound.play("pop"));
+  });
+
+  // The settings window writes preferences; apply them here without a restart.
+  await onEvent<Settings>("settings-changed", (s) => {
+    const previousMain = State.mainPillId;
+    State.settings = { ...State.settings, ...s };
+    applyLanguage();
+    island.applySettings();
+    State.loadIntegrationTasks();
+    // A new main tool comes to the front, as on macOS.
+    if (State.mainPillId !== previousMain) State.setFocus(State.mainPillId);
+    void refreshConfigured();
+  });
+
+  registerHookHandlers(island);
+  registerPhoneLink(island);
+  registerIntegrationHandlers(island);
+  registerShortcutHandlers(island, () => setPaused(false));
+  registerVoiceHandlers();
+  registerSpotifyHandlers(island);
+  // New versions: Rust offers the card, the island opens it when nothing else waits.
+  await Updates.register(island);
+  // Rust may have read Spotify before this page listened: ask once.
+  if (State.settings.activeIntegrations.includes(SPOTIFY_ID)) {
+    void Bridge.spotifyRefresh().then((s) => s && applySpotify(island, s));
+  }
+
+  // Monday recap: app start (greeting over), an agent starting work, waking up.
+  const checkRecap = () => void Recap.check(island);
+  island.onGreetingDone = checkRecap;
+  island.onWake = checkRecap;
+  await onEvent<null>("recap-check", checkRecap);
+
+  island.launch();
+
+  // In a plain browser there is no wake strip behind the cursor: make the whole
+  // page wake the island so the visuals can be checked with `npm run dev`.
+  if (!IS_TAURI) {
+    document.addEventListener("click", () => Sound.resume(), { once: true });
+  }
 }
-window.addEventListener('keydown',event=>{const target=event.target as HTMLElement|null;const typing=!!target?.closest('input,textarea,select,[contenteditable="true"]');if((event.ctrlKey||event.metaKey)&&event.key===','){event.preventDefault();expanded=true;openTab('settings');return;}if(event.altKey&&event.shiftKey&&event.key.toLowerCase()==='q'){event.preventDefault();toggle();return;}if(event.key==='Escape'&&!typing&&expanded){expanded=false;render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded:false}).catch(error=>console.warn('Window collapse failed',error));}});
-function toggle(){if(miniMode){miniMode=false;document.documentElement.classList.remove('qio-mini');expanded=true;}else{expanded=!expanded;}render();if('__TAURI_INTERNALS__' in window)void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Window resize failed',error));}
-if ('__TAURI_INTERNALS__' in window) { void invoke('set_island_expanded',{expanded}).catch((error)=>console.error('Island initialization failed',error)); }
-document.documentElement.classList.toggle('reduced',reducedMotion);
-document.documentElement.classList.toggle('light-theme',lightTheme);
-if(accentTheme!=='default')document.documentElement.classList.add('accent-'+accentTheme);
-document.documentElement.classList.add('character-scale-'+characterScale);
-render();
 
-async function refreshApprovals(){if(!('__TAURI_INTERNALS__' in window))return;try{
- const next=await invoke<PendingApproval[]>('qio_pending_approvals');
- const oldIds=pendingApprovals.map(x=>x.id).join(',');
- const newIds=next.map(x=>x.id).join(',');
- if(oldIds!==newIds){const added=next.some(x=>!pendingApprovals.some(old=>old.id===x.id));pendingApprovals=next;if(added){mood='alert';void notifyIfEnabled('Claude Code درخواست تأیید جدید دارد','approval');}if(!document.activeElement?.matches('input,textarea,select'))render()}
-}catch(error){console.warn('Approval polling failed',error)}}
-void refreshAgents();
-window.setInterval(()=>void refreshApprovals(),1500);
-window.setInterval(tickFocusTimer,500);
-window.setInterval(checkLocalReminders,5000);
-window.setInterval(() => { if (document.visibilityState === 'visible') void refreshAgents(); }, 15000);
-window.setInterval(() => { if (document.visibilityState === 'visible' && expanded && panelTab==='settings') { void refreshGithubActions(); void refreshSystemSnapshot(); } }, 30000);
-
-void fetchProviders();
-void refreshGithubActions();
+void main();
