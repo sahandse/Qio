@@ -1,5 +1,5 @@
 // Copies the packages Tauri buries in target/release/bundle/ into
-// windows/release/, with the names they ship under. Used by `npm run pack` and
+// release/, with the names they ship under. Used by `npm run pack` and
 // by the release workflows, so both produce exactly the same file names.
 
 import { readFileSync, mkdirSync, copyFileSync, readdirSync, statSync } from "node:fs";
@@ -7,7 +7,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const bundleRoot = join(root, "target", "release", "bundle");
+const bundleRoot = join(root, "src-tauri", "target", "release", "bundle");
+// Fallback in case target is in root or src-tauri
+const altBundleRoot = join(root, "target", "release", "bundle");
+
 const outDir = join(root, "release");
 
 const { version } = JSON.parse(readFileSync(join(root, "src-tauri", "tauri.conf.json"), "utf8"));
@@ -22,22 +25,22 @@ const PACKAGES = {
     {
       dir: "nsis",
       suffix: "-setup.exe",
-      names: [`Coucou-Windows-${version}-setup.exe`, "Coucou-Windows-setup.exe"],
+      names: [`Qio-Windows-${version}-setup.exe`, "Qio-Windows-setup.exe"],
     },
     {
       dir: "msi",
       suffix: ".msi",
-      names: [`Coucou-Windows-${version}.msi`, "Coucou-Windows.msi"],
+      names: [`Qio-Windows-${version}.msi`, "Qio-Windows.msi"],
     },
   ],
   linux: [
     {
       dir: "appimage",
       suffix: ".AppImage",
-      names: [`Coucou-Linux-${version}-${arch}.AppImage`, `Coucou-Linux-${arch}.AppImage`],
+      names: [`Qio-Linux-${version}-${arch}.AppImage`, `Qio-Linux-${arch}.AppImage`],
     },
-    { dir: "deb", suffix: ".deb", names: [`Coucou-Linux-${version}-${debArch}.deb`] },
-    { dir: "rpm", suffix: ".rpm", names: [`Coucou-Linux-${version}-${arch}.rpm`] },
+    { dir: "deb", suffix: ".deb", names: [`Qio-Linux-${version}-${debArch}.deb`] },
+    { dir: "rpm", suffix: ".rpm", names: [`Qio-Linux-${version}-${arch}.rpm`] },
   ],
 };
 
@@ -64,9 +67,12 @@ function newest(dir, suffix) {
 mkdirSync(outDir, { recursive: true });
 const written = [];
 for (const { dir, suffix, names } of packages) {
-  const built = newest(join(bundleRoot, dir), suffix);
+  let built = newest(join(bundleRoot, dir), suffix);
   if (!built) {
-    console.error(`No *${suffix} in ${join(bundleRoot, dir)} — run \`npm run tauri build\` first.`);
+    built = newest(join(altBundleRoot, dir), suffix);
+  }
+  if (!built) {
+    console.error(`No *${suffix} in ${join(bundleRoot, dir)} or ${join(altBundleRoot, dir)} — run \`npm run tauri build\` first.`);
     process.exit(1);
   }
   for (const name of names) {

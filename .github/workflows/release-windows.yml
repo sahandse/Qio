@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Release tag to create (example: v0.1.1)'
+        description: 'Release tag to create (example: v0.5.1)'
         required: true
         type: string
 
@@ -77,12 +77,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
 
       - name: Set up stable Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install application dependencies
-        run: npm install
+        run: npm ci || npm install
 
       - name: Run tests
         run: npm test
@@ -90,8 +91,8 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Check Rust compilation
-        run: cargo check --manifest-path src-tauri/Cargo.toml
+      - name: Build qio-hook binary
+        run: cargo build --release -p qio-hook
 
       - name: Build Windows installers
         run: npm run tauri build -- --bundles nsis,msi
@@ -99,7 +100,8 @@ jobs:
       - name: Verify installer files exist
         shell: pwsh
         run: |
-          $files = Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") }
+          $paths = @("target/release/bundle", "src-tauri/target/release/bundle")
+          $files = Get-ChildItem -Path $paths -ErrorAction SilentlyContinue -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") }
           if (-not $files -or $files.Count -lt 1) {
             throw "No Windows installer (.exe or .msi) was generated."
           }
@@ -109,7 +111,10 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path release-assets | Out-Null
-          Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") } | Copy-Item -Destination release-assets
+          $paths = @("target/release/bundle", "src-tauri/target/release/bundle")
+          Get-ChildItem -Path $paths -ErrorAction SilentlyContinue -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".msi") } | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination release-assets -Force
+          }
           Get-ChildItem release-assets -File | ForEach-Object {
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
             "$hash  $($_.Name)" | Add-Content -Path release-assets/SHA256SUMS.txt

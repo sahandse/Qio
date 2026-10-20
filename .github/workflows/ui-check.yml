@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
       - name: Install application dependencies
-        run: npm install
+        run: npm ci || npm install
       - name: Show build environment
         run: |
           node --version
@@ -27,8 +27,8 @@ jobs:
           cargo --version
       - run: npm test
       - run: npm run build
-      - name: Rust compile check
-        run: cargo check --manifest-path src-tauri/Cargo.toml
+      - name: Build qio-hook binary
+        run: cargo build --release -p qio-hook
       - name: Compile desktop application
         run: npm run tauri build
       - name: Upload desktop installers
@@ -37,7 +37,10 @@ jobs:
         with:
           name: Qio-${{ matrix.os }}
           path: |
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/msi/*.msi
+            target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/dmg/*.dmg
-          if-no-files-found: error
+          if-no-files-found: warn

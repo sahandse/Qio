@@ -125,9 +125,10 @@ jobs:
         env:
           TARGET: ${{ matrix.target }}
         run: |
+          cargo build --release -p qio-hook --target "$TARGET"
           npm run tauri build -- --target "$TARGET" --bundles dmg
           VERSION=$(node -p "require('./package.json').version")
-          IMAGE=$(find "src-tauri/target/$TARGET/release/bundle/dmg" -maxdepth 1 -type f -name '*.dmg' -print -quit)
+          IMAGE=$(find "target/$TARGET/release/bundle/dmg" "src-tauri/target/$TARGET/release/bundle/dmg" -maxdepth 1 -type f -name '*.dmg' 2>/dev/null | head -n 1)
           if [ -z "$IMAGE" ]; then
             echo "No DMG was generated for $TARGET"
             exit 1
