@@ -911,7 +911,13 @@ pub fn run() {
             let handle = app.handle().clone();
             log::line("startup: building tray");
             app.manage(phone_link::PhoneLink::new(handle.clone()));
-            tray::build(&handle)?;
+            // A tray/menu failure should not terminate the entire companion.
+            // Record the underlying error so it can be diagnosed from qio.log.
+            if let Err(err) = tray::build(&handle) {
+                log::line(format!("startup: tray unavailable: {err}"));
+            } else {
+                log::line("startup: tray ready");
+            }
             // Before the island: see create_settings_window.
             log::line("startup: creating main window");
             create_settings_window(&handle);
