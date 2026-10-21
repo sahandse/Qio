@@ -16,12 +16,14 @@ installFakeDom();
 // ── The catalog itself ────────────────────────────────────────────────────────
 
 test("the catalog holds the Mac's pills with the Claude Code label for Windows and Linux", () => {
-  // Copied from NotchBuddy/Sources/CoucouKit/PillCatalog.swift: an ID is a
-  // contract value, and a colour or subtitle that drifts is a visible bug.
-  // Windows and Linux name the Claude Code integration after the agent.
+  // Copied from NotchBuddy/Sources/CoucouKit/PillCatalog.swift, then Lintel's
+  // newer entries: an ID is a contract value, and a colour or subtitle that
+  // drifts is a visible bug. Windows and Linux name the Claude Code integration
+  // after the agent.
   const mac = [
     ["integration_claude", "Claude Code", "#F5F6F8", "workspace", "Integration"],
     ["agent_cursor", "Cursor", "#C0C4CC", "workspace", "Integration"],
+    ["agent_jetbrains", "JetBrains", "#FF318C", "workspace", "Integration"],
     ["agent_antigravity", "Antigravity", "#E879F9", "workspace", "Integration"],
     ["agent_codex", "Codex", "#2DD4BF", "workspace", "Integration"],
     ["agent_gemini", "Gemini CLI", "#8AB4F8", "agent", "Agent"],
@@ -30,6 +32,7 @@ test("the catalog holds the Mac's pills with the Claude Code label for Windows a
     ["agent_opencode", "OpenCode", "#4ADE80", "agent", "Agent"],
     ["agent_amp", "Amp", "#F59E0B", "agent", "Agent"],
     ["agent_hermes", "Hermes", "#C084FC", "agent", "Agent"],
+    ["agent_kiro", "Kiro", "#9046FF", "agent", "Agent"],
     ["agent_claude-desktop", "Claude Desktop", "#D97757", "agent", "Agent"],
     ["ai_anthropic", "Anthropic", "#E07950", "ai", "Chat"],
     ["ai_google", "Google AI", "#4285F4", "ai", "Chat"],
@@ -43,6 +46,7 @@ test("the catalog holds the Mac's pills with the Claude Code label for Windows a
     ["integration_notion", "Notion", "#8C8C8C", "service", "Integration"],
     ["integration_calcom", "Cal.com", "#C9956A", "service", "Integration"],
     ["integration_stripe", "Stripe", "#0570DE", "service", "Integration"],
+    ["integration_linear", "Linear", "#5E6AD2", "service", "Integration"],
     ["integration_music", "Apple Music", "#FA2D48", "service", "Integration"],
     ["integration_spotify", "Spotify", "#1DB954", "service", "Integration"],
   ];
@@ -76,6 +80,17 @@ test("the shipped pills keep their IDs, colours and sources with current display
 test("IDs are unique", () => {
   const ids = PILL_CATALOG.map((p) => p.id);
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test("Lintel's newer entries say Coming soon until their backend is here", () => {
+  for (const id of ["agent_jetbrains", "agent_kiro", "integration_linear"]) {
+    assert.equal(pillDefinition(id).support, "soon", id);
+    assert.ok(isComingSoon(id), id);
+    assert.ok(availablePills("windows").some((p) => p.id === id), id);
+  }
+  // Nothing that does nothing may become the main pill.
+  assert.ok(!mainPillChoices("windows").some((p) => p.id === "agent_jetbrains"));
+  assert.equal(pillDefinition("integration_linear").connect.key, "linear-api-key");
 });
 
 test("this build leaves out what only macOS has, and Claude Desktop on Linux", () => {
@@ -140,7 +155,7 @@ test("the main pill is a workspace tool that works here", () => {
 });
 
 test("hook-driven pills are the workspace tools and the agents with hooks", () => {
-  for (const id of ["integration_claude", "agent_cursor", "agent_codex", "agent_gemini", "agent_copilot", "agent_muse", "agent_antigravity", "agent_opencode", "agent_amp", "agent_hermes"]) {
+  for (const id of ["integration_claude", "agent_cursor", "agent_jetbrains", "agent_codex", "agent_gemini", "agent_copilot", "agent_muse", "agent_antigravity", "agent_opencode", "agent_amp", "agent_hermes", "agent_kiro"]) {
     assert.ok(isHookPill(id), id);
   }
   for (const id of ["agent_claude-desktop", "ai_anthropic", "integration_stripe", "agent_unknown"]) {
