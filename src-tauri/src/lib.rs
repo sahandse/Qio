@@ -726,7 +726,14 @@ fn open_settings_window(app: AppHandle, page: Option<String>) {
 }
 
 pub fn run() {
+    // A GUI-subsystem Windows executable has no console. Persist panics before
+    // startup completes so a launch-and-exit failure is diagnosable.
+    std::panic::set_hook(Box::new(|info| {
+        log::line(format!("FATAL panic: {info}"));
+    }));
+    log::line("startup: preparing environment");
     platform::prepare_environment();
+    log::line("startup: loading settings");
     let loaded = settings::load();
     i18n::set_picked(&loaded.language);
     let gate = Arc::new(PollGate::new());
@@ -902,9 +909,11 @@ pub fn run() {
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
+            log::line("startup: building tray");
             app.manage(phone_link::PhoneLink::new(handle.clone()));
             tray::build(&handle)?;
             // Before the island: see create_settings_window.
+            log::line("startup: creating main window");
             create_settings_window(&handle);
             // Same rule for Mochi's desktop window and the dictation pill.
             desktop::setup(&handle);
@@ -948,10 +957,15 @@ pub fn run() {
                 // writing it again adds it, so the window stays hidden at login.
                 let _ = handle.autolaunch().enable();
             }
-            let open_window = flow::get(&handle).map(|f| f.store.lock().unwrap().prefs.open_at_launch).unwrap_or(true);
-            if open_window && !launched_at_login() {
+            // A normal launch from Start/Desktop must always open a visible
+            // window. The hidden-at-login behavior remains unchanged.
+            if !launched_at_login() {
+                log::line("startup: showing main window");
                 show_hub(&handle, None);
+            } else {
+                log::line("startup: login launch; keeping main window hidden");
             }
+            log::line("startup: initialization complete");
             Ok(())
         })
         .build(tauri::generate_context!())
