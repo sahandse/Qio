@@ -1,7 +1,7 @@
 // Every pill the island can show — port of PillCatalog.swift, the single source
 // of truth on macOS. IDs, names, colours, categories and subtitles are the Mac's,
-// in the Mac's order: they are contract values (settings, hook routing), so an
-// ID here never changes once shipped.
+// in the Mac's order, with Lintel's newer entries after them: they are contract
+// values (settings, hook routing), so an ID here never changes once shipped.
 //
 // What is added for Windows and Linux is `support` — not every Mac pill has
 // something behind it here — and `connect`, which says what makes the pill
@@ -26,7 +26,7 @@ export const PILL_CATEGORIES: { id: PillCategory; title: string }[] = [
  * - `yes`: works on Windows and Linux;
  * - `windows`: Windows only (the app behind it has no Linux build);
  * - `linux`: Linux only (what drives it is Linux's);
- * - `soon`: can be declared, shows "Coming soon" (macOS has it, this build not yet);
+ * - `soon`: can be declared, shows "Coming soon" (upstream has it, this build not yet);
  * - `no`: macOS only, never offered here.
  */
 export type PillSupport = "yes" | "windows" | "linux" | "soon" | "no";
@@ -77,6 +77,10 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // Claude Code in Cursor's terminal: the same hooks as Claude Code.
   { id: "agent_cursor", name: "Cursor", color: "#C0C4CC", category: "workspace",
     subtitle: N_("Integration"), source: "agent", support: "yes", connect: hooks },
+  // Claude Code in a JetBrains IDE's terminal: upstream tells it apart from
+  // other terminals and tags it. The relay here does not tag it yet.
+  { id: "agent_jetbrains", name: "JetBrains", color: "#FF318C", category: "workspace",
+    subtitle: N_("Integration"), source: "agent", support: "soon", connect: hooks },
   { id: "agent_antigravity", name: "Antigravity", color: "#E879F9", category: "workspace",
     subtitle: N_("Integration"), source: "agent", support: "yes", connect: hooks },
   { id: "agent_codex", name: "Codex", color: "#2DD4BF", category: "workspace",
@@ -95,6 +99,10 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
   { id: "agent_hermes", name: "Hermes", color: "#C084FC", category: "agent",
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
+  // Kiro CLI: upstream installs its hooks and answers its approvals, neither of
+  // which this build does yet.
+  { id: "agent_kiro", name: "Kiro", color: "#9046FF", category: "agent",
+    subtitle: N_("Agent"), source: "agent", support: "soon", connect: hooks },
   // Claude Code sessions run from the Claude desktop app: the relay tags them
   // from CLAUDE_CODE_ENTRYPOINT, so there is nothing to install. The app has no
   // Linux build.
@@ -128,6 +136,9 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: key("calcom-api-key") },
   { id: "integration_stripe", name: "Stripe", color: "#0570DE", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: key("stripe-api-key") },
+  // Linear's issues and inbox, as upstream polls them (GraphQL). No poller here yet.
+  { id: "integration_linear", name: "Linear", color: "#5E6AD2", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "soon", connect: key("linear-api-key") },
   { id: "integration_music", name: "Apple Music", color: "#FA2D48", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "no", connect: none },
   // Spotify through MPRIS on Linux and the system media controls on Windows
