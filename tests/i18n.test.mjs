@@ -12,7 +12,7 @@ import { installFakeDom } from "./fakedom.mjs";
 installFakeDom();
 
 const {
-  LANGUAGES, LANGUAGE_CODES, N_, dayMonth, isComplete, isRtl, labels, language, lookup, monthShort,
+  LANGUAGES, LANGUAGE_CODES, MAC_LANGUAGES, N_, dayMonth, isComplete, isRtl, labels, language, lookup, monthShort,
   onLanguageChange, resolveLanguage, setLanguage, t, tl, tn, weekdayShort,
 } = await import("../src/i18n/i18n.ts");
 const { h, relabel, liveTextCount } = await import("../src/views/dom.ts");
@@ -22,7 +22,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const WINDOWS = join(here, "..");
 const MAC = JSON.parse(readFileSync(join(WINDOWS, "src/i18n/strings.json"), "utf8"));
 const EXTRA = JSON.parse(readFileSync(join(WINDOWS, "src/i18n/extra.json"), "utf8"));
-const OTHERS = LANGUAGE_CODES.filter((l) => l !== "en");
+const FA = JSON.parse(readFileSync(join(WINDOWS, "src/i18n/fa.json"), "utf8"));
+/** The Mac's languages but English: strings.json and extra.json carry these. */
+const OTHERS = MAC_LANGUAGES.filter((l) => l !== "en");
 
 /** Runs `fn` in `lang`, then puts English back for the other tests. */
 function inLanguage(lang, fn) {
@@ -109,6 +111,7 @@ test("System follows the system's language when Coucou has it, else English", ()
   assert.equal(resolveLanguage("", ["zh-CN"]), "zh-Hans");
   assert.equal(resolveLanguage("", ["zh-TW"]), "en"); // Traditional is not one of ours
   assert.equal(resolveLanguage("", ["ar-EG"]), "ar");
+  assert.equal(resolveLanguage("", ["fa-IR", "en-US"]), "fa");
   assert.equal(resolveLanguage("", ["it-IT"]), "en");
   assert.equal(resolveLanguage("", []), "en");
   // A picked language wins; one this build doesn't know means System.
@@ -116,10 +119,12 @@ test("System follows the system's language when Coucou has it, else English", ()
   assert.equal(resolveLanguage("xx", ["bn-IN"]), "bn");
 });
 
-test("the picker offers the Mac's languages, Arabic reads right to left", () => {
-  assert.deepEqual(LANGUAGES.map((l) => l.code), ["en", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id", "de", "tr"]);
+test("the picker offers the Mac's languages plus Persian; Arabic and Persian read right to left", () => {
+  assert.deepEqual(LANGUAGES.map((l) => l.code), ["en", "fa", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id", "de", "tr"]);
   assert.equal(isRtl("ar"), true);
+  assert.equal(isRtl("fa"), true);
   assert.equal(OTHERS.some((l) => l !== "ar" && isRtl(l)), false);
+  assert.equal(LANGUAGE_CODES.filter((l) => isRtl(l)).join(","), "ar,fa");
 });
 
 test("German translates both tables, fills placeholders and falls back to English", () => {
@@ -238,6 +243,31 @@ test("Turkish can be selected or resolved from regional system languages", () =>
 
 test("Turkish Apple translations keep their placeholders and plural forms", () => checkAppleTranslations("tr"));
 
+test("Persian translates both tables, keeps its placeholders and needs no plural split", () => {
+  inLanguage("fa", () => {
+    assert.equal(t("Allow"), "اجازه بده");
+    assert.equal(t("Deny"), "رد کن");
+    assert.equal(t("Open the chat"), "بازکردن گفت‌وگو");
+    assert.equal(t("Uploading {name}", { name: "a.pdf" }), "در حال فرستادن a.pdf");
+    assert.equal(t("Some brand new sentence."), "Some brand new sentence.");
+    for (const count of [0, 1, 2, 21]) {
+      assert.equal(tn("{count} repo", "{count} repos", count), `${count} مخزن`);
+      assert.equal(tn("✓ Connected · {count} model", "✓ Connected · {count} models", count), `✓ متصل · ${count} مدل`);
+    }
+  });
+  const previousRoot = document.documentElement;
+  document.documentElement = { lang: "en", dataset: {} };
+  try {
+    inLanguage("fa", () => {
+      assert.equal(document.documentElement.lang, "fa");
+      assert.equal(document.documentElement.dataset.dir, "rtl");
+    });
+  } finally {
+    if (previousRoot === undefined) delete document.documentElement;
+    else document.documentElement = previousRoot;
+  }
+});
+
 test("a language change relabels what was built, in place, and says so once", () => {
   let told = 0;
   const off = onLanguageChange(() => told++);
@@ -303,18 +333,46 @@ for (const [name, table] of [["strings.json", MAC.strings], ["extra.json", EXTRA
   });
 }
 
+test("fa.json translates every string of both tables, with the key's placeholders", () => {
+  const english = { ...MAC.strings, ...EXTRA.strings };
+  for (const key of Object.keys(FA.strings)) assert.ok(key in english, `fa.json: ${JSON.stringify(key)} is not a string of either table`);
+  for (const [name, table] of [["strings.json", MAC.strings], ["extra.json", EXTRA.strings]]) {
+    for (const key of Object.keys(table)) {
+      const value = FA.strings[key]?.fa;
+      assert.ok(value !== undefined, `${name}: ${JSON.stringify(key)} has no fa`);
+      const forms = typeof value === "string" ? [value] : Object.values(value);
+      assert.ok(forms.length, `${JSON.stringify(key)}: no Persian form`);
+      for (const form of forms) {
+        assert.ok(String(form).trim(), `${JSON.stringify(key)}: blank Persian`);
+        const got = placeholders(form);
+        const ok = typeof value === "string"
+          ? JSON.stringify(got) === JSON.stringify(placeholders(key))
+          : got.every((p) => placeholders(key).includes(p));
+        assert.ok(ok, `fa: ${JSON.stringify(form)} for ${JSON.stringify(key)}`);
+      }
+      // Persian needs no split beyond "one", but keeps the shape the lookup expects.
+      if (typeof value !== "string") assert.deepEqual(Object.keys(value).sort(), ["one", "other"], key);
+    }
+  }
+});
+
 test("extra.json never shadows a string of the Mac's", () => {
   for (const key of Object.keys(EXTRA.strings)) assert.ok(!(key in MAC.strings), key);
 });
 
 test("generated, Rust and Apple language registrations agree with the picker", () => {
-  assert.deepEqual(GENERATED_LANGUAGES, [...LANGUAGE_CODES]);
-  assert.deepEqual(MAC.languages, [...LANGUAGE_CODES]);
+  assert.deepEqual(GENERATED_LANGUAGES, [...MAC_LANGUAGES]);
+  assert.deepEqual(MAC.languages, [...MAC_LANGUAGES]);
+  assert.deepEqual([...LANGUAGE_CODES], [...MAC_LANGUAGES, "fa"]);
   const rust = readFileSync(join(WINDOWS, "src-tauri/src/i18n.rs"), "utf8");
   const registered = rust.match(/pub const LANGUAGES: \[&str; (\d+)\] = (\[[^;]+\]);/);
   assert.ok(registered);
   assert.equal(Number(registered[1]), LANGUAGE_CODES.length);
   assert.deepEqual(JSON.parse(registered[2]), [...LANGUAGE_CODES]);
+  // Rust embeds the same three tables the webview merges.
+  for (const file of ["strings.json", "extra.json", "fa.json"]) {
+    assert.ok(rust.includes(`include_str!("../../src/i18n/${file}")`), file);
+  }
   // The Mac may have languages Windows and Linux don't have yet, never the other way round.
   // Both Mac targets (Info.plist files and project.yml) declare the same ones.
   const apple = [];

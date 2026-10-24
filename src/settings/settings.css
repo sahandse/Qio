@@ -422,10 +422,16 @@ select option {
   color: #ff8d97;
 }
 
-/* Arabic: the window reads right to left (main.ts sets <html dir="rtl">);
+/* Arabic and Persian: the window reads right to left (main.ts sets <html dir="rtl">);
    diffs, paths, keys and addresses stay left to right. */
 html[dir="rtl"] :is(.diff, .path, .keycap, input[type="password"], input[type="text"]) {
   direction: ltr;
+}
+
+/* Persian at the small sizes this window uses reads badly in Segoe UI's Arabic
+   cut; see src/style.css for the same rule in the island. */
+html[lang="fa"] {
+  --font: "Vazirmatn", "Tahoma", "Segoe UI", "Noto Sans Arabic", sans-serif;
 }
 
 /* Settings → Android phone: the pairing QR code (an SVG from Rust, black on white). */

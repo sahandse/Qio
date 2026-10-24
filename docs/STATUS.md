@@ -3,6 +3,7 @@
 ## Implemented in source
 - Tauri 2 floating desktop companion with original voxel character, expressive states, reduced-motion control, themes, and character scaling.
 - Persian/English direction switching, plus search and agent filters for local activity history.
+- Persian (فارسی) as a full interface language: `src/i18n/fa.json` carries every string of the Mac's catalog and of `extra.json`, in the webview, the hub pages and the Rust tray, notifications and errors.
 - Local metadata-only hooks and setup scripts for Cursor, Claude Code, and Qoder. The UI distinguishes hook configuration from actual activity.
 - Direct API chat with OpenAI-compatible providers and a native Anthropic Messages API path for Claude.
 - Optional notifications and a persistent local setting to pause new hook-event logging. Existing history remains until explicitly cleared.
@@ -10,13 +11,13 @@
 - macOS workflow builds DMGs for Intel and Apple Silicon and can attach them to a release after the Windows release workflow succeeds.
 
 ## Release and verification
-- Latest verified published release before the next release pipeline: v0.1.5.
-- Source version is configured for v0.1.6. Do not treat it as published until GitHub Release contains the expected installer assets.
+- Latest published release: v0.5.2 (Windows NSIS + MSI, checksums, GitHub Release assets).
+- The source version moves with each release; treat a version as published only when its GitHub Release carries the installers.
 - macOS builds are currently unsigned and not notarized unless a release explicitly states otherwise.
 - CI must pass tests, frontend build, Rust compilation, and packaging before the new release is considered ready.
 
 ## Not yet complete or independently verified
-- Complete translation of every guide and status string.
+- A manual pass of the Persian interface on a physical Windows device, at the island's several sizes.
 - Tested adapters for every listed coding agent and compatibility across their versions.
 - macOS code signing and notarization.
 - Resource-use/performance checks and manual installation validation on physical Windows and macOS devices.
