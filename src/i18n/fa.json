@@ -1,0 +1,3359 @@
+{
+ "_about": "Persian, keyed by the English text like strings.json and extra.json. Hand-written for Qio; the Mac's catalog has no Persian.",
+ "strings": {
+  " is ready.": {
+   "fa": " آماده است."
+  },
+  "1 year": {
+   "fa": "۱ سال"
+  },
+  "30 days": {
+   "fa": "۳۰ روز"
+  },
+  "4 active — remove which?": {
+   "fa": "۴ مورد فعال است — کدام حذف شود؟"
+  },
+  "5 hours": {
+   "fa": "۵ ساعت"
+  },
+  "7 days": {
+   "fa": "۷ روز"
+  },
+  "A wrong word, or the wrong person? Fix it from the line's ⋯ menu. Words you correct are remembered for your next calls.": {
+   "fa": "کلمه اشتباه، یا شخص اشتباه؟ از فهرست ⋯ همان خط اصلاحش کن. اصلاح‌هایی که انجام می‌دهی برای تماس‌های بعدی به یاد می‌ماند."
+  },
+  "AI for the chat": {
+   "fa": "هوش مصنوعی گفت‌وگو"
+  },
+  "API key": {
+   "fa": "کلید API"
+  },
+  "API key  (cal_live_…)": {
+   "fa": "کلید API  (cal_live_…)"
+  },
+  "API key  (re_…)": {
+   "fa": "کلید API  (re_…)"
+  },
+  "API key (AI Studio)": {
+   "fa": "کلید API (AI Studio)"
+  },
+  "API key (sk-ant-…)": {
+   "fa": "کلید API (sk-ant-…)"
+  },
+  "API key (sk-…)": {
+   "fa": "کلید API (sk-…)"
+  },
+  "AUTO": {
+   "fa": "خودکار"
+  },
+  "Accessibility allowed: Coucou pastes where you type.": {
+   "fa": "دسترسی ویرایشگری اجازه دارد: کیو آن‌جا که می‌نویسی جای‌گذاری می‌کند."
+  },
+  "Accessibility needed to paste": {
+   "fa": "برای جای‌گذاری، دسترسی ویرایشگری لازم است"
+  },
+  "Active pills": {
+   "fa": "ابزارهای فعال"
+  },
+  "Activity": {
+   "fa": "فعالیت"
+  },
+  "Add": {
+   "fa": "افزودن"
+  },
+  "Add a word, e.g. Supabase": {
+   "fa": "یک کلمه اضافه کن، مثلاً Supabase"
+  },
+  "Add an app": {
+   "fa": "افزودن یک برنامه"
+  },
+  "Add coins in Settings → Integrations": {
+   "fa": "سکه‌ها را در تنظیمات ← یکپارچه‌سازی‌ها اضافه کن"
+  },
+  "Add your Anthropic API key in Settings → Chat first.": {
+   "fa": "اول کلید Anthropic API خودت را در تنظیمات ← گفت‌وگو وارد کن."
+  },
+  "Advertisement": {
+   "fa": "تبلیغ"
+  },
+  "After «OK Coucou», what you say goes to Claude with your Anthropic API key, with what Coucou reads to answer (your pills, your services' data, a contact's address). It acts and searches the web. Never audio.": {
+   "fa": "پس از «باشه کیو»، هر چه بگویی با کلید Anthropic خودت به Claude فرستاده می‌شود، همراه با آنچه کیو برای پاسخ می‌خواند (ابزارهایت، داده سرویس‌هایت، آدرس یک مخاطب). کیو اقدام می‌کند و در وب جست‌وجو می‌کند. هرگز صدای تو ارسال نمی‌شود."
+  },
+  "Agent": {
+   "fa": "عامل"
+  },
+  "Agents": {
+   "fa": "عامل‌ها"
+  },
+  "Alert me when a coin moves {0} %": {
+   "fa": "وقتی قیمت یک سکه {0} درصد تکان خورد به من خبر بده"
+  },
+  "All": {
+   "fa": "همه"
+  },
+  "Allow": {
+   "fa": "اجازه بده"
+  },
+  "Allow Coucou in System Settings › Privacy & Security › Accessibility.": {
+   "fa": "در System Settings › Privacy & Security › Accessibility به کیو اجازه بده."
+  },
+  "Allow Coucou in System Settings → Privacy & Security → Screen Recording, then capture again.": {
+   "fa": "در تنظیمات سیستم ← حریم خصوصی و امنیت ← ضبط صفحه به کیو اجازه بده، سپس دوباره تصویر را بگیر."
+  },
+  "Allow Coucou to control Music": {
+   "fa": "به کیو اجازه بده Music را کنترل کند"
+  },
+  "Allow Coucou to control Spotify": {
+   "fa": "به کیو اجازه بده Spotify را کنترل کند"
+  },
+  "Already active": {
+   "fa": "از قبل فعال است"
+  },
+  "Always": {
+   "fa": "همیشه"
+  },
+  "Amp plugin": {
+   "fa": "افزونه Amp"
+  },
+  "An instruction sent from the iPhone uses the model open in chat. The system prompt and conversation history apply. Instructions sent when Coucou is not running are queued and executed on next launch.": {
+   "fa": "دستوری که از آیفون فرستاده می‌شود از مدلی استفاده می‌کند که در گفت‌وگو باز است. دستور سیستم و تاریخچه گفت‌وگو اعمال می‌شود. دستورهایی که وقتی کیو اجرا نمی‌شود فرستاده شوند در صف می‌مانند و در اجرای بعدی انجام می‌شوند."
+  },
+  "Annotate": {
+   "fa": "یادداشت‌گذاری"
+  },
+  "Answer questions and permissions from terminal sessions in the notch": {
+   "fa": "پاسخ سوال‌ها و مجوزهای نشست‌های ترمینال، از ناچ"
+  },
+  "Anthropic API": {
+   "fa": "Anthropic API"
+  },
+  "Antigravity hooks": {
+   "fa": "هوک‌های Antigravity"
+  },
+  "App": {
+   "fa": "برنامه"
+  },
+  "Apple Intelligence": {
+   "fa": "Apple Intelligence"
+  },
+  "Applies on next launch": {
+   "fa": "از اجرای بعدی اعمال می‌شود"
+  },
+  "Approval requests appear in the notch. If Coucou is not running, Hermes falls back to its own prompt.": {
+   "fa": "درخواست‌های تأیید در ناچ نمایش داده می‌شوند. اگر کیو اجرا نشود، Hermes به سوال خودش برمی‌گردد."
+  },
+  "Approval requests are handled by Hermes (terminal or gateway).": {
+   "fa": "درخواست‌های تأیید را Hermes مدیریت می‌کند (ترمینال یا درگاه)."
+  },
+  "Approved": {
+   "fa": "تأیید شد"
+  },
+  "As said": {
+   "fa": "همان‌طور که گفتی"
+  },
+  "As spoken": {
+   "fa": "آن‌طور که شنیده شد"
+  },
+  "Ask Claude": {
+   "fa": "از Claude بپرس"
+  },
+  "Ask a question": {
+   "fa": "سوال بپرس"
+  },
+  "Ask a question about it": {
+   "fa": "درباره‌اش سوال بپرس"
+  },
+  "Ask me anything…": {
+   "fa": "هر سوالی داری بپرس…"
+  },
+  "Attach front window": {
+   "fa": "پیوست پنجره روبه‌رو"
+  },
+  "Auto (seasons)": {
+   "fa": "خودکار (فصل‌ها)"
+  },
+  "Auto mode": {
+   "fa": "حالت خودکار"
+  },
+  "Auto-close · {seconds}s": {
+   "fa": "بسته‌شدن خودکار · {seconds} ثانیه"
+  },
+  "Automatic": {
+   "fa": "خودکار"
+  },
+  "Automatic (your Mac’s dictation language)": {
+   "fa": "خودکار (زبان دیکتهٔ مک تو)"
+  },
+  "Automation not allowed": {
+   "fa": "اتوماسیون اجازه ندارد"
+  },
+  "Battery {0} %": {
+   "fa": "باتری {0} ٪"
+  },
+  "Beanie": {
+   "fa": "کلاه بافتنی"
+  },
+  "Behavior": {
+   "fa": "رفتار"
+  },
+  "Billing problem on the Claude account.": {
+   "fa": "در حساب Claude مشکل صورتحساب وجود دارد."
+  },
+  "Both use Claude with your own key: only the words go to Anthropic, never your voice, which stays on your Mac. If Claude doesn't answer in time, the words are pasted as heard.": {
+   "fa": "هر دو با کلید خودت از Claude استفاده می‌کنند: فقط نوشته‌ها به Anthropic می‌روند، هرگز صدای تو که روی مک می‌ماند. اگر Claude به‌موقع پاسخ ندهد، همان چیزی که شنیده شده جای‌گذاری می‌شود."
+  },
+  "Bottom": {
+   "fa": "پایین"
+  },
+  "Bow": {
+   "fa": "پاپیون"
+  },
+  "Bunny ears": {
+   "fa": "گوش خرگوشی"
+  },
+  "Busiest day": {
+   "fa": "شلوغ‌ترین روز"
+  },
+  "COMMANDS": {
+   "fa": "دستورها"
+  },
+  "Call · {0}": {
+   "fa": "تماس · {0}"
+  },
+  "Can't reach {name} at {url}. Is it running?": {
+   "fa": "به {name} در {url} نمی‌رسم. آیا در حال اجراست؟"
+  },
+  "Cancel": {
+   "fa": "لغو"
+  },
+  "Cancel a dictation": {
+   "fa": "لغو دیکته"
+  },
+  "Capture the screen for Claude": {
+   "fa": "گرفتن تصویر صفحه برای Claude"
+  },
+  "Captured. Mochi has it.": {
+   "fa": "گرفته شد. موچی آن را دارد."
+  },
+  "Change plan": {
+   "fa": "تغییر پلن"
+  },
+  "Chat": {
+   "fa": "گفت‌وگو"
+  },
+  "Chat with {name}": {
+   "fa": "گفت‌وگو با {name}"
+  },
+  "Chat — other providers": {
+   "fa": "گفت‌وگو — ارائه‌دهندگان دیگر"
+  },
+  "Check now": {
+   "fa": "همین حالا بررسی کن"
+  },
+  "Checking the download…": {
+   "fa": "در حال بررسی فایل دانلودی…"
+  },
+  "Checking the signature…": {
+   "fa": "در حال بررسی امضا…"
+  },
+  "Choose the tools you use. Coucou only shows what you declare here.": {
+   "fa": "ابزارهایی که استفاده می‌کنی را انتخاب کن. کیو فقط آنچه را اینجا اعلام کنی نشان می‌دهد."
+  },
+  "City": {
+   "fa": "شهر"
+  },
+  "Classic token with repo scope, or fine-grained with read access to Pull requests, commit statuses, and Actions.": {
+   "fa": "توکن کلاسیک با دسترسی repo، یا توکن fine-grained با دسترسی خواندن به Pull requests، وضعیت کامیت‌ها و Actions."
+  },
+  "Claude (your key)": {
+   "fa": "Claude (کلید تو)"
+  },
+  "Claude Code finished": {
+   "fa": "Claude Code کارش تمام شد"
+  },
+  "Claude Code hooks": {
+   "fa": "هوک‌های Claude Code"
+  },
+  "Claude Code is asking": {
+   "fa": "Claude Code سوال می‌پرسد"
+  },
+  "Claude Code is not signed in, or its key is no longer valid.": {
+   "fa": "Claude Code وارد نشده یا کلیدش دیگر معتبر نیست."
+  },
+  "Claude Code, Codex and the other agents Mochi follows.": {
+   "fa": "Claude Code، Codex و سایر عامل‌هایی که موچی دنبال می‌کند."
+  },
+  "Claude Desktop chats (experimental)": {
+   "fa": "گفت‌وگوهای Claude Desktop (آزمایشی)"
+  },
+  "Claude as Coucou's brain": {
+   "fa": "Claude به‌عنوان مغز کیو"
+  },
+  "Claude cleans up what you say, in the style of the app you write in.": {
+   "fa": "Claude هر چه می‌گویی را در سبک همان برنامه‌ای که در آن می‌نویسی مرتب می‌کند."
+  },
+  "Claude is overloaded. Try again in a moment.": {
+   "fa": "Claude شلوغ است. کمی بعد دوباره امتحان کن."
+  },
+  "Claude is reading {name}…": {
+   "fa": "Claude در حال خواندن {name} است…"
+  },
+  "Claude is searching…": {
+   "fa": "Claude در حال جست‌وجو است…"
+  },
+  "Claude plan": {
+   "fa": "پلن Claude"
+  },
+  "Claude's rate limit is reached. Try again in a moment.": {
+   "fa": "سقف درخواست Claude پر شده است. کمی بعد دوباره امتحان کن."
+  },
+  "Claude's servers had a problem. Try again.": {
+   "fa": "سرورهای Claude مشکل داشتند. دوباره امتحان کن."
+  },
+  "Clean up with Claude": {
+   "fa": "با Claude مرتب کن"
+  },
+  "Clear": {
+   "fa": "پاک کن"
+  },
+  "Clear history": {
+   "fa": "پاک‌کردن تاریخچه"
+  },
+  "Close": {
+   "fa": "بستن"
+  },
+  "Close after": {
+   "fa": "بستن پس از"
+  },
+  "Close notch (if not pinned)": {
+   "fa": "بستن ناچ (اگر سنجاق نشده باشد)"
+  },
+  "Codex hooks": {
+   "fa": "هوک‌های Codex"
+  },
+  "Coins (BTC, ETH, SOL…)": {
+   "fa": "سکه‌ها (BTC، ETH، SOL…)"
+  },
+  "Color": {
+   "fa": "رنگ"
+  },
+  "Coming soon": {
+   "fa": "به‌زودی"
+  },
+  "Command not recognised": {
+   "fa": "دستور شناخته نشد"
+  },
+  "Completed successfully.": {
+   "fa": "با موفقیت انجام شد."
+  },
+  "Confirm and write": {
+   "fa": "تأیید و نوشتن"
+  },
+  "Connect": {
+   "fa": "اتصال"
+  },
+  "Connect to a local model server. No API key required.": {
+   "fa": "به یک سرویس مدل محلی وصل شو. بدون نیاز به کلید API."
+  },
+  "Connected": {
+   "fa": "متصل"
+  },
+  "Connected · loading…": {
+   "fa": "متصل · در حال بارگذاری…"
+  },
+  "Connected · {detail}": {
+   "fa": "متصل · {detail}"
+  },
+  "Connecting…": {
+   "fa": "در حال اتصال…"
+  },
+  "Continue…": {
+   "fa": "ادامه…"
+  },
+  "Copied": {
+   "fa": "کپی شد"
+  },
+  "Copied · allow Accessibility to paste": {
+   "fa": "کپی شد · برای جای‌گذاری به ویرایشگری اجازه بده"
+  },
+  "Copy": {
+   "fa": "کپی"
+  },
+  "Copy as Markdown": {
+   "fa": "کپی به‌صورت Markdown"
+  },
+  "Correct the transcript again": {
+   "fa": "بازنویسی متن را دوباره اصلاح کن"
+  },
+  "Coucou Flow…": {
+   "fa": "کیو Flow…"
+  },
+  "Coucou answers in": {
+   "fa": "کیو پاسخ می‌دهد به"
+  },
+  "Coucou can't hear you: the microphone is not allowed or not available.": {
+   "fa": "کیو صدای تو را نمی‌شنود: میکروفون اجازه ندارد یا در دسترس نیست."
+  },
+  "Coucou can't paste yet, or see Esc: it needs the Accessibility permission. Turn on Coucou in System Settings → Privacy & Security → Accessibility. If it is already on, remove it with − and add it again: a new build of Coucou needs it again.": {
+   "fa": "کیو هنوز نمی‌تواند جای‌گذاری کند یا Esc را ببیند: به دسترسی ویرایشگری نیاز دارد. کیو را در تنظیمات سیستم ← حریم خصوصی و امنیت ← ویرایشگری روشن کن. اگر روشن است، با − حذفش کن و دوباره اضافه کن: یک بیلد تازه از کیو دوباره به آن نیاز دارد."
+  },
+  "Coucou can't use the microphone. Allow it in System Settings → Privacy & Security → Microphone.": {
+   "fa": "کیو نمی‌تواند از میکروفون استفاده کند. در تنظیمات سیستم ← حریم خصوصی و امنیت ← میکروفون به آن اجازه بده."
+  },
+  "Coucou couldn't paste: your words are copied. Press ⌘V, and allow Accessibility so it pastes for you.": {
+   "fa": "کیو نتوانست جای‌گذاری کند: نوشته‌ات کپی شده است. ⌘V را بزن و اجازه بده ویرایشگری فعال باشد تا خودش جای‌گذاری کند."
+  },
+  "Coucou is up to date": {
+   "fa": "کیو به‌روز است"
+  },
+  "Coucou is writing the transcript, person by person…": {
+   "fa": "کیو متن را نفر به نفر می‌نویسد…"
+  },
+  "Coucou isn’t in your Applications folder, so it can’t replace itself: get the new version on GitHub.": {
+   "fa": "کیو داخل پوشه Applications نیست، پس نمی‌تواند خودش را جایگزین کند: نسخه تازه را از GitHub بگیر."
+  },
+  "Coucou looks at its own releases on GitHub a few times a day. An update is installed only after your click, once Apple’s signature and notarization check out.": {
+   "fa": "کیو چند بار در روز انتشارهای خودش را در GitHub می‌بیند. به‌روزرسانی فقط پس از کلیک تو نصب می‌شود، وقتی امضای اپل و notarization آن درست باشد."
+  },
+  "Coucou reads back results in the spoken language, using a synthesized voice. 100% on-device.": {
+   "fa": "کیو نتیجه‌ها را با صدای مصنوعی و به همان زبان گفتاری برایت می‌خواند. ۱۰۰٪ روی دستگاه خودت."
+  },
+  "Coucou responds aloud": {
+   "fa": "کیو با صدا پاسخ می‌دهد"
+  },
+  "Coucou writes your calls on your Mac with Parakeet, and tells the voices apart with a second small model. Both are downloaded once (about 650 MB), then everything works offline.": {
+   "fa": "کیو تماس‌هایت را با Parakeet روی مک تو می‌نویسد و صداها را با یک مدل کوچک دوم از هم تشخیص می‌دهد. هر دو یک‌بار دانلود می‌شوند (حدود ۶۵۰ مگابایت) و بعد همه‌چیز آفلاین کار می‌کند."
+  },
+  "Coucou {0} is out": {
+   "fa": "کیو {0} منتشر شد"
+  },
+  "Couldn’t reach GitHub": {
+   "fa": "GitHub در دسترس نبود"
+  },
+  "Counted on your Mac, never sent anywhere.": {
+   "fa": "روی مک تو شمرده می‌شود، هرگز جایی ارسال نمی‌شود."
+  },
+  "Crown": {
+   "fa": "تاج"
+  },
+  "Currency": {
+   "fa": "ارز"
+  },
+  "Custom…": {
+   "fa": "دلخواه…"
+  },
+  "DeepSeek key saved.": {
+   "fa": "کلید DeepSeek ذخیره شد."
+  },
+  "Default": {
+   "fa": "پیش‌فرض"
+  },
+  "Delete": {
+   "fa": "حذف"
+  },
+  "Delete the line": {
+   "fa": "حذف خط"
+  },
+  "Delete this call and its notes?": {
+   "fa": "این تماس و یادداشت‌هایش حذف شوند؟"
+  },
+  "Demo": {
+   "fa": "نمایشی"
+  },
+  "Demo mode": {
+   "fa": "حالت نمایشی"
+  },
+  "Denied": {
+   "fa": "رد شد"
+  },
+  "Deny": {
+   "fa": "رد کن"
+  },
+  "Deployments": {
+   "fa": "استقرارها"
+  },
+  "Dictate (right-click to choose the language)": {
+   "fa": "دیکته (با کلیک راست زبان را انتخاب کن)"
+  },
+  "Dictate anywhere on your Mac": {
+   "fa": "هر جا روی مک دیکته کن"
+  },
+  "Dictate in an app and it shows here.": {
+   "fa": "در یک برنامه دیکته کن تا اینجا نمایش داده شود."
+  },
+  "Dictate · {0}": {
+   "fa": "دیکته · {0}"
+  },
+  "Dictation": {
+   "fa": "دیکته"
+  },
+  "Dictation is off": {
+   "fa": "دیکته خاموش است"
+  },
+  "Dictation language": {
+   "fa": "زبان دیکته"
+  },
+  "Dictations": {
+   "fa": "دیکته‌ها"
+  },
+  "Dictionary": {
+   "fa": "واژه‌نامه"
+  },
+  "Diff too large": {
+   "fa": "diff خیلی بزرگ است"
+  },
+  "Disconnect": {
+   "fa": "قطع اتصال"
+  },
+  "Display": {
+   "fa": "نمایشگر"
+  },
+  "Don't keep": {
+   "fa": "نگه ندار"
+  },
+  "Done": {
+   "fa": "انجام شد"
+  },
+  "Download": {
+   "fa": "دانلود"
+  },
+  "Download the models": {
+   "fa": "دانلود مدل‌ها"
+  },
+  "Download the models in Coucou Flow → Settings first.": {
+   "fa": "اول مدل‌ها را در کیو Flow ← تنظیمات دانلود کن."
+  },
+  "Downloading from GitHub…": {
+   "fa": "در حال دانلود از GitHub…"
+  },
+  "Draft": {
+   "fa": "پیش‌نویس"
+  },
+  "Drop a file named like one of Mochi's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.": {
+   "fa": "فایلی با نام یکی از صداهای موچی (finish.wav، approval.mp3، greet.m4a…) را در پوشه صداها رها کن تا جایگزین شود، سپس Reload را بزن."
+  },
+  "Drop a file or window, or ask me anything.": {
+   "fa": "یک فایل یا پنجره را اینجا رها کن، یا هر سوالی بپرس."
+  },
+  "Drop your files here": {
+   "fa": "فایل‌هایت را اینجا رها کن"
+  },
+  "Duplicate": {
+   "fa": "تکرار"
+  },
+  "Edit": {
+   "fa": "ویرایش"
+  },
+  "Edit the snippet": {
+   "fa": "ویرایش قطعه کد"
+  },
+  "Edits": {
+   "fa": "ویرایش‌ها"
+  },
+  "ElevenLabs API key": {
+   "fa": "کلید API ElevenLabs"
+  },
+  "Emails": {
+   "fa": "ایمیل‌ها"
+  },
+  "Enable sounds": {
+   "fa": "صداها را روشن کن"
+  },
+  "Enable voice command": {
+   "fa": "فرمان صوتی را روشن کن"
+  },
+  "Erase everything": {
+   "fa": "همه‌چیز را پاک کن"
+  },
+  "Erase the history": {
+   "fa": "پاک‌کردن تاریخچه"
+  },
+  "Erase the history and the statistics?": {
+   "fa": "تاریخچه و آمار هم پاک شوند؟"
+  },
+  "Esc": {
+   "fa": "Esc"
+  },
+  "Everything stays on your Mac. Tell the people in the call that you are recording.": {
+   "fa": "همه‌چیز روی مک تو می‌ماند. به آدم‌های تماس بگو داری ضبط می‌کنی."
+  },
+  "Exchange": {
+   "fa": "صرافی"
+  },
+  "Explore all features without an API key or Claude Code. Nothing is written to disk.": {
+   "fa": "همه قابلیت‌ها را بدون کلید API یا Claude Code ببین. چیزی روی دیسک نوشته نمی‌شود."
+  },
+  "Export as Markdown…": {
+   "fa": "خروجی Markdown…"
+  },
+  "FILES": {
+   "fa": "فایل‌ها"
+  },
+  "Failed": {
+   "fa": "ناموفق"
+  },
+  "Favorite": {
+   "fa": "علاقه‌مندی"
+  },
+  "Fetches": {
+   "fa": "دریافت‌ها"
+  },
+  "Fix the line": {
+   "fa": "خط را اصلاح کن"
+  },
+  "Flow dictation": {
+   "fa": "دیکته Flow"
+  },
+  "For a more natural voice, download a Premium voice: System Settings → Accessibility → Spoken Content → System Voice → Manage Voices. In English: Ava for a woman, Jamie for a man (British).": {
+   "fa": "برای صدای طبیعی‌تر یک صدای Premium را دانلود کن: تنظیمات سیستم ← Accessibility ← Spoken Content ← System Voice ← Manage Voices. در انگلیسی: Ava برای صدای زن، Jamie برای صدای مرد (بریتیش)."
+  },
+  "For regular chats in the Claude app, which run no hook. When you leave Claude while it is writing, Coucou checks once a second, through Accessibility, whether its Stop button is still there. Nothing of the chat is read.": {
+   "fa": "برای گفت‌وگوهای معمولی در برنامه Claude، که هوکی در کار نیست. وقتی Claude در حال نوشتن است و آن را ترک می‌کنی، کیو هر ثانیه یک‌بار — فقط از راه دسترسی ویرایشگری — چک می‌کند که دکمه Stop هنوز سر جایش هست یا نه. هیچ متنی از گفت‌وگو خوانده نمی‌شود."
+  },
+  "Forever": {
+   "fa": "تا ابد"
+  },
+  "From Open-Meteo for this city, only when you ask.": {
+   "fa": "از Open-Meteo برای همین شهر، فقط وقتی بپرسی."
+  },
+  "From address  (you@yourdomain.com)": {
+   "fa": "فرستنده  (you@yourdomain.com)"
+  },
+  "Full sentences and paragraphs, for mails.": {
+   "fa": "جمله و پاراگراف کامل، برای ایمیل."
+  },
+  "Gemini CLI hooks": {
+   "fa": "هوک‌های Gemini CLI"
+  },
+  "General": {
+   "fa": "عمومی"
+  },
+  "Get Spotify": {
+   "fa": "Spotify را بگیر"
+  },
+  "Get it on GitHub": {
+   "fa": "از GitHub بگیرش"
+  },
+  "Get new versions from the notch?": {
+   "fa": "نسخه‌های جدید را از ناچ پیشنهاد کنم؟"
+  },
+  "GitHub Copilot CLI hooks": {
+   "fa": "هوک‌های GitHub Copilot CLI"
+  },
+  "Give me a sec — back to work in three seconds.": {
+   "fa": "یک لحظه — سه ثانیه دیگر برمی‌گردم به کار."
+  },
+  "Global shortcuts — active from any app": {
+   "fa": "میان‌برهای سراسری — از هر برنامه‌ای فعالند"
+  },
+  "Gmail node timed out after 30s. Retry or open n8n.": {
+   "fa": "گره Gmail بعد از ۳۰ ثانیه وقتش تمام شد. دوباره امتحان کن یا n8n را باز کن."
+  },
+  "Go to alert": {
+   "fa": "رفتن به هشدار"
+  },
+  "Go to tab by number": {
+   "fa": "رفتن به تب با شماره"
+  },
+  "Goes through the Coucou relay to Apple's push service. Only the agent name and state are sent: no project name, command, or path.": {
+   "fa": "از راه رلهٔ کیو به سرویس پوش اپل می‌رود. فقط نام عامل و وضعیتش ارسال می‌شود: نه نام پروژه، نه دستور، نه مسیر."
+  },
+  "Google AI": {
+   "fa": "Google AI"
+  },
+  "Granted": {
+   "fa": "داده شد"
+  },
+  "Hands-free": {
+   "fa": "هندزفری"
+  },
+  "He sweats when the processor is at full load, flushes when the Mac is hot, puffs up when memory is short and gets sleepy when the battery is low. Point at Mochi to see why. Read only while Mochi is on screen; nothing leaves your Mac.": {
+   "fa": "وقتی پردازنده کاملاً درگیر است عرق می‌کند، وقتی مک داغ است سرخ می‌شود، وقتی حافظه کم می‌آورد باد می‌کند و وقتی باتری پایین است خوابش می‌برد. نشانگر را روی موچی بگیر تا دلیلش را ببینی. فقط وقتی موچی روی صفحه است می‌خواند؛ هیچ‌چیز مک را ترک نمی‌کند."
+  },
+  "Heard, e.g. cloud code": {
+   "fa": "چیزی که شنیده شد، مثلاً cloud code"
+  },
+  "Hello": {
+   "fa": "سلام"
+  },
+  "Hello {0}": {
+   "fa": "سلام {0}"
+  },
+  "Hermes Agent": {
+   "fa": "عامل Hermes"
+  },
+  "Hermes plugin removed": {
+   "fa": "افزونه Hermes حذف شد"
+  },
+  "Hide after": {
+   "fa": "پنهان‌کردن پس از"
+  },
+  "Hide project names in shared images": {
+   "fa": "نام پروژه‌ها را در تصویرهای مشترک پنهان کن"
+  },
+  "History": {
+   "fa": "تاریخچه"
+  },
+  "Hold a key to dictate anywhere": {
+   "fa": "یک کلید را نگه‌دار تا هر جا دیکته کنی"
+  },
+  "Hold to dictate": {
+   "fa": "نگه‌دار تا دیکته کنی"
+  },
+  "Hold {0} and talk: the image and your words go in together.": {
+   "fa": "{0} را نگه‌دار و حرف بزن: تصویر و حرف‌هایت با هم وارد می‌شوند."
+  },
+  "Hold {0} anywhere, speak, let go: it's pasted.": {
+   "fa": "{0} را هر جا نگه‌دار، حرف بزن و رها کن: جای‌گذاری می‌شود."
+  },
+  "Hold {0} in any app, speak, let go: your words are pasted where you type.": {
+   "fa": "{0} را در هر برنامه‌ای نگه‌دار، حرف بزن و رها کن: حرف‌هایت آن‌جا که می‌نویسی جای‌گذاری می‌شود."
+  },
+  "Hold {0}, speak, let go: your words are pasted where you type. Tap it twice to keep listening hands-free, and once more to paste. Esc cancels.": {
+   "fa": "{0} را نگه‌دار، حرف بزن و رها کن: حرف‌هایت آن‌جا که می‌نویسی جای‌گذاری می‌شود. دو بار بزن تا بدون دست به گوش دادن ادامه دهد و یک بار دیگر بزن تا جای‌گذاری کند. Esc لغو می‌کند."
+  },
+  "Hooks installed": {
+   "fa": "هوک‌ها نصب شدند"
+  },
+  "Hooks installed — open Codex and run /hooks or open Hooks in app settings to approve them": {
+   "fa": "هوک‌ها نصب شدند — Codex را باز کن و /hooks را اجرا کن، یا بخش Hooks تنظیمات برنامه را باز کن تا آن‌ها را تأیید کنی"
+  },
+  "Hooks installed — restart Antigravity to activate them": {
+   "fa": "هوک‌ها نصب شدند — Antigravity را دوباره راه‌اندازی کن تا فعال شوند"
+  },
+  "Hooks installed — restart Copilot CLI to activate them": {
+   "fa": "هوک‌ها نصب شدند — Copilot CLI را دوباره راه‌اندازی کن تا فعال شوند"
+  },
+  "Hooks installed — restart Gemini CLI to activate them": {
+   "fa": "هوک‌ها نصب شدند — Gemini CLI را دوباره راه‌اندازی کن تا فعال شوند"
+  },
+  "Hooks installed — restart Muse Code to activate them": {
+   "fa": "هوک‌ها نصب شدند — Muse Code را دوباره راه‌اندازی کن تا فعال شوند"
+  },
+  "Hooks not installed": {
+   "fa": "هوک‌ها نصب نشده‌اند"
+  },
+  "Hooks outdated — update them to answer Claude's questions from the notch": {
+   "fa": "هوک‌ها قدیمی‌اند — آن‌ها را به‌روز کن تا سوال‌های Claude از ناچ پاسخ داده شوند"
+  },
+  "Hotkey": {
+   "fa": "میان‌بر"
+  },
+  "Hovering the island opens it; it folds again shortly after the pointer leaves. Click inside to keep it open.": {
+   "fa": "نشانگر که روی جزیره برود بازش می‌کند و کمی بعد از رفتن نشانگر دوباره جمع می‌شود. برای باز نگه‌داشتنش داخلش کلیک کن."
+  },
+  "Inbox": {
+   "fa": "صندوق"
+  },
+  "Install": {
+   "fa": "نصب"
+  },
+  "Install Coucou hooks in ~/.claude?": {
+   "fa": "هوک‌های کیو در ~/.claude نصب شوند؟"
+  },
+  "Install hooks": {
+   "fa": "نصب هوک‌ها"
+  },
+  "Install plugin": {
+   "fa": "نصب افزونه"
+  },
+  "Install relay": {
+   "fa": "نصب رله"
+  },
+  "Install {0}": {
+   "fa": "نصب {0}"
+  },
+  "Installed": {
+   "fa": "نصب شد"
+  },
+  "Installed: quit and reopen Coucou to use the new version.": {
+   "fa": "نصب شد: کیو را ببند و دوباره باز کن تا از نسخه جدید استفاده کنی."
+  },
+  "Installing…": {
+   "fa": "در حال نصب…"
+  },
+  "Instance URL  (https://…)": {
+   "fa": "آدرس نمونه  (https://…)"
+  },
+  "Integration": {
+   "fa": "یکپارچه‌سازی"
+  },
+  "Integration token  (secret_…)": {
+   "fa": "توکن یکپارچه‌سازی  (secret_…)"
+  },
+  "Integrations": {
+   "fa": "یکپارچه‌سازی‌ها"
+  },
+  "Jump to terminal": {
+   "fa": "پریدن به ترمینال"
+  },
+  "Keep a history of my coding sessions": {
+   "fa": "از نشست‌های کدنویسی‌ام تاریخچه نگه دار"
+  },
+  "Keep the history": {
+   "fa": "تاریخچه را نگه دار"
+  },
+  "Key": {
+   "fa": "کلید"
+  },
+  "Key configured · {model}": {
+   "fa": "کلید تنظیم شد · {model}"
+  },
+  "Key not configured": {
+   "fa": "کلید تنظیم نشده"
+  },
+  "Key points": {
+   "fa": "نکته‌های کلیدی"
+  },
+  "Key saved in Keychain": {
+   "fa": "کلید در Keychain ذخیره شد"
+  },
+  "Keys": {
+   "fa": "کلیدها"
+  },
+  "LM Studio disconnected.": {
+   "fa": "LM Studio قطع شد."
+  },
+  "Language": {
+   "fa": "زبان"
+  },
+  "Last dictation pasted": {
+   "fa": "آخرین دیکته جای‌گذاری شد"
+  },
+  "Later": {
+   "fa": "بعداً"
+  },
+  "Launch at Mac startup": {
+   "fa": "در شروع به کار مک اجرا شو"
+  },
+  "Left": {
+   "fa": "چپ"
+  },
+  "Let my iPhone send instructions to Claude Code": {
+   "fa": "آیفونم بتواند به Claude Code دستور بفرستد"
+  },
+  "Listening…": {
+   "fa": "در حال گوش دادن…"
+  },
+  "Lists": {
+   "fa": "فهرست‌ها"
+  },
+  "Live": {
+   "fa": "زنده"
+  },
+  "Loading models…": {
+   "fa": "در حال بارگذاری مدل‌ها…"
+  },
+  "Loading…": {
+   "fa": "در حال بارگذاری…"
+  },
+  "Local AI model: Apple Intelligence is off": {
+   "fa": "مدل هوش مصنوعی محلی: Apple Intelligence خاموش است"
+  },
+  "Local AI model: available": {
+   "fa": "مدل هوش مصنوعی محلی: در دسترس"
+  },
+  "Local AI model: language not supported": {
+   "fa": "مدل هوش مصنوعی محلی: زبان پشتیبانی نمی‌شود"
+  },
+  "Local AI model: requires macOS 26 or later": {
+   "fa": "مدل هوش مصنوعی محلی: macOS 26 یا جدیدتر لازم دارد"
+  },
+  "Local models": {
+   "fa": "مدل‌های محلی"
+  },
+  "Longest session": {
+   "fa": "بلندترین نشست"
+  },
+  "Mac voice": {
+   "fa": "صدای مک"
+  },
+  "Mail is closed": {
+   "fa": "Mail بسته است"
+  },
+  "Mail not available.": {
+   "fa": "Mail در دسترس نیست."
+  },
+  "Main": {
+   "fa": "اصلی"
+  },
+  "Main: {0}": {
+   "fa": "اصلی: {0}"
+  },
+  "Man": {
+   "fa": "مرد"
+  },
+  "Manual": {
+   "fa": "دستی"
+  },
+  "Mark as read": {
+   "fa": "علامت‌گذاری به‌عنوان خوانده‌شده"
+  },
+  "Me": {
+   "fa": "من"
+  },
+  "Memory is full": {
+   "fa": "حافظه پر است"
+  },
+  "Memory is short": {
+   "fa": "حافظه کم است"
+  },
+  "Microphone unavailable": {
+   "fa": "میکروفون در دسترس نیست"
+  },
+  "Microphone:": {
+   "fa": "میکروفون:"
+  },
+  "Missing recipient.": {
+   "fa": "گیرنده ندارد."
+  },
+  "Mochi and your Mac": {
+   "fa": "موچی و مک تو"
+  },
+  "Mochi checks Coucou’s releases on GitHub a few times a day and tells you when one is out. Nothing about you is sent.": {
+   "fa": "موچی چند بار در روز انتشارهای کیو را در GitHub می‌بیند و وقتی نسخه تازه‌ای بیرون بیاید بهت می‌گوید. هیچ چیزی درباره تو ارسال نمی‌شود."
+  },
+  "Mochi jumps when a chat reply is ready": {
+   "fa": "وقتی پاسخ گفت‌وگو آماده می‌شود موچی پر می‌کند"
+  },
+  "Mochi reacts to your Mac": {
+   "fa": "موچی به مک تو واکنش نشان می‌دهد"
+  },
+  "Mochi to desktop on/off": {
+   "fa": "بردن موچی روی دسکتاپ، روشن/خاموش"
+  },
+  "Mochi, his sounds and how the notch behaves.": {
+   "fa": "موچی، صداهایش و رفتار ناچ."
+  },
+  "Model": {
+   "fa": "مدل"
+  },
+  "Model ID (e.g. claude-sonnet-4-6)": {
+   "fa": "شناسه مدل (مثلاً claude-sonnet-4-6)"
+  },
+  "Month": {
+   "fa": "ماه"
+  },
+  "Moonshot key saved.": {
+   "fa": "کلید Moonshot ذخیره شد."
+  },
+  "Move Mochi to my iPhone's Dynamic Island when my Mac is locked": {
+   "fa": "وقتی مک قفل است موچی را به Dynamic Island آیفونم ببر"
+  },
+  "Muse Code hooks": {
+   "fa": "هوک‌های Muse Code"
+  },
+  "Mute / unmute sounds": {
+   "fa": "بی‌صدا / باصدا کردن صداها"
+  },
+  "My PRs": {
+   "fa": "PRهای من"
+  },
+  "My wallet": {
+   "fa": "کیف پول من"
+  },
+  "Name": {
+   "fa": "نام"
+  },
+  "Names and words Coucou must always spell right.": {
+   "fa": "نام‌ها و کلمه‌هایی که کیو همیشه باید درست بنویسد."
+  },
+  "Natural": {
+   "fa": "طبیعی"
+  },
+  "Navigate list items": {
+   "fa": "حرکت بین گزینه‌های فهرست"
+  },
+  "Needs Apple silicon": {
+   "fa": "به Apple silicon نیاز دارد"
+  },
+  "Needs input": {
+   "fa": "نیاز به ورودی دارد"
+  },
+  "New conversation": {
+   "fa": "گفت‌وگوی جدید"
+  },
+  "New email": {
+   "fa": "ایمیل جدید"
+  },
+  "New snippet": {
+   "fa": "قطعه‌کد جدید"
+  },
+  "Next": {
+   "fa": "بعدی"
+  },
+  "Next / previous tab": {
+   "fa": "تب بعدی / قبلی"
+  },
+  "Next tab": {
+   "fa": "تب بعدی"
+  },
+  "Next track": {
+   "fa": "آهنگ بعدی"
+  },
+  "No activity last week": {
+   "fa": "هفته گذشته فعالیتی نبود"
+  },
+  "No calls scheduled": {
+   "fa": "تماسی زمان‌بندی نشده"
+  },
+  "No changes": {
+   "fa": "تغییری نیست"
+  },
+  "No contributions": {
+   "fa": "مشارکتی نیست"
+  },
+  "No detail available.": {
+   "fa": "جزئیاتی در دسترس نیست."
+  },
+  "No dictation matches.": {
+   "fa": "دیکته‌ای مطابقت نداشت."
+  },
+  "No error details available.": {
+   "fa": "جزئیات خطایی در دسترس نیست."
+  },
+  "No messages": {
+   "fa": "پیامی نیست"
+  },
+  "No models yet — download one in {name} first.": {
+   "fa": "هنوز مدلی نیست — اول در {name} یکی دانلود کن."
+  },
+  "No music app running": {
+   "fa": "هیچ برنامه موسیقی در حال اجرا نیست"
+  },
+  "No other open app": {
+   "fa": "برنامه باز دیگری نیست"
+  },
+  "No snippet yet. Your booking link, your signature, your address: say a few words, get the whole text.": {
+   "fa": "هنوز قطعه‌کدی نداری. لینک رزورت، امضایت، آدرست: چند کلمه بگو و متن کامل را بگیر."
+  },
+  "No speech recognition model available on this device. Install one in System Settings → Keyboard → Dictation.": {
+   "fa": "در این دستگاه هیچ مدل تشخیص گفتاری نیست. یکی را در تنظیمات سیستم ← صفحه‌کلید ← دیکته نصب کن."
+  },
+  "No summary": {
+   "fa": "بدون خلاصه"
+  },
+  "No summary yet.": {
+   "fa": "هنوز خلاصه‌ای نیست."
+  },
+  "No text field here? Your words are copied: click where you want them and press ⌘V.": {
+   "fa": "این‌جا کادر متنی نیست؟ حرف‌هایت کپی شده: آن‌جا که می‌خواهی کلیک کن و ⌘V را بزن."
+  },
+  "No thanks": {
+   "fa": "نه ممنون"
+  },
+  "No word yet. Add the names, brands and jargon Coucou gets wrong.": {
+   "fa": "هنوز کلمه‌ای نیست. نام‌ها، برندها و اصطلاحاتی که کیو اشتباه می‌نویسد را اضافه کن."
+  },
+  "Nobody was heard in this recording.": {
+   "fa": "در این ضبط صدای کسی شنیده نشد."
+  },
+  "None": {
+   "fa": "هیچ‌کدام"
+  },
+  "Not active": {
+   "fa": "فعال نیست"
+  },
+  "Not connected": {
+   "fa": "متصل نیست"
+  },
+  "Not found: {0}": {
+   "fa": "پیدا نشد: {0}"
+  },
+  "Not in your library, opened search for {0}": {
+   "fa": "در کتابخانه‌ات نبود، جست‌وجوی {0} باز شد"
+  },
+  "Not installed": {
+   "fa": "نصب نشده"
+  },
+  "Not on this exchange: {0}": {
+   "fa": "در این صرافی نیست: {0}"
+  },
+  "Not playing": {
+   "fa": "در حال پخش نیست"
+  },
+  "Not recognised: « {0} »": {
+   "fa": "شناخته نشد: « {0} »"
+  },
+  "Not requested": {
+   "fa": "درخواست نشده"
+  },
+  "Notch": {
+   "fa": "ناچ"
+  },
+  "Notch shortcuts — active when the notch is in front": {
+   "fa": "میان‌برهای ناچ — وقتی ناچ روبه‌روست فعالند"
+  },
+  "Notebook": {
+   "fa": "دفترچه"
+  },
+  "Notes ready: {0}": {
+   "fa": "یادداشت‌ها آماده است: {0}"
+  },
+  "Notetaker": {
+   "fa": "یادداشت‌بردار"
+  },
+  "Nothing here": {
+   "fa": "چیزی اینجا نیست"
+  },
+  "Nothing running right now.": {
+   "fa": "همین حالا چیزی در حال اجرا نیست."
+  },
+  "OK": {
+   "fa": "باشه"
+  },
+  "OK, leaving it as is": {
+   "fa": "باشه، همین‌طور می‌ماند"
+  },
+  "Ollama disconnected.": {
+   "fa": "Ollama قطع شد."
+  },
+  "On-device when your Mac supports it, nothing to download.": {
+   "fa": "وقتی مکت پشتیبانی کند روی خود دستگاه است و چیزی برای دانلود ندارد."
+  },
+  "One download, then offline": {
+   "fa": "یک‌بار دانلود، بعد آفلاین"
+  },
+  "One permission left": {
+   "fa": "یک مجوز مانده"
+  },
+  "Only http:// and https:// URLs are accepted.": {
+   "fa": "فقط نشانی‌های http:// و https:// قبول می‌شوند."
+  },
+  "Only the dictionary and the snippets: for code, terminals and AI chats.": {
+   "fa": "فقط واژه‌نامه و قطعه‌کدها: برای کد، ترمینال و گفت‌وگوهای هوش مصنوعی."
+  },
+  "Only: {0}": {
+   "fa": "فقط: {0}"
+  },
+  "Open": {
+   "fa": "باز کن"
+  },
+  "Open / close current diff": {
+   "fa": "باز / بسته کردن diff فعلی"
+  },
+  "Open / close notch": {
+   "fa": "باز / بسته کردن ناچ"
+  },
+  "Open / close wardrobe": {
+   "fa": "باز / بسته کردن کمد لباس"
+  },
+  "Open Accessibility settings": {
+   "fa": "بازکردن تنظیمات ویرایشگری"
+  },
+  "Open Claude": {
+   "fa": "بازکردن Claude"
+  },
+  "Open Codex": {
+   "fa": "بازکردن Codex"
+  },
+  "Open Coucou": {
+   "fa": "بازکردن کیو"
+  },
+  "Open Coucou Flow": {
+   "fa": "بازکردن کیو Flow"
+  },
+  "Open Coucou like any app; a click on its icon brings this window back. Off, Coucou lives in the menu bar only.": {
+   "fa": "کیو مثل هر برنامه‌ای باز می‌شود؛ یک کلیک روی آیکونش این پنجره را برمی‌گرداند. اگر خاموش باشد، کیو فقط در نوار بالا می‌ماند."
+  },
+  "Open Cursor": {
+   "fa": "بازکردن Cursor"
+  },
+  "Open Mail": {
+   "fa": "بازکردن Mail"
+  },
+  "Open Music": {
+   "fa": "بازکردن Music"
+  },
+  "Open Settings": {
+   "fa": "بازکردن تنظیمات"
+  },
+  "Open Settings…": {
+   "fa": "بازکردن تنظیمات…"
+  },
+  "Open Spotify": {
+   "fa": "بازکردن Spotify"
+  },
+  "Open Visual Studio Code": {
+   "fa": "بازکردن Visual Studio Code"
+  },
+  "Open chat": {
+   "fa": "بازکردن گفت‌وگو"
+  },
+  "Open for every pill’s alerts": {
+   "fa": "برای هشدار هر ابزار باز شود"
+  },
+  "Open in Mail": {
+   "fa": "در Mail باز کن"
+  },
+  "Open in n8n": {
+   "fa": "در n8n باز کن"
+  },
+  "Open on hover": {
+   "fa": "با بردن نشانگر باز شود"
+  },
+  "Open selected item": {
+   "fa": "بازکردن گزینه انتخاب‌شده"
+  },
+  "Open settings": {
+   "fa": "بازکردن تنظیمات"
+  },
+  "Open sounds folder": {
+   "fa": "بازکردن پوشه صداها"
+  },
+  "Open terminal": {
+   "fa": "بازکردن ترمینال"
+  },
+  "Open the Notetaker →": {
+   "fa": "یادداشت‌بردار را باز کن ←"
+  },
+  "Open this window when you open Coucou": {
+   "fa": "وقتی کیو را باز می‌کنی این پنجره هم باز شود"
+  },
+  "Open {name}": {
+   "fa": "بازکردن {name}"
+  },
+  "OpenAI": {
+   "fa": "OpenAI"
+  },
+  "OpenCode plugin": {
+   "fa": "افزونه OpenCode"
+  },
+  "Opening Apple Music…": {
+   "fa": "در حال بازکردن Apple Music…"
+  },
+  "Other apps": {
+   "fa": "برنامه‌های دیگر"
+  },
+  "Other languages": {
+   "fa": "زبان‌های دیگر"
+  },
+  "Others": {
+   "fa": "دیگران"
+  },
+  "Other…": {
+   "fa": "دیگر…"
+  },
+  "Overview": {
+   "fa": "نمای کلی"
+  },
+  "Parakeet, on your Mac": {
+   "fa": "Parakeet، روی مک تو"
+  },
+  "Party hat": {
+   "fa": "کلاه مهمانی"
+  },
+  "Paste": {
+   "fa": "جای‌گذاری"
+  },
+  "Paste it into your prompt, annotate it, or ask Claude.": {
+   "fa": "در promptت جای‌گذاری‌اش کن، یادداشت بزن، یا از Claude بپرس."
+  },
+  "Paste the last dictation again": {
+   "fa": "آخرین دیکته را دوباره جای‌گذاری کن"
+  },
+  "Paste · or press {0}": {
+   "fa": "جای‌گذاری · یا {0} را بزن"
+  },
+  "Pause": {
+   "fa": "توقف"
+  },
+  "Paused": {
+   "fa": "متوقف"
+  },
+  "Payments": {
+   "fa": "پرداخت‌ها"
+  },
+  "Permission": {
+   "fa": "مجوز"
+  },
+  "Permissions": {
+   "fa": "مجوزها"
+  },
+  "Person {0}": {
+   "fa": "فرد {0}"
+  },
+  "Personal Access Token": {
+   "fa": "توکن شخصی (Personal Access Token)"
+  },
+  "Pin / unpin notch": {
+   "fa": "سنجاق کردن / برداشتن ناچ"
+  },
+  "Pitch": {
+   "fa": "زیر و بمی صدا"
+  },
+  "Plan usage": {
+   "fa": "مصرف پلن"
+  },
+  "Play": {
+   "fa": "پخش"
+  },
+  "Playing": {
+   "fa": "در حال پخش"
+  },
+  "Playing · {title}": {
+   "fa": "در حال پخش · {title}"
+  },
+  "Plugin installed — restart Amp to activate it": {
+   "fa": "افزونه نصب شد — Amp را دوباره راه‌اندازی کن تا فعال شود"
+  },
+  "Plugin installed — restart OpenCode to activate it": {
+   "fa": "افزونه نصب شد — OpenCode را دوباره راه‌اندازی کن تا فعال شود"
+  },
+  "Plugin not installed": {
+   "fa": "افزونه نصب نشده"
+  },
+  "Polished": {
+   "fa": "مرتّب"
+  },
+  "Previous": {
+   "fa": "قبلی"
+  },
+  "Previous tab": {
+   "fa": "تب قبلی"
+  },
+  "Previous track": {
+   "fa": "آهنگ قبلی"
+  },
+  "Privacy": {
+   "fa": "حریم خصوصی"
+  },
+  "Projects": {
+   "fa": "پروژه‌ها"
+  },
+  "Prompt and translation": {
+   "fa": "دستور و ترجمه"
+  },
+  "Prompt mode": {
+   "fa": "حالت پرامپت"
+  },
+  "Public prices from the exchange: no account, no key. Read every minute, only while the pill is on.": {
+   "fa": "قیمت‌های عمومی از صرافی: بدون حساب، بدون کلید. هر دقیقه خوانده می‌شود، فقط وقتی این ابزار روشن است."
+  },
+  "Pumpkin": {
+   "fa": "کدو"
+  },
+  "Quit": {
+   "fa": "خروج"
+  },
+  "Qwen key saved.": {
+   "fa": "کلید Qwen ذخیره شد."
+  },
+  "Reads": {
+   "fa": "می‌خواند"
+  },
+  "Ready · hold {0}": {
+   "fa": "آماده · {0} را نگه‌دار"
+  },
+  "Ready · no setup needed": {
+   "fa": "آماده · بدون نیاز به تنظیم"
+  },
+  "Recent": {
+   "fa": "اخیر"
+  },
+  "Recently heard phrases": {
+   "fa": "عبارت‌های تازه شنیده‌شده"
+  },
+  "Recognition": {
+   "fa": "تشخیص"
+  },
+  "Record a call": {
+   "fa": "ضبط یک تماس"
+  },
+  "Recording…": {
+   "fa": "در حال ضبط…"
+  },
+  "Refresh": {
+   "fa": "تازه‌سازی"
+  },
+  "Relay: installed": {
+   "fa": "رله: نصب شده"
+  },
+  "Relay: not installed": {
+   "fa": "رله: نصب نشده"
+  },
+  "Reload sounds": {
+   "fa": "بارگذاری دوباره صداها"
+  },
+  "Remove": {
+   "fa": "حذف"
+  },
+  "Remove from favorites": {
+   "fa": "برداشتن از علاقه‌مندی‌ها"
+  },
+  "Remove the models": {
+   "fa": "حذف مدل‌ها"
+  },
+  "Removes the “um”, the repeats and the corrections you made while speaking, and fixes the punctuation.": {
+   "fa": "«اِم»، تکرارها و اصلاح‌هایی که حین حرف زدن دادی را حذف می‌کند و نگارش را درست می‌کند."
+  },
+  "Repeat all": {
+   "fa": "تکرار همه"
+  },
+  "Repeat off": {
+   "fa": "تکرار خاموش"
+  },
+  "Repeat on": {
+   "fa": "تکرار روشن"
+  },
+  "Repeat one": {
+   "fa": "تکرار یک آهنگ"
+  },
+  "Replacements": {
+   "fa": "جایگزینی‌ها"
+  },
+  "Reply": {
+   "fa": "پاسخ"
+  },
+  "Reply in terminal": {
+   "fa": "در ترمینال پاسخ بده"
+  },
+  "Reply ready": {
+   "fa": "پاسخ آماده است"
+  },
+  "Request permissions": {
+   "fa": "درخواست مجوزها"
+  },
+  "Resend": {
+   "fa": "ارسال دوباره"
+  },
+  "Reset all to defaults": {
+   "fa": "بازگرداندن همه به پیش‌فرض"
+  },
+  "Resetting…": {
+   "fa": "در حال بازگردانی…"
+  },
+  "Restart Coucou": {
+   "fa": "راه‌اندازی دوباره کیو"
+  },
+  "Restarting Coucou…": {
+   "fa": "در حال راه‌اندازی دوباره کیو…"
+  },
+  "Retry": {
+   "fa": "تلاش دوباره"
+  },
+  "Review the JSON below before confirming.": {
+   "fa": "قبل از تأیید، JSON پایین را نگاه کن."
+  },
+  "Review the content below before confirming.": {
+   "fa": "قبل از تأیید، محتوای پایین را نگاه کن."
+  },
+  "Right": {
+   "fa": "راست"
+  },
+  "Right {0}": {
+   "fa": "راست {0}"
+  },
+  "Round glasses": {
+   "fa": "عینک گرد"
+  },
+  "Runs": {
+   "fa": "اجراها"
+  },
+  "SESSIONS": {
+   "fa": "نشست‌ها"
+  },
+  "Said by": {
+   "fa": "گفته توسط"
+  },
+  "Santa hat": {
+   "fa": "کلاه بابانوئل"
+  },
+  "Save": {
+   "fa": "ذخیره"
+  },
+  "Save integrations": {
+   "fa": "ذخیره یکپارچه‌سازی‌ها"
+  },
+  "Save…": {
+   "fa": "ذخیره…"
+  },
+  "Say the trigger while dictating: Coucou pastes the whole text in its place.": {
+   "fa": "حین دیکته کلمه محرک را بگو: کیو متن کامل را جای آن می‌گذارد."
+  },
+  "Say your command": {
+   "fa": "دستورت را بگو"
+  },
+  "Say your idea any old way: it's pasted as a clear prompt (goal, context, steps, constraints, done when), ready for Claude Code, Cursor or ChatGPT.": {
+   "fa": "ایده‌ات را هر طور دوست داری بگو: به‌صورت یک پرامپت روشن (هدف، زمینه، مرحله‌ها، محدودیت‌ها، «کی تمام شده؟») جای‌گذاری می‌شود، آماده برای Claude Code، Cursor یا ChatGPT."
+  },
+  "Scarf": {
+   "fa": "شال‌گردن"
+  },
+  "Schedule": {
+   "fa": "زمان‌بندی"
+  },
+  "Screenshot": {
+   "fa": "اسکرین‌شات"
+  },
+  "Search dictations": {
+   "fa": "جست‌وجوی دیکته‌ها"
+  },
+  "Searches": {
+   "fa": "جست‌وجوها"
+  },
+  "Searches the web": {
+   "fa": "در وب جست‌وجو می‌کند"
+  },
+  "Secret key  (sk_live_… or sk_test_…)": {
+   "fa": "کلید مخفی  (sk_live_… یا sk_test_…)"
+  },
+  "See": {
+   "fa": "ببین"
+  },
+  "Send": {
+   "fa": "ارسال"
+  },
+  "Send by email": {
+   "fa": "ارسال با ایمیل"
+  },
+  "Send chat message": {
+   "fa": "ارسال پیام گفت‌وگو"
+  },
+  "Sending…": {
+   "fa": "در حال ارسال…"
+  },
+  "Sends your sessions to your private iCloud for the Coucou app on iPhone. Project names, commands, and questions are encrypted with your iCloud keys. Disabling removes data from iCloud.": {
+   "fa": "نشست‌هایت را در iCloud خصوصی‌ات می‌فرستد تا در برنامه کیو روی آیفون ببینی. نام پروژه‌ها، دستور‌ها و سوال‌ها با کلیدهای iCloud تو رمزنگاری می‌شوند. با خاموش‌کردن، داده از iCloud پاک می‌شود."
+  },
+  "Services": {
+   "fa": "سرویس‌ها"
+  },
+  "Session finished": {
+   "fa": "نشست تمام شد"
+  },
+  "Session stopped on an error.": {
+   "fa": "نشست با خطا متوقف شد."
+  },
+  "Settings": {
+   "fa": "تنظیمات"
+  },
+  "Settings — Coucou": {
+   "fa": "تنظیمات — کیو"
+  },
+  "Settings…": {
+   "fa": "تنظیمات…"
+  },
+  "Share image": {
+   "fa": "اشتراک تصویر"
+  },
+  "Share…": {
+   "fa": "اشتراک…"
+  },
+  "Shortcut": {
+   "fa": "میان‌بر"
+  },
+  "Shortcuts": {
+   "fa": "میان‌برها"
+  },
+  "Show Codex plan in the notch": {
+   "fa": "پلن Codex را در ناچ نشان بده"
+  },
+  "Show Coucou in the Dock": {
+   "fa": "کیو را در Dock نشان بده"
+  },
+  "Show Mochi on": {
+   "fa": "نمایش موچی روی"
+  },
+  "Show approval requests in the notch": {
+   "fa": "درخواست‌های تأیید را در ناچ نشان بده"
+  },
+  "Show in notch": {
+   "fa": "نشان دادن در ناچ"
+  },
+  "Show island with shortcut": {
+   "fa": "نشان‌دادن جزیره با میان‌بر"
+  },
+  "Show my agent sessions on my iPhone": {
+   "fa": "نشست‌های عامل‌هایم را روی آیفون نشان بده"
+  },
+  "Shows your Claude plan usage (5-hour and weekly limits) in the notch header. Coucou adds a status line relay in ~/.claude/settings.json. If you already have a status line, it keeps working as before. Pro and Max plans only.": {
+   "fa": "مصرف پلن Claude تو (سقف ۵ ساعته و هفتگی) را در سربرگ ناچ نشان می‌دهد. کیو یک خط وضعیت با رله در ~/.claude/settings.json اضافه می‌کند. اگر از قبل خط وضعیت داری، مثل قبل کار می‌کند. فقط پلن‌های Pro و Max."
+  },
+  "Shuffle off": {
+   "fa": "پخش تصادفی خاموش"
+  },
+  "Shuffle on": {
+   "fa": "پخش تصادفی روشن"
+  },
+  "Snippets": {
+   "fa": "قطعه‌کدها"
+  },
+  "Sorry, can you say that again?": {
+   "fa": "ببخشید، می‌شود دوباره بگویی؟"
+  },
+  "Sound": {
+   "fa": "صدا"
+  },
+  "Speak in any language: your words are pasted in the one you pick.": {
+   "fa": "به هر زبانی حرف بزن: حرف‌هایت به همان زبانی که انتخاب کنی جای‌گذاری می‌شود."
+  },
+  "Speech recognition:": {
+   "fa": "تشخیص گفتار:"
+  },
+  "Speed": {
+   "fa": "سرعت"
+  },
+  "Spotify not installed": {
+   "fa": "Spotify نصب نشده"
+  },
+  "Startup": {
+   "fa": "شروع به کار"
+  },
+  "Statistics": {
+   "fa": "آمار"
+  },
+  "Stop": {
+   "fa": "توقف"
+  },
+  "Stop demo": {
+   "fa": "توقف نمایش"
+  },
+  "Stop dictation": {
+   "fa": "توقف دیکته"
+  },
+  "Stored locally on your Mac. Nothing leaves your Mac. Retained for 12 weeks.": {
+   "fa": "محلی روی مک تو نگه داشته می‌شود. هیچ‌چیز مک را ترک نمی‌کند. ۱۲ هفته می‌ماند."
+  },
+  "Stripe, GitHub, Vercel, n8n, Notion and the rest.": {
+   "fa": "Stripe، GitHub، Vercel، n8n، Notion و بقیه."
+  },
+  "Style per app": {
+   "fa": "سبک برای هر برنامه"
+  },
+  "Styles": {
+   "fa": "سبک‌ها"
+  },
+  "Subject": {
+   "fa": "موضوع"
+  },
+  "Subtitles under the notch": {
+   "fa": "زیرنویس زیر ناچ"
+  },
+  "Success": {
+   "fa": "موفق"
+  },
+  "Summaries": {
+   "fa": "خلاصه‌ها"
+  },
+  "Summary": {
+   "fa": "خلاصه"
+  },
+  "Sunglasses": {
+   "fa": "عینک آفتابی"
+  },
+  "System": {
+   "fa": "سیستم"
+  },
+  "System conflict": {
+   "fa": "تعارض سیستمی"
+  },
+  "TIME CODING": {
+   "fa": "زمان کدنویسی"
+  },
+  "Talk to Coucou": {
+   "fa": "با کیو حرف بزن"
+  },
+  "Tap twice, speak as long as you like, tap once to paste.": {
+   "fa": "دو بار بزن، هر قدر می‌خواهی حرف بزن، یک بار بزن تا جای‌گذاری شود."
+  },
+  "Tasks": {
+   "fa": "کارها"
+  },
+  "Tell me when a new version is out": {
+   "fa": "وقتی نسخه تازه بیرون آمد به من بگو"
+  },
+  "Test the voice": {
+   "fa": "آزمایش صدا"
+  },
+  "Tests": {
+   "fa": "تست‌ها"
+  },
+  "The AI of the notch's chat, with your own keys.": {
+   "fa": "هوش مصنوعی گفت‌وگوی ناچ، با کلیدهای خودت."
+  },
+  "The Notetaker": {
+   "fa": "یادداشت‌بردار"
+  },
+  "The answer was too long and was cut.": {
+   "fa": "پاسخ خیلی بلند بود و کوتاه شد."
+  },
+  "The capture is on the clipboard: press ⌘V where you want it.": {
+   "fa": "تصویر در کلیپ‌بورد است: آن‌جا که می‌خواهی ⌘V را بزن."
+  },
+  "The clean-up uses your Claude key. Add it in Settings → Chat.": {
+   "fa": "مرتب‌کردن از کلید Claude تو استفاده می‌کند. در تنظیمات ← گفت‌وگو اضافه‌اش کن."
+  },
+  "The download couldn’t be opened. Nothing was changed.": {
+   "fa": "فایل دانلودی باز نشد. چیزی تغییر نکرد."
+  },
+  "The download failed. Try again, or get it on GitHub.": {
+   "fa": "دانلود انجام نشد. دوباره امتحان کن یا از GitHub بگیرش."
+  },
+  "The download isn’t signed and notarized by Coucou’s developer, so it wasn’t installed.": {
+   "fa": "فایل دانلودی توسط توسعه‌دهنده کیو امضا و notarize نشده، پس نصب نشد."
+  },
+  "The download isn’t the announced version of Coucou. Nothing was changed.": {
+   "fa": "فایل دانلودی همان نسخه اعلام‌شده کیو نیست. چیزی تغییر نکرد."
+  },
+  "The history is off. Turn it on in Settings → Privacy.": {
+   "fa": "تاریخچه خاموش است. در تنظیمات ← حریم خصوصی روشنش کن."
+  },
+  "The history, the statistics and your notes stay on this Mac, in Coucou's folder. Dictations are never saved as audio; a call's audio is deleted as soon as its transcript is written.": {
+   "fa": "تاریخچه، آمار و یادداشت‌هایت روی همین مک و در پوشه کیو می‌مانند. دیکته‌ها هرگز به‌صورت صوت ذخیره نمی‌شوند؛ صدای یک تماس به‌محض نوشتن متنش پاک می‌شود."
+  },
+  "The keys that open the notch and its actions.": {
+   "fa": "کلیدهایی که ناچ و کارهایش را باز می‌کنند."
+  },
+  "The most accurate, offline, 25 languages. Downloaded once (about 650 MB).": {
+   "fa": "دقیق‌ترین حالت، آفلاین، ۲۵ زبان. یک‌بار دانلود می‌شود (حدود ۶۵۰ مگابایت)."
+  },
+  "The pills shown in the notch, their order and their colours.": {
+   "fa": "ابزارهای نمایش‌داده‌شده در ناچ، ترتیب و رنگ‌هایشان."
+  },
+  "The recording of this call is gone.": {
+   "fa": "ضبط این تماس از بین رفته است."
+  },
+  "The text Coucou pastes": {
+   "fa": "متنی که کیو جای‌گذاری می‌کند"
+  },
+  "The transcript could not be written.": {
+   "fa": "متن، نوشته نشد."
+  },
+  "The update didn’t go through": {
+   "fa": "به‌روزرسانی انجام نشد"
+  },
+  "The words show up here as people speak.": {
+   "fa": "هر چه کسی بگوید همین‌جا نوشته می‌شود."
+  },
+  "The words you bring in are remembered for your next calls.": {
+   "fa": "کلمه‌هایی که اضافه می‌کنی برای تماس‌های بعدی به یاد می‌ماند."
+  },
+  "This model is not available.": {
+   "fa": "این مدل در دسترس نیست."
+  },
+  "Time saved": {
+   "fa": "زمان ذخیره‌شده"
+  },
+  "To": {
+   "fa": "به"
+  },
+  "To do": {
+   "fa": "انجام‌دادنی"
+  },
+  "To review": {
+   "fa": "بررسی‌کردنی"
+  },
+  "To use Google Gemini or OpenAI from the chat. Keys are stored in the Keychain.": {
+   "fa": "برای استفاده از Google Gemini یا OpenAI در گفت‌وگو. کلیدها در Keychain ذخیره می‌شوند."
+  },
+  "To use fn, set System Settings → Keyboard → “Press 🌐 key to” to “Do Nothing”.": {
+   "fa": "برای استفاده از fn، در تنظیمات سیستم ← صفحه‌کلید، «Press 🌐 key to» را روی «Do Nothing» بگذار."
+  },
+  "Today": {
+   "fa": "امروز"
+  },
+  "Token": {
+   "fa": "توکن"
+  },
+  "Too many hits at once.": {
+   "fa": "درخواست هم‌زمان خیلی زیاد است."
+  },
+  "Top agent": {
+   "fa": "بیشترین عامل"
+  },
+  "Top project": {
+   "fa": "بیشترین پروژه"
+  },
+  "Transcript": {
+   "fa": "متن"
+  },
+  "Translate into": {
+   "fa": "ترجمه به"
+  },
+  "Try demo mode": {
+   "fa": "حالت نمایشی را امتحان کن"
+  },
+  "Turn on dictation": {
+   "fa": "دیکته را روشن کن"
+  },
+  "Uninstall": {
+   "fa": "حذف نصب"
+  },
+  "Uninstall relay": {
+   "fa": "حذف رله"
+  },
+  "Unknown": {
+   "fa": "ناشناخته"
+  },
+  "Unlimited and free": {
+   "fa": "نامحدود و رایگان"
+  },
+  "Until Parakeet is downloaded, Coucou uses your Mac's speech recognition.": {
+   "fa": "تا Parakeet دانلود نشود، کیو از تشخیص گفتار مک تو استفاده می‌کند."
+  },
+  "Update Coucou to {0}…": {
+   "fa": "به‌روزرسانی کیو به {0}…"
+  },
+  "Update hooks": {
+   "fa": "به‌روزرسانی هوک‌ها"
+  },
+  "Update now": {
+   "fa": "همین حالا به‌روز کن"
+  },
+  "Updates": {
+   "fa": "به‌روزرسانی‌ها"
+  },
+  "Uploading {name}": {
+   "fa": "در حال فرستادن {name}"
+  },
+  "Used by the chat. The list comes from your Anthropic account.": {
+   "fa": "گفت‌وگو از آن استفاده می‌کند. فهرست از حساب Anthropic تو می‌آید."
+  },
+  "Voice": {
+   "fa": "صدا"
+  },
+  "Voice in use: {0}": {
+   "fa": "صدای در حال استفاده: {0}"
+  },
+  "Voice type": {
+   "fa": "نوع صدا"
+  },
+  "Volume": {
+   "fa": "بلندی صدا"
+  },
+  "Volume down": {
+   "fa": "کم کردن صدا"
+  },
+  "Volume up": {
+   "fa": "زیاد کردن صدا"
+  },
+  "Volume {0}%": {
+   "fa": "بلندی صدا {0}٪"
+  },
+  "Volume: {0}%": {
+   "fa": "بلندی صدا: {0}٪"
+  },
+  "Waiting for a response from Claude Code": {
+   "fa": "در انتظار پاسخ از Claude Code"
+  },
+  "Wardrobe": {
+   "fa": "کمد لباس"
+  },
+  "Watching {count} of {total}": {
+   "fa": "{count} از {total} را زیر نظر دارد"
+  },
+  "Weather by voice": {
+   "fa": "آب‌وهوا با صدا"
+  },
+  "Week": {
+   "fa": "هفته"
+  },
+  "Weekly recap": {
+   "fa": "جمع‌بندی هفتگی"
+  },
+  "What do you want to do with it?": {
+   "fa": "می‌خواهی با آن چه کار کنی؟"
+  },
+  "What you dictated, how fast, and where.": {
+   "fa": "هر چه دیکته کردی، با چه سرعتی و کجا."
+  },
+  "What you say, e.g. my signature": {
+   "fa": "هر چه می‌گویی، مثلاً امضای من"
+  },
+  "Whatever you speak, it's pasted in {0}.": {
+   "fa": "هر چه بگویی به {0} جای‌گذاری می‌شود."
+  },
+  "What’s new": {
+   "fa": "تازه‌ها"
+  },
+  "When Coucou hears the words on the left, it writes the ones on the right.": {
+   "fa": "وقتی کیو کلمه‌های سمت چپ را بشنود، کلمه‌های سمت راست را می‌نویسد."
+  },
+  "When a pill other than the one shown finishes or hits an error, the notch shows it for a moment, then the pill you had comes back.": {
+   "fa": "وقتی ابزاری جز همان که نمایش داده می‌شود تمام کند یا به خطا بخورد، ناچ یک لحظه او را نشان می‌دهد و بعد ابزار قبلی برمی‌گردد."
+  },
+  "When enabled, Coucou listens for the wake word « OK Coucou ». Speech recognition runs entirely on-device — no audio or transcript leaves your Mac.": {
+   "fa": "وقتی روشن باشد، کیو به کلمه بیدارباش «باشه کیو» گوش می‌دهد. تشخیص گفتار کاملاً روی خود دستگاه انجام می‌شود — نه صدا و نه متن از مک تو بیرون نمی‌رود."
+  },
+  "When the words went to the wrong place.": {
+   "fa": "وقتی حرف‌ها جای اشتباه رفت."
+  },
+  "Where the pill is": {
+   "fa": "کجا ابزار باشد"
+  },
+  "Where you code": {
+   "fa": "کجا کد می‌زنی"
+  },
+  "Where you dictate": {
+   "fa": "کجا دیکته می‌کنی"
+  },
+  "Which pill do you want to add?": {
+   "fa": "کدام ابزار اضافه شود؟"
+  },
+  "Which pill do you want to remove?": {
+   "fa": "کدام ابزار حذف شود؟"
+  },
+  "Which playlist?": {
+   "fa": "کدام پلی‌لیست؟"
+  },
+  "While listening, macOS shows the orange microphone dot in the top-right of the menu bar. This is normal system behaviour.": {
+   "fa": "در زمان گوش دادن، macOS نقطه نارنجی میکروفون را گوشه بالای نوار نشان می‌دهد. این رفتار طبیعی سیستم است."
+  },
+  "Who is it?": {
+   "fa": "این کیست؟"
+  },
+  "Witch hat": {
+   "fa": "کلاه جادوگری"
+  },
+  "With Claude, the transcript (never the audio) goes to Anthropic with your key from Settings → Chat. Apple Intelligence writes it on your Mac (macOS 26).": {
+   "fa": "با Claude، متن (هرگز صدا) با کلید تو از تنظیمات ← گفت‌وگو به Anthropic می‌رود. Apple Intelligence همان‌جا روی مک تو می‌نویسدش (macOS 26)."
+  },
+  "With the clean-up on, the text (never your voice) goes to Anthropic with your Claude key. Off, everything stays on your Mac.": {
+   "fa": "با روشن‌بودن مرتب‌کردن، متن (هرگز صدایت) با کلید Claude تو به Anthropic می‌رود. اگر خاموش باشد همه‌چیز روی مک تو می‌ماند."
+  },
+  "Without the “um” and the repeats, your tone kept.": {
+   "fa": "بدون «اِم» و تکرار، با لحن خودت."
+  },
+  "Woman": {
+   "fa": "زن"
+  },
+  "Words dictated": {
+   "fa": "کلمه دیکته‌شده"
+  },
+  "Words per day": {
+   "fa": "کلمه در روز"
+  },
+  "Workflow stopped.": {
+   "fa": "جریان کار متوقف شد."
+  },
+  "Workflows": {
+   "fa": "جریان‌های کار"
+  },
+  "Write the summary": {
+   "fa": "خلاصه را بنویس"
+  },
+  "Write the summary again": {
+   "fa": "خلاصه را دوباره بنویس"
+  },
+  "Writes": {
+   "fa": "می‌نویسد"
+  },
+  "Writes:\n• ~/.claude/coucou/nb-hook\n• ~/.claude/settings.json (backup created first)": {
+   "fa": "می‌نویسد:\n• ~/.claude/coucou/nb-hook\n• ~/.claude/settings.json (اول نسخه پشتیبان ساخته می‌شود)"
+  },
+  "Writing the summary…": {
+   "fa": "در حال نوشتن خلاصه…"
+  },
+  "Written, e.g. Claude Code": {
+   "fa": "چیزی که نوشته شد، مثلاً Claude Code"
+  },
+  "Yes, tell me": {
+   "fa": "بله، به من بگو"
+  },
+  "Yesterday": {
+   "fa": "دیروز"
+  },
+  "You have {0}": {
+   "fa": "تو {0} داری"
+  },
+  "You say": {
+   "fa": "تو می‌گویی"
+  },
+  "You speak": {
+   "fa": "تو حرف می‌زنی"
+  },
+  "Your Mac is hot": {
+   "fa": "مکت داغ است"
+  },
+  "Your Mac is warm": {
+   "fa": "مکت گرم است"
+  },
+  "Your Mac's speech recognition": {
+   "fa": "تشخیص گفتار مک تو"
+  },
+  "Your answer…": {
+   "fa": "پاسخ تو…"
+  },
+  "Your calls transcribed person by person, with a summary and the to-dos. No bot in the meeting.": {
+   "fa": "تماس‌هایت نفر به نفر نوشته می‌شود، با خلاصه و کارهای انجام‌دادنی. هیچ رباتی در جلسه نیست."
+  },
+  "Your calls will show here. Click Record a call when one starts.": {
+   "fa": "تماس‌هایت اینجا نمایش داده می‌شوند. وقتی تماسی شروع شد «ضبط یک تماس» را بزن."
+  },
+  "Your dictations will show here. Hold {0} in any app and speak.": {
+   "fa": "دیکته‌هایت اینجا می‌آیند. {0} را در هر برنامه‌ای نگه‌دار و حرف بزن."
+  },
+  "Your voice is turned into text by your Mac's speech recognition, on-device when your Mac supports it; Coucou sends it nowhere. After pasting, the clipboard gets back what it held.": {
+   "fa": "صدایت با تشخیص گفتار مک تو به متن تبدیل می‌شود، وقتی مکت پشتیبانی کند روی خود دستگاه؛ کیو جایی نمی‌فرستدش. بعد از جای‌گذاری، کلیپ‌بورد به همان محتوای قبلی‌اش برمی‌گردد."
+  },
+  "coding": {
+   "fa": "کدنویسی"
+  },
+  "commands": {
+   "fa": "دستورها"
+  },
+  "days in a row": {
+   "fa": "روز پشت هم"
+  },
+  "failed": {
+   "fa": "ناموفق"
+  },
+  "file": {
+   "fa": "فایل"
+  },
+  "files": {
+   "fa": "فایل"
+  },
+  "fn (🌐)": {
+   "fa": "fn (🌐)"
+  },
+  "has a plan ready": {
+   "fa": "یک پلن آماده دارد"
+  },
+  "in {h} h {m}": {
+   "fa": "{h} ساعت و {m} دقیقه دیگر"
+  },
+  "in {m} min": {
+   "fa": "{m} دقیقه دیگر"
+  },
+  "just now": {
+   "fa": "همین الان"
+  },
+  "min without movement": {
+   "fa": "دقیقه بی‌حرکتی"
+  },
+  "needs permission": {
+   "fa": "به مجوز نیاز دارد"
+  },
+  "now": {
+   "fa": "اکنون"
+  },
+  "presses this → island opens": {
+   "fa": "این را بزنی → جزیره باز می‌شود"
+  },
+  "s inactive": {
+   "fa": "ثانیه بی‌فعالیت"
+  },
+  "session": {
+   "fa": "نشست"
+  },
+  "sessions": {
+   "fa": "نشست"
+  },
+  "vs typing at 45 words/min": {
+   "fa": "در مقابل تایپ با ۴۵ کلمه در دقیقه"
+  },
+  "with": {
+   "fa": "با"
+  },
+  "with {name}": {
+   "fa": "با {name}"
+  },
+  "words dictated": {
+   "fa": "کلمه دیکته‌شده"
+  },
+  "words/min": {
+   "fa": "کلمه در دقیقه"
+  },
+  "writing…": {
+   "fa": "در حال نوشتن…"
+  },
+  "{0} added": {
+   "fa": "{0} اضافه شد"
+  },
+  "{0} added — hooks not installed": {
+   "fa": "{0} اضافه شد — هوک‌ها نصب نشدند"
+  },
+  "{0} custom": {
+   "fa": "{0} دلخواه"
+  },
+  "{0} did not answer": {
+   "fa": "{0} پاسخ نداد"
+  },
+  "{0} h %02lld": {
+   "fa": "{0} ساعت"
+  },
+  "{0} min": {
+   "fa": "{0} دقیقه"
+  },
+  "{0} removed": {
+   "fa": "{0} حذف شد"
+  },
+  "{0} unread": {
+   "fa": "{0} خوانده‌نشده"
+  },
+  "{0} — open Spotify": {
+   "fa": "{0} — Spotify را باز کن"
+  },
+  "{0} → {1}": {
+   "fa": "{0} ← {1}"
+  },
+  "{count}/4 slots used": {
+   "fa": "{count} از ۴ خانه استفاده شده"
+  },
+  "{name} is ready.": {
+   "fa": "{name} آماده است."
+  },
+  "{n} h ago": {
+   "fa": "{n} ساعت پیش"
+  },
+  "{n} min ago": {
+   "fa": "{n} دقیقه پیش"
+  },
+  "« OK Coucou », Mochi's voice and the dictation key.": {
+   "fa": "«باشه کیو»، صدای موچی و کلید دیکته."
+  },
+  "« OK Coucou » — voice wake word": {
+   "fa": "«باشه کیو» — کلمه بیدارباش صوتی"
+  },
+  "✓ Amp plugin installed in ~/.config/amp/plugins/coucou.ts": {
+   "fa": "✓ افزونه Amp در ~/.config/amp/plugins/coucou.ts نصب شد"
+  },
+  "✓ Amp plugin removed.": {
+   "fa": "✓ افزونه Amp حذف شد."
+  },
+  "✓ Antigravity hooks installed in ~/.gemini/config/hooks.json": {
+   "fa": "✓ هوک‌های Antigravity در ~/.gemini/config/hooks.json نصب شدند"
+  },
+  "✓ Antigravity hooks removed.": {
+   "fa": "✓ هوک‌های Antigravity حذف شدند."
+  },
+  "✓ Codex hooks installed — run /hooks in Codex or open Hooks in app settings to approve them.": {
+   "fa": "✓ هوک‌های Codex نصب شدند — در Codex فرمان /hooks را اجرا کن یا بخش Hooks تنظیمات برنامه را باز کن تا آن‌ها را تأیید کنی."
+  },
+  "✓ Codex hooks removed.": {
+   "fa": "✓ هوک‌های Codex حذف شدند."
+  },
+  "✓ Connected · {count} models": {
+   "fa": {
+    "one": "✓ متصل · {count} مدل",
+    "other": "✓ متصل · {count} مدل"
+   }
+  },
+  "✓ Copilot CLI hooks installed in ~/.copilot/hooks/coucou.json": {
+   "fa": "✓ هوک‌های Copilot CLI در ~/.copilot/hooks/coucou.json نصب شدند"
+  },
+  "✓ Copilot CLI hooks removed.": {
+   "fa": "✓ هوک‌های Copilot CLI حذف شدند."
+  },
+  "✓ Gemini CLI hooks installed in ~/.gemini/settings.json": {
+   "fa": "✓ هوک‌های Gemini CLI در ~/.gemini/settings.json نصب شدند"
+  },
+  "✓ Gemini CLI hooks removed.": {
+   "fa": "✓ هوک‌های Gemini CLI حذف شدند."
+  },
+  "✓ Google key saved.": {
+   "fa": "✓ کلید Google ذخیره شد."
+  },
+  "✓ Hermes plugin installed": {
+   "fa": "✓ افزونه Hermes نصب شد"
+  },
+  "✓ Hermes plugin installed in ~/.hermes/plugins/coucou/": {
+   "fa": "✓ افزونه Hermes در ~/.hermes/plugins/coucou/ نصب شد"
+  },
+  "✓ Hooks installed in ~/.claude/settings.json": {
+   "fa": "✓ هوک‌ها در ~/.claude/settings.json نصب شدند"
+  },
+  "✓ Hooks installed — restart VS Code to activate them.": {
+   "fa": "✓ هوک‌ها نصب شدند — VS Code را دوباره راه‌اندازی کن تا فعال شوند."
+  },
+  "✓ Hooks removed.": {
+   "fa": "✓ هوک‌ها حذف شدند."
+  },
+  "✓ Integration keys saved.": {
+   "fa": "✓ کلیدهای یکپارچه‌سازی ذخیره شدند."
+  },
+  "✓ Key saved.": {
+   "fa": "✓ کلید ذخیره شد."
+  },
+  "✓ Muse Code hooks installed in ~/.config/muse/settings.json": {
+   "fa": "✓ هوک‌های Muse Code در ~/.config/muse/settings.json نصب شدند"
+  },
+  "✓ Muse Code hooks removed.": {
+   "fa": "✓ هوک‌های Muse Code حذف شدند."
+  },
+  "✓ OpenAI key saved.": {
+   "fa": "✓ کلید OpenAI ذخیره شد."
+  },
+  "✓ OpenCode plugin installed in ~/.config/opencode/plugins/coucou.js": {
+   "fa": "✓ افزونه OpenCode در ~/.config/opencode/plugins/coucou.js نصب شد"
+  },
+  "✓ OpenCode plugin removed.": {
+   "fa": "✓ افزونه OpenCode حذف شد."
+  },
+  "✓ Status line installed.": {
+   "fa": "✓ خط وضعیت نصب شد."
+  },
+  "✓ Status line removed.": {
+   "fa": "✓ خط وضعیت حذف شد."
+  },
+  "❌ Select the .claude folder (hidden, in your Home directory).": {
+   "fa": "❌ پوشه .claude را انتخاب کن (مخفی، در پوشه Home تو)."
+  },
+  " · until {date}": {
+   "fa": " · تا {date}"
+  },
+  "(stored)": {
+   "fa": "(ذخیره‌شده)"
+  },
+  "+ subagent": {
+   "fa": "+ زیرعامل"
+  },
+  "A hook group named \"coucou\" that Coucou did not write is already there — Coucou has not touched it.": {
+   "fa": "از قبل یک گروه هوک به نام \"coucou\" آنجا هست که کیو ننوشته‌اش — کیو به آن دست نزده است."
+  },
+  "API error {code}": {
+   "fa": "خطای API {code}"
+  },
+  "API key (optional)": {
+   "fa": "کلید API (اختیاری)"
+  },
+  "API key missing. Open settings.": {
+   "fa": "کلید API نیست. تنظیمات را باز کن."
+  },
+  "Answer in terminal": {
+   "fa": "در ترمینال پاسخ بده"
+  },
+  "Answer it in your terminal.": {
+   "fa": "در ترمینالت پاسخش بده."
+  },
+  "Ask": {
+   "fa": "بپرس"
+  },
+  "Asking Codex…": {
+   "fa": "در حال پرسیدن از Codex…"
+  },
+  "Attach the front window to the chat": {
+   "fa": "پنجره روبه‌رو را به گفت‌وگو پیوست کن"
+  },
+  "Auto · follows the seasons (now: {outfit})": {
+   "fa": "خودکار · با فصل‌ها پیش می‌رود (الان: {outfit})"
+  },
+  "Auto · {outfit}": {
+   "fa": "خودکار · {outfit}"
+  },
+  "Auto-close": {
+   "fa": "بسته‌شدن خودکار"
+  },
+  "Back": {
+   "fa": "برگشت"
+  },
+  "Back up and remove": {
+   "fa": "پشتیبان بگیر و حذف کن"
+  },
+  "Back up and write": {
+   "fa": "پشتیبان بگیر و بنویس"
+  },
+  "Backup of {path} failed, nothing was written: {error}": {
+   "fa": "از {path} پشتیبان گرفته نشد، چیزی نوشته نشد: {error}"
+  },
+  "Backup → {path}": {
+   "fa": "پشتیبان ← {path}"
+  },
+  "Bad API response: {error}": {
+   "fa": "پاسخ نامعتبر API: {error}"
+  },
+  "Can't read {path}: {error}": {
+   "fa": "نمی‌توانم {path} را بخوانم: {error}"
+  },
+  "Canceled": {
+   "fa": "لغو شد"
+  },
+  "Cannot copy: {error}": {
+   "fa": "کپی نشد: {error}"
+  },
+  "Cannot reach {url}. Is the server running?": {
+   "fa": "به {url} نمی‌رسم. سرویس در حال اجراست؟"
+  },
+  "Cannot read {path}: {error}": {
+   "fa": "خواندن {path} ممکن نشد: {error}"
+  },
+  "Chat providers": {
+   "fa": "ارائه‌دهندگان گفت‌وگو"
+  },
+  "Chat with Google AI, OpenAI or OpenRouter instead of Claude: add a key here, then click the model name above the chat box to switch provider and model. Keys stay in the system keychain. These providers get no web search and no tools: they can answer, never act on this computer.": {
+   "fa": "به‌جای Claude با Google AI، OpenAI یا OpenRouter گفت‌وگو کن: اینجا کلید اضافه کن، بعد روی نام مدل بالای کادر گفت‌وگو کلیک کن تا ارائه‌دهنده و مدل عوض شوند. کلیدها در keychain سیستم می‌مانند. این ارائه‌دهندگان جست‌وجوی وب و ابزار ندارند: فقط می‌توانند پاسخ بدهند، هرگز روی این کامپیوتر کاری انجام نمی‌دهند."
+  },
+  "Chat with a model you run yourself: Ollama or LM Studio (leave the address empty for the usual one on this computer), or any server that speaks the OpenAI API, such as vLLM or llama.cpp. Once connected, pick it above the chat box.": {
+   "fa": "با مدلی که خودت اجرا می‌کنی گفت‌وگو کن: Ollama یا LM Studio (برای همان آدرس معمولی روی این کامپیوتر کادر را خالی بگذار)، یا هر سرویسی که با API اوپن‌ای‌آی حرف می‌زند مثل vLLM یا llama.cpp. وقتی وصل شدی، از بالای کادر گفت‌وگو انتخابش کن."
+  },
+  "Choose a model": {
+   "fa": "یک مدل انتخاب کن"
+  },
+  "Classic token with the repo scope, or fine-grained with read access to Pull requests, Commit statuses and Actions.": {
+   "fa": "توکن کلاسیک با دسترسی repo، یا توکن fine-grained با دسترسی خواندن به Pull requests، وضعیت کامیت‌ها و Actions."
+  },
+  "Claude declined this one.": {
+   "fa": "Claude این را رد کرد."
+  },
+  "Claude needs an answer.": {
+   "fa": "Claude به یک پاسخ نیاز دارد."
+  },
+  "Claude plan usage": {
+   "fa": "مصرف پلن Claude"
+  },
+  "Close the island": {
+   "fa": "بستن جزیره"
+  },
+  "Code": {
+   "fa": "کد"
+  },
+  "Codex plan": {
+   "fa": "پلن Codex"
+  },
+  "Codex plan usage": {
+   "fa": "مصرف پلن Codex"
+  },
+  "Codex runs new hooks only once you trust them: start Codex and review them once with /hooks.": {
+   "fa": "Codex هوک‌های جدید را فقط بعد از اعتماد تو اجرا می‌کند: Codex را باز کن و یک‌بار با /hooks آن‌ها را بررسی کن."
+  },
+  "Connect {name} in Settings → Local models first.": {
+   "fa": "اول {name} را در تنظیمات ← مدل‌های محلی وصل کن."
+  },
+  "Copied — paste it anywhere.": {
+   "fa": "کپی شد — هر جا می‌خواهی جای‌گذاری کن."
+  },
+  "Copying images isn't available here — use Save image.": {
+   "fa": "کپی‌کردن تصویر اینجا ممکن نیست — از «ذخیره تصویر» استفاده کن."
+  },
+  "Coucou could not list the agents.": {
+   "fa": "کیو نتوانست عامل‌ها را فهرست کند."
+  },
+  "Coucou counts your agent sessions as they happen — check back next Monday.": {
+   "fa": "کیو نشست‌های عامل‌هایت را همان‌طور که اتفاق می‌افتد می‌شمارد — دوشنبه آینده دوباره نگاه کن."
+  },
+  "Coucou is hooked into your Claude Code sessions. Tool calls, questions and permission requests show up in the island, and you can answer them there.": {
+   "fa": "کیو به نشست‌های Claude Code تو وصل است. فراخوانی ابزارها، سوال‌ها و درخواست‌های مجوز در جزیره نمایش داده می‌شوند و می‌توانی همان‌جا پاسخش‌ها را بدهی."
+  },
+  "Could not remove {path}: {error}": {
+   "fa": "{path} حذف نشد: {error}"
+  },
+  "Could not remove: {error}": {
+   "fa": "حذف نشد: {error}"
+  },
+  "Could not save the image: {error}": {
+   "fa": "تصویر ذخیره نشد: {error}"
+  },
+  "Could not save your current status line next to the relay; nothing was changed.": {
+   "fa": "خط وضعیت فعلی‌ات کنار رله ذخیره نشد؛ چیزی تغییر نکرد."
+  },
+  "Could not save: {error}": {
+   "fa": "ذخیره نشد: {error}"
+  },
+  "Could not write: {error}": {
+   "fa": "نوشته نشد: {error}"
+  },
+  "Counts and project names only — never commands, files or prompts. Kept on this computer for 12 weeks.": {
+   "fa": "فقط شمارش‌ها و نام پروژه‌ها — هرگز دستور، فایل یا پرامپت. ۱۲ هفته روی همین کامپیوتر می‌ماند."
+  },
+  "Custom server": {
+   "fa": "سرویس دلخواه"
+  },
+  "Default branch CI": {
+   "fa": "CI شاخه پیش‌فرض"
+  },
+  "Deployment": {
+   "fa": "استقرار"
+  },
+  "Details": {
+   "fa": "جزئیات"
+  },
+  "Display under the cursor": {
+   "fa": "نمایشگر زیر نشانگر"
+  },
+  "Docs": {
+   "fa": "مستندات"
+  },
+  "Done.": {
+   "fa": "انجام شد."
+  },
+  "Done. Open a new Claude Code session to pick the hooks up.": {
+   "fa": "انجام شد. یک نشست جدید Claude Code باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Done. Previous settings saved as {backup}. Open a new Claude Code session to pick the hooks up.": {
+   "fa": "انجام شد. تنظیمات قبلی با نام {backup} ذخیره شد. یک نشست جدید Claude Code باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Done. Previous settings saved as {backup}. The numbers appear after the next reply of a Claude Code session.": {
+   "fa": "انجام شد. تنظیمات قبلی با نام {backup} ذخیره شد. رقم‌ها بعد از پاسخ بعدی یک نشست Claude Code دیده می‌شوند."
+  },
+  "Done. Previous version saved as {paths}.": {
+   "fa": "انجام شد. نسخه قبلی در {paths} ذخیره شد."
+  },
+  "Done. The numbers appear after the next reply of a Claude Code session.": {
+   "fa": "انجام شد. رقم‌ها بعد از پاسخ بعدی یک نشست Claude Code دیده می‌شوند."
+  },
+  "Drop": {
+   "fa": "رها کن"
+  },
+  "Enter the server address first.": {
+   "fa": "اول آدرس سرویس را بنویس."
+  },
+  "Error": {
+   "fa": "خطا"
+  },
+  "File": {
+   "fa": "فایل"
+  },
+  "Folders can't be dropped yet.": {
+   "fa": "پوشه‌ها فعلاً قابل رهاکردن نیستند."
+  },
+  "Friday": {
+   "fa": "جمعه"
+  },
+  "From anywhere": {
+   "fa": "از هر جا"
+  },
+  "Go to pill 1 to 9": {
+   "fa": "رفتن به ابزار ۱ تا ۹"
+  },
+  "Go to the waiting permission or question": {
+   "fa": "رفتن به مجوز یا سوال در انتظار"
+  },
+  "Hide project names": {
+   "fa": "پنهان‌کردن نام پروژه‌ها"
+  },
+  "History cleared.": {
+   "fa": "تاریخچه پاک شد."
+  },
+  "Hold Ctrl, Alt or the Windows key with it.": {
+   "fa": "با آن Ctrl، Alt یا کلید Windows را نگه‌دار."
+  },
+  "Images": {
+   "fa": "تصویرها"
+  },
+  "In the open island": {
+   "fa": "در جزیره بازشده"
+  },
+  "In use": {
+   "fa": "در حال استفاده"
+  },
+  "In use by another app": {
+   "fa": "در حال استفاده یک برنامه دیگر"
+  },
+  "Install hooks…": {
+   "fa": "نصب هوک‌ها…"
+  },
+  "Install relay…": {
+   "fa": "نصب رله…"
+  },
+  "Install the hooks to see your Claude Code sessions in the island and approve permissions without leaving what you are doing.": {
+   "fa": "هوک‌ها را نصب کن تا نشست‌های Claude Code‌ات را در جزیره ببینی و بدون ترک کارت مجوزها را تأیید کنی."
+  },
+  "Install…": {
+   "fa": "نصب…"
+  },
+  "Instance URL": {
+   "fa": "آدرس نمونه"
+  },
+  "Integration lacks access": {
+   "fa": "یکپارچه‌سازی دسترسی ندارد"
+  },
+  "Integration token": {
+   "fa": "توکن یکپارچه‌سازی"
+  },
+  "Invalid API key (401)": {
+   "fa": "کلید API نامعتبر (401)"
+  },
+  "Island lives on": {
+   "fa": "جزیره روی"
+  },
+  "Keep the island open": {
+   "fa": "جزیره را باز نگه دار"
+  },
+  "Key configured": {
+   "fa": "کلید تنظیم شد"
+  },
+  "Key from {site}": {
+   "fa": "کلید از {site}"
+  },
+  "Key lacks access": {
+   "fa": "کلید دسترسی ندارد"
+  },
+  "Key removed.": {
+   "fa": "کلید حذف شد."
+  },
+  "Key saved in the {store}.": {
+   "fa": "کلید در {store} ذخیره شد."
+  },
+  "Later — keep it waiting": {
+   "fa": "بعداً — در انتظار بماند"
+  },
+  "Launch at startup": {
+   "fa": "هنگام شروع سیستم اجرا شو"
+  },
+  "Leave the user name and password out of the address.": {
+   "fa": "نام کاربری و رمز را داخل آدرس ننویس."
+  },
+  "Main display": {
+   "fa": "نمایشگر اصلی"
+  },
+  "Main tool": {
+   "fa": "ابزار اصلی"
+  },
+  "Meeting": {
+   "fa": "جلسه"
+  },
+  "Monday": {
+   "fa": "دوشنبه"
+  },
+  "Mute": {
+   "fa": "بی‌صدا"
+  },
+  "Mute or unmute Mochi": {
+   "fa": "موچی را بی‌صدا یا باصدا کن"
+  },
+  "Network error: {error}": {
+   "fa": "خطای شبکه: {error}"
+  },
+  "Next or previous pill": {
+   "fa": "ابزار بعدی یا قبلی"
+  },
+  "Next pill": {
+   "fa": "ابزار بعدی"
+  },
+  "No API key — add it in Settings.": {
+   "fa": "کلید API نداریم — در تنظیمات اضافه‌اش کن."
+  },
+  "No Pictures or Downloads folder to save into.": {
+   "fa": "پوشه‌ای برای ذخیره (تصویرها یا دانلودها) وجود ندارد."
+  },
+  "No change.": {
+   "fa": "تغییری نکرد."
+  },
+  "No connection: {error}": {
+   "fa": "اتصال برقرار نشد: {error}"
+  },
+  "No display server was found, so global shortcuts are off.": {
+   "fa": "سرور نمایشی پیدا نشد، پس میان‌برهای سراسری خاموش‌اند."
+  },
+  "No existing file — nothing to back up.": {
+   "fa": "فایلی از قبل وجود ندارد — چیزی برای پشتیبان‌گیری نیست."
+  },
+  "No key yet — the chat needs one.": {
+   "fa": "هنوز کلیدی نیست — گفت‌وگو به یکی نیاز دارد."
+  },
+  "No models yet. Download one in {name} first.": {
+   "fa": "هنوز مدلی نیست. اول در {name} یکی دانلود کن."
+  },
+  "No response text.": {
+   "fa": "متن پاسخ نیست."
+  },
+  "No settings.json yet — nothing to back up.": {
+   "fa": "هنوز settings.json نیست — چیزی برای پشتیبان‌گیری نیست."
+  },
+  "No telemetry. Network requests only go to the services you configure yourself.": {
+   "fa": "بدون تله‌متری. درخواست‌های شبکه فقط به سرویس‌هایی می‌روند که خودت تنظیم کرده‌ای."
+  },
+  "Not a valid address: {address}": {
+   "fa": "آدرس معتبر نیست: {address}"
+  },
+  "Not a valid http:// or https:// address.": {
+   "fa": "آدرس معتبر http:// یا https:// نیست."
+  },
+  "Not a valid shortcut": {
+   "fa": "میان‌بر معتبر نیست"
+  },
+  "Not available": {
+   "fa": "در دسترس نیست"
+  },
+  "Nothing leaves your PC: the server runs on this computer.": {
+   "fa": "هیچ‌چیز کامپیوترت را ترک نمی‌کند: سرویس روی همین دستگاه اجرا می‌شود."
+  },
+  "Only files dropped on the island can be added.": {
+   "fa": "فقط فایلی که روی جزیره رها شود قابل اضافه‌کردن است."
+  },
+  "Open in VS Code": {
+   "fa": "در VS Code باز کن"
+  },
+  "Open or close the island": {
+   "fa": "باز یا بسته کردن جزیره"
+  },
+  "Open the chat": {
+   "fa": "بازکردن گفت‌وگو"
+  },
+  "Open the terminal": {
+   "fa": "بازکردن ترمینال"
+  },
+  "Open the wardrobe": {
+   "fa": "بازکردن کمد لباس"
+  },
+  "OpenAI-compatible": {
+   "fa": "سازگار با OpenAI"
+  },
+  "OpenAI-compatible server": {
+   "fa": "سرویس سازگار با OpenAI"
+  },
+  "PDF": {
+   "fa": "PDF"
+  },
+  "Payment": {
+   "fa": "پرداخت"
+  },
+  "Pick a model above the chat box first.": {
+   "fa": "اول از بالای کادر گفت‌وگو یک مدل انتخاب کن."
+  },
+  "Pick a {name} model above the chat box.": {
+   "fa": "از بالای کادر گفت‌وگو یک مدل {name} انتخاب کن."
+  },
+  "Pick up to {max} pills to show next to Mochi — {used}/{max} in use. Keys are stored in the {store}, never on disk.": {
+   "fa": "تا {max} ابزار برای نمایش کنار موچی انتخاب کن — {used}/{max} در حال استفاده. کلیدها در {store} ذخیره می‌شوند، هرگز روی دیسک."
+  },
+  "Press keys…": {
+   "fa": "کلیدها را بزن…"
+  },
+  "Previous pill": {
+   "fa": "ابزار قبلی"
+  },
+  "Questions": {
+   "fa": "سوال‌ها"
+  },
+  "Ready": {
+   "fa": "آماده"
+  },
+  "Reinstall hooks…": {
+   "fa": "نصب دوباره هوک‌ها…"
+  },
+  "Reinstall…": {
+   "fa": "نصب دوباره…"
+  },
+  "Relay": {
+   "fa": "رله"
+  },
+  "Repositories": {
+   "fa": "مخزن‌ها"
+  },
+  "Reset to defaults": {
+   "fa": "بازگرداندن به پیش‌فرض"
+  },
+  "Resets": {
+   "fa": "بازنشانی‌ها"
+  },
+  "Restart Amp to load the plugin.": {
+   "fa": "Amp را دوباره راه‌اندازی کن تا افزونه بارگذاری شود."
+  },
+  "Restart Cursor to pick the hooks up.": {
+   "fa": "Cursor را دوباره راه‌اندازی کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Restart OpenCode to load the plugin.": {
+   "fa": "OpenCode را دوباره راه‌اندازی کن تا افزونه بارگذاری شود."
+  },
+  "Result": {
+   "fa": "نتیجه"
+  },
+  "Saturday": {
+   "fa": "شنبه"
+  },
+  "Save image": {
+   "fa": "ذخیره تصویر"
+  },
+  "Save key": {
+   "fa": "ذخیره کلید"
+  },
+  "Saved as {name}": {
+   "fa": "با نام {name} ذخیره شد"
+  },
+  "Saved. It never touches disk.": {
+   "fa": "ذخیره شد. روی دیسک نمی‌نشیند."
+  },
+  "Saving…": {
+   "fa": "در حال ذخیره…"
+  },
+  "Secret key": {
+   "fa": "کلید مخفی"
+  },
+  "Send Mochi to the desktop": {
+   "fa": "موچی را روی دسکتاپ بفرست"
+  },
+  "Send the message": {
+   "fa": "پیام را بفرست"
+  },
+  "Sending by email isn't in this version.": {
+   "fa": "ارسال با ایمیل در این نسخه نیست."
+  },
+  "Sessions — approvals stay in the agent": {
+   "fa": "نشست‌ها — تأییدها در خود عامل می‌ماند"
+  },
+  "Sessions, and Allow / Deny from the island": {
+   "fa": "نشست‌ها، و اجازه / رد از جزیره"
+  },
+  "Share your week": {
+   "fa": "هفته‌ات را به اشتراک بگذار"
+  },
+  "Show in folder": {
+   "fa": "در پوشه نشان بده"
+  },
+  "Show other coding agents in the island. Coucou adds its entries to each agent's own config: you see the exact change and where the backup goes before anything is written, and uninstalling removes only what Coucou added.": {
+   "fa": "سایر عامل‌های کدنویسی را در جزیره نشان بده. کیو گزینه‌های خودش را در تنظیمات هر عامل اضافه می‌کند: پیش از نوشتن دقیقاً می‌بینی چه چیزی عوض می‌شود و پشتیبان کجا می‌رود، و هنگام حذف‌کردن فقط همان چیزی که کیو اضافه کرده پاک می‌شود."
+  },
+  "Shows your Claude plan usage (5-hour and weekly limits) in the island's header. Coucou adds a status line relay in ~/.claude/settings.json. If you already have a status line, it keeps working as before. Pro and Max plans only.": {
+   "fa": "مصرف پلن Claude تو (سقف ۵ ساعته و هفتگی) را در سربرگ جزیره نشان می‌دهد. کیو یک خط وضعیت با رله در ~/.claude/settings.json اضافه می‌کند. اگر از قبل خط وضعیت داری، مثل قبل کار می‌کند. فقط پلن‌های Pro و Max."
+  },
+  "Shows your Codex plan usage (weekly limit and free resets left) in the island's header. Coucou asks the Codex CLI (codex app-server) when the pill shows; nothing is installed. Codex must be signed in with ChatGPT.": {
+   "fa": "مصرف پلن Codex تو (سقف هفتگی و بازنشانی‌های رایگان باقی‌مانده) را در سربرگ جزیره نشان می‌دهد. کیو وقتی این ابزار روشن است از خود Codex CLI (codex app-server) می‌پرسد؛ چیزی نصب نمی‌شود. Codex باید با ChatGPT وارد شده باشد."
+  },
+  "Start a new Antigravity conversation to pick the hooks up.": {
+   "fa": "یک گفت‌وگوی جدید Antigravity باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Start a new Copilot CLI session to pick the hooks up.": {
+   "fa": "یک نشست جدید Copilot CLI باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Start a new Gemini CLI session to pick the hooks up.": {
+   "fa": "یک نشست جدید Gemini CLI باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Start a new Muse Code session to pick the hooks up.": {
+   "fa": "یک نشست جدید Muse Code باز کن تا هوک‌ها بارگذاری شوند."
+  },
+  "Start a new chat": {
+   "fa": "گفت‌وگوی جدید شروع کن"
+  },
+  "Sunday": {
+   "fa": "یکشنبه"
+  },
+  "Switch provider or model": {
+   "fa": "عوض‌کردن ارائه‌دهنده یا مدل"
+  },
+  "That key can't be used in a shortcut.": {
+   "fa": "آن کلید در میان‌بر قابل استفاده نیست."
+  },
+  "The address must start with http:// or https://.": {
+   "fa": "آدرس باید با http:// یا https:// شروع شود."
+  },
+  "The file is removed.": {
+   "fa": "فایل حذف شد."
+  },
+  "The image could not be read.": {
+   "fa": "تصویر خوانده نشد."
+  },
+  "The image is too large.": {
+   "fa": "تصویر خیلی بزرگ است."
+  },
+  "The preview is out of date. Nothing was written — review the new diff.": {
+   "fa": "پیش‌نمایش کهنه است. چیزی نوشته نشد — diff جدید را بررسی کن."
+  },
+  "The relay isn't installed yet.": {
+   "fa": "رله هنوز نصب نشده است."
+  },
+  "The relay isn't installed yet. Restart Coucou.": {
+   "fa": "رله هنوز نصب نشده است. کیو را دوباره راه‌اندازی کن."
+  },
+  "The server refused the key. Check it, then connect again.": {
+   "fa": "سرویس کلید را رد کرد. بررسیش کن و دوباره وصل شو."
+  },
+  "The server's answer is too large.": {
+   "fa": "پاسخ سرویس خیلی بزرگ است."
+  },
+  "This address is another machine, over plain http: what you ask travels unencrypted.": {
+   "fa": "این آدرس یک کامپیوتر دیگر است، با http ساده: هر چه بپرسی بدون رمزنگاری ارسال می‌شود."
+  },
+  "This address is another machine: what you ask is sent to it.": {
+   "fa": "این آدرس یک کامپیوتر دیگر است: هر چه بپرسی برایش فرستاده می‌شود."
+  },
+  "This agent takes a plugin, not hook entries.": {
+   "fa": "این عامل افزونه می‌خواهد، نه ورودی هوک."
+  },
+  "This is exactly what changes for {name}. Nothing else is touched.": {
+   "fa": "دقیقاً همین برای {name} عوض می‌شود. به چیز دیگری دست نمی‌زنیم."
+  },
+  "This is exactly what will change in your settings.json. Your own hooks are left untouched.": {
+   "fa": "دقیقاً همین در settings.json تو عوض می‌شود. هوک‌های خودت دست‌نخورده می‌مانند."
+  },
+  "This is exactly what will change: only the status line. If you already have one it keeps working, Coucou's relay runs it for you.": {
+   "fa": "دقیقاً همین عوض می‌شود: فقط خط وضعیت. اگر از قبل یکی داری، مثل قبل کار می‌کند و رله کیو برایت اجرایش می‌کند."
+  },
+  "This puts your previous status line back, or removes the entry if there was none.": {
+   "fa": "خط وضعیت قبلی‌ات را برمی‌گرداند، یا اگر چیزی نبوده ورودی را حذف می‌کند."
+  },
+  "This removes Coucou's entries only. Everything else stays.": {
+   "fa": "فقط ورودی‌های کیو حذف می‌شود. بقیه چیز می‌ماند."
+  },
+  "This removes Coucou's entries only. Your own hooks are left untouched.": {
+   "fa": "فقط ورودی‌های کیو حذف می‌شود. هوک‌های خودت دست‌نخورده می‌مانند."
+  },
+  "Thursday": {
+   "fa": "پنجشنبه"
+  },
+  "Token lacks access": {
+   "fa": "توکن دسترسی ندارد"
+  },
+  "Token lacks the needed scope": {
+   "fa": "توکن آن دسترسی لازم را ندارد"
+  },
+  "Total stars": {
+   "fa": "مجموع ستاره‌ها"
+  },
+  "Tuesday": {
+   "fa": "سه‌شنبه"
+  },
+  "Turn it on once with `hermes plugins enable coucou`, then start a new Hermes session.": {
+   "fa": "یک‌بار با `hermes plugins enable coucou` روشنش کن، بعد یک نشست جدید Hermes باز کن."
+  },
+  "Types “{char}”": {
+   "fa": "«{char}» را تایپ می‌کند"
+  },
+  "Unexpected API response.": {
+   "fa": "پاسخ غیرمنتظره API."
+  },
+  "Uninstall hooks…": {
+   "fa": "حذف هوک‌ها…"
+  },
+  "Uninstall relay…": {
+   "fa": "حذف رله…"
+  },
+  "Uninstall…": {
+   "fa": "حذف نصب…"
+  },
+  "Unknown agent \"{id}\".": {
+   "fa": "عامل ناشناخته \"{id}\"."
+  },
+  "Untitled": {
+   "fa": "بدون نام"
+  },
+  "Use a secret key (sk_live_… not pk_live_…)": {
+   "fa": "کلید مخفی استفاده کن (sk_live_… نه pk_live_…)"
+  },
+  "Use in chat": {
+   "fa": "در گفت‌وگو استفاده کن"
+  },
+  "Used twice": {
+   "fa": "دو بار استفاده شده"
+  },
+  "Wardrobe…": {
+   "fa": "کمد لباس…"
+  },
+  "Warning: the key would be sent unencrypted (http://) to another machine. Use https://, or a server on this computer.": {
+   "fa": "هشدار: کلید بدون رمزنگاری (http://) به کامپیوتر دیگری می‌رود. از https:// استفاده کن، یا از سرویسی روی همین کامپیوتر."
+  },
+  "Wednesday": {
+   "fa": "چهارشنبه"
+  },
+  "Work from any app. Click a shortcut to change it, then press the new keys — Esc cancels, Backspace removes it.": {
+   "fa": "از هر برنامه‌ای کار کن. روی یک میان‌بر کلیک کن و کلیدهای تازه‌اش را بزن — Esc لغو می‌کند، Backspace حذفش می‌کند."
+  },
+  "Workflow": {
+   "fa": "جریان کار"
+  },
+  "Write to {path} failed: {error}": {
+   "fa": "نوشتن در {path} انجام نشد: {error}"
+  },
+  "Your Wayland desktop doesn't let apps listen for keys outside their own windows. Add the shortcuts in your system's keyboard settings instead, with these commands:": {
+   "fa": "محیط Wayland تو اجازه نمی‌دهد برنامه‌ها کلیدهای بیرون پنجره خودشان را گوش دهند. به‌جایش میان‌برها را با این فرمان‌ها در تنظیمات صفحه‌کلید سیستم خودت اضافه کن:"
+  },
+  "Desktop: {keys}": {
+   "fa": "دسکتاپ: {keys}"
+  },
+  "Not set by your desktop": {
+   "fa": "توسط دسکتاپت تنظیم نشد"
+  },
+  "These shortcuts are registered with your desktop. It may ask you to confirm them or to pick other keys; when it says which keys it uses, they show next to each shortcut.": {
+   "fa": "این میان‌برها در دسکتاپ تو ثبت شده‌اند. ممکن است بخواهد آن‌ها را تأیید کنی یا کلید دیگری انتخاب کنی؛ وقتی بگوید کدام کلیدها را استفاده می‌کند، کنار هر میان‌بر نشان داده می‌شوند."
+  },
+  "Asking your desktop to register the shortcuts. It may show its own window to confirm them.": {
+   "fa": "دارد از دسکتاپت می‌خواهد میان‌برها را ثبت کند. ممکن است پنجره خودش را برای تأیید نشان بدهد."
+  },
+  "If one doesn't work, you can also add it in your system's keyboard settings with these commands:": {
+   "fa": "اگر یکی‌شان کار نکرد، می‌توانی با این فرمان‌ها در تنظیمات صفحه‌کلید سیستم اضافه‌اش کنی:"
+  },
+  "all green": {
+   "fa": "همه سبز"
+  },
+  "coucou-hook.exe is not in place yet. Restart Coucou; if it still fails, build it with `cargo build -p coucou-hook`.": {
+   "fa": "coucou-hook.exe هنوز سر جایش نیست. کیو را دوباره راه‌اندازی کن؛ اگر باز هم نشد، با `cargo build -p coucou-hook` بسازش."
+  },
+  "failing": {
+   "fa": "ناموفق"
+  },
+  "finished": {
+   "fa": "تمام شد"
+  },
+  "installed": {
+   "fa": "نصب شده"
+  },
+  "is asking": {
+   "fa": "سوال می‌پرسد"
+  },
+  "is asking ({index} of {total})": {
+   "fa": "سوال می‌پرسد ({index} از {total})"
+  },
+  "is asking a question": {
+   "fa": "سوالی می‌پرسد"
+  },
+  "lines": {
+   "fa": "خط"
+  },
+  "no repos": {
+   "fa": "مخزنی نیست"
+  },
+  "not installed": {
+   "fa": "نصب نشده"
+  },
+  "passing": {
+   "fa": "موفق"
+  },
+  "running": {
+   "fa": "در حال اجرا"
+  },
+  "seconds after you leave the island": {
+   "fa": "ثانیه بعد از ترک جزیره"
+  },
+  "settings.json: {what} has an unexpected type — Coucou has not touched it.": {
+   "fa": "settings.json: نوع {what} غیرمنتظره است — کیو به آن دست نزده است."
+  },
+  "unknown": {
+   "fa": "ناشناخته"
+  },
+  "{allowed} allowed, {denied} denied": {
+   "fa": "{allowed} اجازه، {denied} رد"
+  },
+  "{count} contributions": {
+   "fa": {
+    "one": "{count} مشارکت",
+    "other": "{count} مشارکت"
+   }
+  },
+  "{count} models": {
+   "fa": {
+    "one": "{count} مدل",
+    "other": "{count} مدل"
+   }
+  },
+  "{count} repos": {
+   "fa": {
+    "one": "{count} مخزن",
+    "other": "{count} مخزن"
+   }
+  },
+  "{file} isn't UTF-8 text — Coucou won't touch it.": {
+   "fa": "{file} متن UTF-8 نیست — کیو دست نمی‌زند."
+  },
+  "{file} isn't a JSON object — Coucou won't touch it.": {
+   "fa": "{file} یک شیء JSON نیست — کیو دست نمی‌زند."
+  },
+  "{file} isn't valid JSON ({error}). Fix or move it, then try again — Coucou won't overwrite it.": {
+   "fa": "{file} JSON معتبر نیست ({error}). درستش کن یا جابه‌جاش کن و بعد دوباره امتحان کن — کیو بازنویسی‌اش نمی‌کند."
+  },
+  "{h}h {m}m": {
+   "fa": "{h} ساعت و {m} دقیقه"
+  },
+  "{keys} types “{char}” on your keyboard, so it can't be a shortcut. Pick another key.": {
+   "fa": "{keys} روی صفحه‌کلید تو «{char}» تایپ می‌کند، پس میان‌بر نیست. کلید دیگری انتخاب کن."
+  },
+  "{model} isn't installed. Pick another model above the chat box.": {
+   "fa": "{model} نصب نشده است. از بالای کادر گفت‌وگو مدل دیگری انتخاب کن."
+  },
+  "{name} API key missing. Add it in Settings.": {
+   "fa": "کلید API {name} نیست. در تنظیمات اضافه‌اش کن."
+  },
+  "{name} rate limit reached (429): {detail}": {
+   "fa": "به سقف درخواست {name} رسیدی (429): {detail}"
+  },
+  "{name} rejected the API key ({status}). Check it in Settings.": {
+   "fa": "{name} کلید API را رد کرد ({status}). در تنظیمات بررسیش کن."
+  },
+  "{name} wasn't written by Coucou — Coucou has not touched it.": {
+   "fa": "{name} را کیو ننوشته است — کیو به آن دست نزده است."
+  },
+  "{name} — {width}×{height} at {x},{y}": {
+   "fa": "{name} — {width}×{height} در {x},{y}"
+  },
+  "{name}: model not found (404). Pick another one above the chat box. {detail}": {
+   "fa": "{name}: مدل پیدا نشد (404). از بالای کادر گفت‌وگو یکی دیگر انتخاب کن. {detail}"
+  },
+  "{name}: not enough credits (402). {detail}": {
+   "fa": "{name}: اعتبار کافی نیست (402). {detail}"
+  },
+  "{n} available": {
+   "fa": "{n} در دسترس"
+  },
+  "{n}d": {
+   "fa": "{n} روز"
+  },
+  "{n}h": {
+   "fa": "{n} ساعت"
+  },
+  "{n}m": {
+   "fa": "{n} دقیقه"
+  },
+  "{path} changed since the preview. Nothing was written — review the new diff.": {
+   "fa": "{path} از زمان پیش‌نمایش عوض شده است. چیزی نوشته نشد — diff جدید را بررسی کن."
+  },
+  "{time} ago": {
+   "fa": "{time} پیش"
+  },
+  "{total} past year": {
+   "fa": "{total} سال گذشته"
+  },
+  "{used}/{max} slots in use — the main tool doesn't take one.": {
+   "fa": "{used}/{max} خانه در حال استفاده — ابزار اصلی خانه نمی‌گیرد."
+  },
+  "{what} has an unexpected type — Coucou has not touched it.": {
+   "fa": "نوع {what} غیرمنتظره است — کیو به آن دست نزده است."
+  },
+  "• subagent done": {
+   "fa": "• زیرعامل تمام شد"
+  },
+  "⚠ failed": {
+   "fa": "⚠ ناموفق"
+  },
+  "A key is only sent over https, or to a server on this computer.": {
+   "fa": "کلید فقط روی https، یا به سرویسی روی همین کامپیوتر فرستاده می‌شود."
+  },
+  "Only a file dropped on the island can be sent with a question.": {
+   "fa": "فقط فایلی که روی جزیره رها شده باشد با سوال فرستاده می‌شود."
+  },
+  "The numbers come from the Claude Code command-line tool. The Claude desktop app does not report them, so the gauge stays empty if you only use the desktop app.": {
+   "fa": "رقم‌ها از ابزار خط فرمان Claude Code می‌آیند. برنامه دسکتاپ Claude آن‌ها را گزارش نمی‌دهد، پس اگر فقط از برنامه دسکتاپ استفاده کنی این سنجه خالی می‌ماند."
+  },
+  "Your phone finds this computer again by itself when the network changes. It is announced on your local network only while this switch is on. Some hotspots and guest networks block this.": {
+   "fa": "گوشی تو وقتی شبکه عوض شود خودش دوباره این کامپیوتر را پیدا می‌کند. فقط وقتی این کلید روشن است در شبکه محلی اعلام می‌شود. بعضی هات‌اسپات‌ها و شبکه‌های مهمان این را مسدود می‌کنند."
+  },
+  "Let the phone answer Claude Code's questions": {
+   "fa": "گوشی بتواند به سوال‌های Claude Code پاسخ بدهد"
+  },
+  "The phone shows each question with its options. Every answer is confirmed with the phone's fingerprint or screen lock.": {
+   "fa": "گوشی هر سوال را با گزینه‌هایش نشان می‌دهد. هر پاسخ با اثر انگشت یا قفل صفحه گوشی تأیید می‌شود."
+  },
+  "Android phone": {
+   "fa": "گوشی اندروید"
+  },
+  "Send your agents' sessions to Coucou for Android and answer permission requests from the phone. Off by default; it only listens on your local network.": {
+   "fa": "نشست‌های عامل‌هایت را به کیو برای اندروید بفرست و درخواست‌های مجوز را با گوشی پاسخ بده. پیش‌فرض خاموش است؛ فقط در شبکه محلی تو گوش می‌دهد."
+  },
+  "Allow on the phone asks for the fingerprint or the screen lock. Deny does not.": {
+   "fa": "برای «اجازه بده» روی گوشی اثر انگشت یا قفل صفحه خواسته می‌شود. برای «رد کن» نه."
+  },
+  "Phone link": {
+   "fa": "اتصال به گوشی"
+  },
+  "Could not turn it on: {error}": {
+   "fa": "روشن نشد: {error}"
+  },
+  "Show pairing code": {
+   "fa": "نمایش کد جفت‌شدن"
+  },
+  "Phones connected: {count}": {
+   "fa": "گوشی‌های وصل‌شده: {count}"
+  },
+  "In Coucou for Android, scan this code with the camera or paste the link.": {
+   "fa": "در کیو برای اندروید، این کد را با دوربین اسکن کن یا لینک را جای‌گذاری کن."
+  },
+  "Copy link": {
+   "fa": "کپی لینک"
+  },
+  "Pair again": {
+   "fa": "دوباره جفت کن"
+  },
+  "The phone that was paired is disconnected and needs the new code.": {
+   "fa": "گوشی جفت‌شده قطع شده و به کد جدید نیاز دارد."
+  },
+  "If Windows asks about the firewall, allow Coucou on private networks. The phone and this computer must be on the same Wi-Fi.": {
+   "fa": "اگر ویندوز درباره فایروال پرسید، کیو را در شبکه‌های خصوصی مجاز کن. گوشی و این کامپیوتر باید روی یک Wi-Fi باشند."
+  },
+  "The phone connects to {address}": {
+   "fa": "گوشی به {address} وصل می‌شود"
+  },
+  "Let the phone chat with my AI providers": {
+   "fa": "گوشی بتواند با ارائه‌دهندگان هوش مصنوعی من گفت‌وگو کند"
+  },
+  "Chat uses the API keys saved on this computer. The phone never sees them, and each message may cost money.": {
+   "fa": "گفت‌وگو از کلیدهای API ذخیره‌شده روی این کامپیوتر استفاده می‌کند. گوشی هرگز آن‌ها را نمی‌بیند، و هر پیام ممکن است هزینه داشته باشد."
+  },
+  "Models the phone may use": {
+   "fa": "مدل‌هایی که گوشی می‌تواند استفاده کند"
+  },
+  "Choose models": {
+   "fa": "انتخاب مدل‌ها"
+  },
+  "Nothing is allowed yet: the phone cannot chat until you tick a model.": {
+   "fa": "هنوز چیزی اجازه ندارد: تا مدلی را تیک نزنی گوشی نمی‌تواند گفت‌وگو کند."
+  },
+  "No provider is ready: add an API key or connect a local model first.": {
+   "fa": "هیچ ارائه‌دهنده‌ای آماده نیست: اول کلید API اضافه کن یا به یک مدل محلی وصل شو."
+  },
+  "Show session details on the phone": {
+   "fa": "جزئیات نشست را روی گوشی نشان بده"
+  },
+  "Sends the last steps (as shown on the island, so they can include commands), the final line, the project's folder name and the colour. Never a path.": {
+   "fa": "آخرین مرحله‌ها (همان‌طور که در جزیره نمایش داده می‌شوند، پس ممکن است دستور داشته باشند)، خط پایانی، نام پوشه پروژه و رنگش را می‌فرستد. هرگز مسیر فایل."
+  },
+  "Show the files an agent changed on the phone": {
+   "fa": "فایل‌هایی که عامل عوض کرده را روی گوشی نشان بده"
+  },
+  "The phone lists the files each agent changed and, when you tap one, shows what changed in it (200 lines at most, long lines cut). File names and lines go only to your paired phone, over the pinned encrypted link, and only when it asks.": {
+   "fa": "گوشی فایل‌هایی که هر عامل عوض کرده را فهرست می‌کند و با زدن روی هر کدام نشان می‌دهد در آن چه تغییر کرده (حداکثر ۲۰۰ خط، خطوط بلند کوتاه می‌شوند). نام فایل‌ها و خط‌ها فقط به گوشی جفت‌شده تو می‌رود، روی همان لینک رمزنگاری‌شده و تاییدشده، و فقط وقتی خودش بخواهد."
+  },
+  "Show my plan usage on the phone": {
+   "fa": "مصرف پلنم را روی گوشی نشان بده"
+  },
+  "The phone shows how much of your Claude and Codex plans is used and when they reset: the same percentages as the pills here, nothing else.": {
+   "fa": "گوشی نشان می‌دهد چقدر از پلن‌های Claude و Codex تو مصرف شده و کی بازنشانی می‌شوند: همان درصدهای این‌جا، و چیزی جز آن‌ها."
+  },
+  "Payment failed": {
+   "fa": "پرداخت ناموفق"
+  },
+  "Delivered": {
+   "fa": "تحویل شد"
+  },
+  "Not delivered": {
+   "fa": "تحویل نشد"
+  },
+  "Show these services on the phone": {
+   "fa": "این سرویس‌ها را روی گوشی نشان بده"
+  },
+  "Each tick lets your paired phone see that service's card: a headline and up to three short lines, read-only. Nothing is shown until you tick it. No addresses, subjects, links or keys are ever sent.": {
+   "fa": "هر تیک به گوشی جفت‌شده اجازه می‌دهد کارت همان سرویس را ببیند: یک تیتر و تا سه خط کوتاه، فقط خواندنی. تا تیک نزنی چیزی نمایش داده نمی‌شود. هیچ آدرس، موضوع، لینک یا کلیدی هرگز ارسال نمی‌شود."
+  },
+  "The link you copied contains the pairing code: anyone who gets it can pair a phone with this computer. If it ends up somewhere it should not, press Pair again to make a new code; the old one stops working.": {
+   "fa": "لینکی که کپی کردی کد جفت‌شدن را دارد: هر کسی که به آن برسد می‌تواند یک گوشی را با این کامپیوتر جفت کند. اگر جای نامناسبی افتاد، «دوباره جفت کن» را بزن تا کد تازه ساخته شود؛ کد قبلی از کار می‌افتد."
+  },
+  "Reaching the relay…": {
+   "fa": "در حال رسیدن به رله…"
+  },
+  "Connected to the relay, waiting for the phone.": {
+   "fa": "به رله وصل شد، در انتظار گوشی."
+  },
+  "The phone is connected through the relay.": {
+   "fa": "گوشی از راه رله وصل است."
+  },
+  "The relay refused the access key.": {
+   "fa": "رله کلید دسترسی را رد کرد."
+  },
+  "The relay cannot be reached. Trying again.": {
+   "fa": "رله در دسترس نیست. دوباره امتحان می‌شود."
+  },
+  "This pairing is in use somewhere else. Press Pair again.": {
+   "fa": "این جفت در جای دیگری در حال استفاده است. «دوباره جفت کن» را بزن."
+  },
+  "The relay is limiting connections from here. Trying again later.": {
+   "fa": "رله اتصال‌ها از این محل را محدود کرده است. بعداً دوباره امتحان می‌شود."
+  },
+  "Off": {
+   "fa": "خاموش"
+  },
+  "Save address": {
+   "fa": "ذخیره آدرس"
+  },
+  "Away from home Wi-Fi": {
+   "fa": "خارج از Wi-Fi خانه"
+  },
+  "Reach this computer from your phone on mobile data or another network, through a relay you deployed yourself. Everything is encrypted end to end: the relay only forwards data it cannot read. Off by default.": {
+   "fa": "وقتی با اینترنت گوشی یا شبکه‌ای دیگر از راه یک رله که خودت نصب کرده‌ای به این کامپیوتر وصل می‌شوی. همه‌چیز سرتاسری رمزنگاری می‌شود: رله فقط داده‌ای را رد می‌کند که خودش نمی‌تواند بخواند. پیش‌فرض خاموش است."
+  },
+  "Relay address": {
+   "fa": "آدرس رله"
+  },
+  "Relay access key": {
+   "fa": "کلید دسترسی رله"
+  },
+  "Paste the access key you set when you deployed the relay. It is kept in the system keystore and never shown again.": {
+   "fa": "کلید دسترسی‌ای را که هنگام نصب رله تعیین کردی جای‌گذاری کن. در حافظهٔ کلیدهای سیستم می‌ماند و دیگر به تو نشان داده نمی‌شود."
+  },
+  "This code also carries the access key and the end-to-end key for the relay {host}. Pair again makes a new key and a new room.": {
+   "fa": "این کد کلید دسترسی و کلید رمزنگاری سرتاسری رلهٔ {host} را هم دارد. «دوباره جفت کن» کلید و اتاق تازه‌ای می‌سازد."
+  },
+  "Dictate anywhere on your computer": {
+   "fa": "هر جای کامپیوتر دیکته کن"
+  },
+  "Parakeet, on your computer": {
+   "fa": "Parakeet، روی کامپیوتر تو"
+  },
+  "The most accurate, offline, 25 languages. Downloaded once (about {0} MB).": {
+   "fa": "دقیق‌ترین، آفلاین، ۲۵ زبان. یک بار دانلود می‌شود (حدود {0} مگابایت)."
+  },
+  "On a keyboard with AltGr, the right Alt types characters: pick another key.": {
+   "fa": "در کیبوردی که AltGr دارد، Alt راست کاراکتر می‌نویسد: کلید دیگری انتخاب کن."
+  },
+  "Paste again": {
+   "fa": "دوباره جای‌گذاری کن"
+  },
+  "Coucou can't watch the keyboard here: use the pill's microphone to dictate.": {
+   "fa": "کیو نمی‌تواند این‌جا کیبورد را ببیند: برای دیکته از میکروفون همان ابزار استفاده کن."
+  },
+  "Microphone": {
+   "fa": "میکروفون"
+  },
+  "System default": {
+   "fa": "پیش‌فرض سیستم"
+  },
+  "The one Coucou listens to for dictation and calls.": {
+   "fa": "همان که کیو برای دیکته و تماس‌ها به آن گوش می‌دهد."
+  },
+  "Your voice never leaves this computer: Parakeet turns it into text here, and the recording is dropped as soon as it is pasted.": {
+   "fa": "صدای تو هرگز از این کامپیوتر بیرون نمی‌رود: Parakeet همین‌جا به متنش تبدیلش می‌کند و به‌محض جای‌گذاری، ضبط حذف می‌شود."
+  },
+  "With Claude, the transcript (never the audio) goes to Anthropic with your key from Notch → Chat.": {
+   "fa": "با Claude، متن (هرگز صدا) با کلید تو از ناچ ← گفت‌وگو به Anthropic می‌رود."
+  },
+  "Everything stays on this computer. Tell the people in the call that you are recording.": {
+   "fa": "همه‌چیز روی همین کامپیوتر می‌ماند. به آدم‌های تماس بگو که داری ضبط می‌کنی."
+  },
+  "Not when Coucou starts with the computer.": {
+   "fa": "نه وقتی کیو با کامپیوتر روشن می‌شود."
+  },
+  "The history, the statistics and your notes stay on this computer, in Coucou's folder. Dictations are never saved as audio; a call's audio is deleted as soon as its transcript is written.": {
+   "fa": "تاریخچه، آمار و یادداشت‌هایت روی همین کامپیوتر و در پوشهٔ کیو می‌مانند. دیکته‌ها هرگز به‌صورت صدا ذخیره نمی‌شوند؛ صدای یک تماس به‌محض نوشته‌شدن متنش پاک می‌شود."
+  },
+  "{0} h {1}": {
+   "fa": "{0} ساعت {1} دقیقه"
+  },
+  "Counted on this computer, never sent anywhere.": {
+   "fa": "روی همین کامپیوتر شمرده می‌شود و به هیچ‌جا فرستاده نمی‌شود."
+  },
+  "Coucou writes your calls on this computer with Parakeet, and tells the voices apart with a second small model. Both are downloaded once (about {0} MB), then everything works offline.": {
+   "fa": "کیو تماس‌هایت را روی همین کامپیوتر با Parakeet می‌نویسد و صداها را با یک مدل کوچک دوم از هم تشخیص می‌دهد. هر دو یک بار دانلود می‌شوند (حدود {0} مگابایت) و بعد همه‌چیز آفلاین کار می‌کند."
+  },
+  "The clean-up uses your Claude key. Add it in Notch → Chat.": {
+   "fa": "مرتب‌کردن از کلید Claude تو استفاده می‌کند. در ناچ ← گفت‌وگو اضافه‌اش کن."
+  },
+  "With the clean-up on, the text (never your voice) goes to Anthropic with your Claude key. Off, everything stays on this computer.": {
+   "fa": "با مرتب‌کردن روشن، متن (هرگز صدایت) با کلید Claude تو به Anthropic می‌رود. با خاموش، همه‌چیز روی همین کامپیوتر می‌ماند."
+  },
+  "Mochi, his sounds and how the island behaves.": {
+   "fa": "موچی، صداهایش و اینکه جزیره چطور رفتار می‌کند."
+  },
+  "The pills shown in the island, their order and their colours.": {
+   "fa": "ابزارهایی که در جزیره نمایش داده می‌شوند، ترتیب و رنگ‌هایشان."
+  },
+  "The AI of the island's chat, with your own keys.": {
+   "fa": "هوش مصنوعی گفت‌وگوی جزیره، با کلیدهای خودت."
+  },
+  "Your agents and their approvals on your Android phone, over your Wi-Fi.": {
+   "fa": "عامل‌های تو و تأییدهایشان روی گوشی اندروید، از راه Wi-Fi خودت."
+  },
+  "The keys that open the island and its actions.": {
+   "fa": "کلیدهایی که جزیره و کارهایش را باز می‌کنند."
+  },
+  "Downloading the voice model…": {
+   "fa": "در حال دانلود مدل صدا…"
+  },
+  "Download the voice model to dictate": {
+   "fa": "برای دیکته، مدل صدا را دانلود کن"
+  },
+  "Use the pill's microphone to dictate": {
+   "fa": "برای دیکته از میکروفون ابزار استفاده کن"
+  },
+  "Copied · press Ctrl+V to paste": {
+   "fa": "کپی شد · برای جای‌گذاری Ctrl+V را بزن"
+  },
+  "Download the voice model first, in Coucou → Settings → Recognition.": {
+   "fa": "اول مدل صدا را دانلود کن، در کیو ← تنظیمات ← تشخیص."
+  },
+  "Your words are copied: click where you want them and press Ctrl+V.": {
+   "fa": "کلمه‌هایت کپی شدند: هرجا می‌خواهی کلیک کن و Ctrl+V را بزن."
+  },
+  "On Wayland, the desktop holds the dictation key for Coucou: Ctrl+Alt+V, or the keys you picked when it asked. The first paste asks once to let Coucou type for you.": {
+   "fa": "روی Wayland، دسکتاپ کلید دیکته را برای کیو نگه می‌دارد: Ctrl+Alt+V، یا همان کلیدهایی که وقتی پرسید تو انتخاب کردی. اولین جای‌گذاری یک بار اجازه می‌خواهد که کیو به‌جای تو تایپ کند."
+  },
+  "ElevenLabs key": {
+   "fa": "کلید ElevenLabs"
+  },
+  "Say « OK Coucou », then ask anything: add a pill, play music, the weather, an email to prepare.": {
+   "fa": "بگو «باشه کیو» و هر سؤالی بپرس: یک ابزار اضافه کن، آهنگ پخش کن، هوا را بگو، یا ایمیلی برای آماده‌کردن."
+  },
+  "Listening": {
+   "fa": "در حال گوش دادن"
+  },
+  "Listen for « OK Coucou »": {
+   "fa": "به «باشه کیو» گوش بده"
+  },
+  "The microphone stays open; only what follows « OK Coucou » goes further.": {
+   "fa": "میکروفون باز می‌ماند؛ فقط آنچه بعد از «باشه کیو» می‌گویی جای دیگری می‌رود."
+  },
+  "Hears « OK Coucou » here, without the internet.": {
+   "fa": "«باشه کیو» را همین‌جا و بدون اینترنت می‌شنود."
+  },
+  "Coucou answers with Claude: add your Claude key in Notch → Chat.": {
+   "fa": "کیو با Claude جواب می‌دهد: کلید Claude خودت را در ناچ ← گفت‌وگو اضافه کن."
+  },
+  "Download the voice model so Coucou can hear you.": {
+   "fa": "مدل صدا را دانلود کن تا کیو صدایت را بشنود."
+  },
+  "Answers": {
+   "fa": "پاسخ‌ها"
+  },
+  "System voice": {
+   "fa": "صدای سیستم"
+  },
+  "Text only": {
+   "fa": "فقط متن"
+  },
+  "Coucou answers out loud": {
+   "fa": "کیو بلند جواب می‌دهد"
+  },
+  "Female": {
+   "fa": "زنانه"
+  },
+  "Male": {
+   "fa": "مردانه"
+  },
+  "Your voice never leaves this computer: Parakeet turns it into text here. Only the words after « OK Coucou » go to Anthropic with your Claude key, and to ElevenLabs if you picked it for the answers.": {
+   "fa": "صدای تو هرگز از این کامپیوتر بیرون نمی‌رود: Parakeet همین‌جا به متنش تبدیلش می‌کند. فقط کلمه‌های بعد از «باشه کیو» با کلید Claude تو به Anthropic می‌روند، و به ElevenLabs اگر برایش انتخابش کرده باشی."
+  },
+  "An email is never sent by Coucou: your mail app opens with it written, and you send it.": {
+   "fa": "کیو هرگز ایمیلی نمی‌فرستد: برنامهٔ ایمیل تو با همان چیزی که نوشته باز می‌شود و خودت می‌فرستی."
+  },
+  "Coucou couldn't answer: check your Claude key in Notch → Chat.": {
+   "fa": "کیو نتوانست جواب بدهد: کلید Claude خودت را در ناچ ← گفت‌وگو بررسی کن."
+  },
+  "Show clock in the island": {
+   "fa": "ساعت را در جزیره نشان بده"
+  },
+  "The date and the time in the middle of the island when it is compact.": {
+   "fa": "تاریخ و ساعت، وسط جزیره وقتی جمع‌شده است."
+  },
+  "Get new versions from the island?": {
+   "fa": "نسخه‌های جدید را از جزیره بگیرم؟"
+  },
+  "Mochi checks Coucou's releases on GitHub a few times a day and tells you when one is out. Nothing about you is sent.": {
+   "fa": "موچی چند بار در روز انتشارهای کیو را در GitHub می‌بیند و وقتی نسخه‌ای بیرون بیاید به تو می‌گوید. هیچ چیز دربارهٔ تو فرستاده نمی‌شود."
+  },
+  "Coucou {version} is out": {
+   "fa": "کیو {version} بیرون آمد"
+  },
+  "You have {version}": {
+   "fa": "نسخهٔ تو {version} است"
+  },
+  "What's new": {
+   "fa": "تازه‌ها"
+  },
+  "Downloading from GitHub… {percent} %": {
+   "fa": "در حال دانلود از GitHub… {percent} ٪"
+  },
+  "Installing… Coucou closes and comes back by itself.": {
+   "fa": "در حال نصب… کیو بسته می‌شود و خودش برمی‌گردد."
+  },
+  "The update didn't go through": {
+   "fa": "به‌روزرسانی انجام نشد"
+  },
+  "Install {version}": {
+   "fa": "نصب {version}"
+  },
+  "Get {version} on GitHub": {
+   "fa": "{version} را از GitHub بگیر"
+  },
+  "Couldn't reach GitHub": {
+   "fa": "GitHub در دسترس نبود"
+  },
+  "Coucou looks at its own releases on GitHub a few times a day. An update is installed only after your click, once its SHA-256 matches the one GitHub publishes.": {
+   "fa": "کیو چند بار در روز انتشارهای خودش را در GitHub می‌بیند. به‌روزرسانی فقط پس از کلیک تو نصب می‌شود، وقتی SHA-256 فایل همان چیزی باشد که GitHub منتشر می‌کند."
+  },
+  "Coucou looks at its own releases on GitHub a few times a day and tells you when one is out. Update it the way you installed it: AppImage, .deb, .rpm or your package manager.": {
+   "fa": "کیو چند بار در روز انتشارهای خودش را در GitHub می‌بیند و وقتی نسخه‌ای بیرون بیاید به تو می‌گوید. همان‌طور که نصبش کرده‌ای به‌روزرسانی‌اش کن: AppImage، ‏.deb، ‏.rpm یا مدیریت بستهٔ خودت."
+  },
+  "The download failed. Try again, or get the new version on GitHub.": {
+   "fa": "دانلود ناموفق بود. دوباره امتحان کن یا نسخهٔ تازه را از GitHub بگیر."
+  },
+  "GitHub gave no checksum for this download, so nothing was installed.": {
+   "fa": "GitHub برای این دانلود هش نداد، پس چیزی نصب نشد."
+  },
+  "The download isn't the file GitHub published for this version, so nothing was installed.": {
+   "fa": "فایل دانلودشده همان فایلی نیست که GitHub برای این نسخه منتشر کرده، پس چیزی نصب نشد."
+  },
+  "Windows blocked the installer. Get the new version from its release page instead.": {
+   "fa": "ویندوز برنامهٔ نصب را مسدود کرد. به‌جایش نسخهٔ تازه را از صفحهٔ همان انتشار بگیر."
+  },
+  "Update Coucou to {version}…": {
+   "fa": "به‌روزرسانی کیو به {version}…"
+  }
+ }
+}

@@ -20,6 +20,11 @@ body {
   color: #fff;
 }
 
+/* Persian in the bubble reads in its own face (see src/style.css). */
+html[lang="fa"] body {
+  font-family: "Vazirmatn", "Tahoma", "Segoe UI", "Noto Sans Arabic", sans-serif;
+}
+
 #pill {
   position: absolute;
   inset: 0;

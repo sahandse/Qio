@@ -1,14 +1,16 @@
-// Interface language — the Mac's languages except Thai and Traditional Chinese, Mac-only for now.
+// Interface language — the Mac's languages plus Persian, which Qio writes itself.
 //
 // Strings are looked up by their English text, like the Mac's catalog:
-// `t("Allow")`, `t("Uploading {name}", { name })`. Two tables, both keyed by
+// `t("Allow")`, `t("Uploading {name}", { name })`. Three tables, all keyed by
 // the English text:
 // - strings.json, generated from the Mac's Localizable.xcstrings by
 //   scripts/gen-strings.mjs (never edited by hand);
-// - extra.json, the strings only Windows and Linux have, written by hand.
-// A string missing from both, or from one language, shows in English.
+// - extra.json, the strings only Windows and Linux have, written by hand;
+// - fa.json, every string in Persian, written by hand for Qio (the Mac's
+//   catalog has no Persian).
+// A string missing from all of them, or from one language, shows in English.
 //
-// The Rust side (src-tauri/src/i18n.rs) embeds the same two files and looks up
+// The Rust side (src-tauri/src/i18n.rs) embeds the same files and looks up
 // the same way, for the tray menu, notifications and the errors it returns.
 //
 // Changing the language never reloads a window: `setLanguage` tells whoever
@@ -17,13 +19,17 @@
 
 import MAC from "./strings.json";
 import EXTRA from "./extra.json";
+import FA from "./fa.json";
 
-export const LANGUAGE_CODES = ["en", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id", "de", "tr"] as const;
+/** The languages the Mac's catalog (and so strings.json) carries. */
+export const MAC_LANGUAGES = ["en", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id", "de", "tr"] as const;
+export const LANGUAGE_CODES = [...MAC_LANGUAGES, "fa"] as const;
 export type Language = (typeof LANGUAGE_CODES)[number];
 
-/** The picker's entries, each in its own language, in the Mac's order. */
+/** The picker's entries, each in its own language: Persian first after English, then the Mac's order. */
 export const LANGUAGES: readonly { code: Language; name: string }[] = [
   { code: "en", name: "English" },
+  { code: "fa", name: "فارسی" },
   { code: "zh-Hans", name: "简体中文" },
   { code: "hi", name: "हिन्दी" },
   { code: "es", name: "Español" },
@@ -42,11 +48,21 @@ type Plural = Partial<Record<Intl.LDMLPluralRule, string>>;
 type Entry = Partial<Record<Language, string | Plural>>;
 type Table = Record<string, Entry>;
 
-/** extra.json wins over the Mac's table where both have a string. */
-const TABLE: Table = {
-  ...((MAC as { strings: Table }).strings),
-  ...((EXTRA as { strings: Table }).strings),
-};
+/**
+ * The three tables, merged per string: a hand-written table adds its language
+ * to a key the Mac already has instead of replacing that key's other
+ * languages. extra.json and fa.json come last, so they win where two tables
+ * have the same string in the same language.
+ */
+const TABLE: Table = (() => {
+  const merged: Table = { ...((MAC as { strings: Table }).strings) };
+  for (const source of [(EXTRA as { strings: Table }).strings, (FA as { strings: Table }).strings]) {
+    for (const [key, entry] of Object.entries(source)) {
+      merged[key] = { ...merged[key], ...entry };
+    }
+  }
+  return merged;
+})();
 
 let current: Language = "en";
 const listeners = new Set<(lang: Language) => void>();
@@ -91,9 +107,9 @@ export function language(): Language {
   return current;
 }
 
-/** Arabic reads right to left. */
+/** Arabic and Persian read right to left. */
 export function isRtl(lang: Language = current): boolean {
-  return lang === "ar";
+  return lang === "ar" || lang === "fa";
 }
 
 /** Switches the language. Returns true when it changed (listeners were told). */

@@ -2649,12 +2649,20 @@ input[type="range"]::-webkit-slider-thumb {
   width: 44px;
 }
 
-/* ── Arabic: right to left ─────────────────────────────────────────────────────
+/* ── Arabic and Persian: right to left ───────────────────────────────────────
    i18n.ts sets <html data-dir="rtl">. The text of the cards reads and aligns
    right to left; Mochi, the pills, the header and the cards themselves keep
    their places, and code, commands and the contribution grid stay left to
    right. A chat message follows its own text's direction (an English answer
    stays left to right). */
+
+/* Persian at 11–13px is cramped in Segoe UI's Arabic cut. Vazirmatn is the
+   free Persian UI face people install for this and Tahoma is the one Windows
+   already has; both cover Latin, so mixed text stays in one style. */
+html[lang="fa"] {
+  --font: "Vazirmatn", "Tahoma", "Segoe UI", "Noto Sans Arabic", sans-serif;
+}
+
 html[data-dir="rtl"] #views :is(.stack, .int-card, .plan-card, .drop-body, .up-card) {
   direction: rtl;
 }
