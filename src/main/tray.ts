@@ -1,6 +1,7 @@
 import { Menu, Tray, app, nativeImage } from 'electron'
 import { join } from 'node:path'
 import type { Settings } from '@shared/types'
+import { toPersianDigits } from '@shared/persian'
 
 export interface TrayHandlers {
   getSettings(): Settings
@@ -23,7 +24,7 @@ function trayIcon() {
 export function setupTray(trayHandlers: TrayHandlers): Tray {
   handlers = trayHandlers
   tray = new Tray(trayIcon())
-  tray.setToolTip('Qio — a living notch')
+  tray.setToolTip('Qio — یک نچ زنده')
   tray.on('click', () => {
     notchVisible = true
     handlers?.onToggleNotch(true)
@@ -43,7 +44,7 @@ export function refreshTray(): void {
   const settings = handlers.getSettings()
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Open Qio',
+      label: 'باز کردن Qio',
       click: () => {
         notchVisible = true
         handlers?.onToggleNotch(true)
@@ -52,25 +53,25 @@ export function refreshTray(): void {
     },
     { type: 'separator' },
     {
-      label: 'Start with Windows',
+      label: 'اجرا هنگام ورود به ویندوز',
       type: 'checkbox',
       checked: settings.startWithWindows,
       click: (item) => handlers?.patchSettings({ startWithWindows: item.checked })
     },
     {
-      label: 'Qio mascot',
+      label: 'ماسکوت Qio',
       type: 'checkbox',
       checked: settings.mascot,
       click: (item) => handlers?.patchSettings({ mascot: item.checked })
     },
     {
-      label: 'Minimal notch',
+      label: 'نچ حداقلی',
       type: 'checkbox',
       checked: settings.minimalNotch,
       click: (item) => handlers?.patchSettings({ minimalNotch: item.checked })
     },
     {
-      label: 'Show on screen',
+      label: 'نمایش روی صفحه',
       type: 'checkbox',
       checked: notchVisible,
       click: (item) => {
@@ -79,8 +80,11 @@ export function refreshTray(): void {
       }
     },
     { type: 'separator' },
-    { label: `About Qio ${app.getVersion()}`, click: () => handlers?.onOpenPanel('settings') },
-    { label: 'Quit Qio', click: () => handlers?.onQuit() }
+    {
+      label: `دربارهٔ Qio ${toPersianDigits(app.getVersion())}`,
+      click: () => handlers?.onOpenPanel('settings')
+    },
+    { label: 'خروج از Qio', click: () => handlers?.onQuit() }
   ])
   tray.setContextMenu(menu)
 }

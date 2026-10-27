@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { OverlayPayload } from '@shared/types'
 import { layoutLabel } from './lib/format'
+import { toPersianDigits } from './lib/jalali'
 import { BatteryIcon, BoltIcon, KeyboardIcon, MuteIcon, SunIcon, VolumeIcon } from './components/Icons'
 
 export default function Overlay() {
@@ -21,7 +22,7 @@ export default function Overlay() {
 
   if (!payload) return null
 
-  const percent = (value: number) => `${Math.round(value)}%`
+  const percent = (value: number) => `${toPersianDigits(Math.round(value))}٪`
 
   return (
     <div className="overlay-stage">
@@ -30,7 +31,7 @@ export default function Overlay() {
           <>
             <span className="overlay-icon">{payload.muted ? <MuteIcon size={20} /> : <VolumeIcon size={20} />}</span>
             <div className="overlay-body">
-              <span className="overlay-label">{payload.muted ? 'Muted' : 'Volume'}</span>
+              <span className="overlay-label">{payload.muted ? 'بی‌صدا' : 'صدا'}</span>
               <span className="overlay-meter">
                 <span
                   className="overlay-meter-fill"
@@ -48,7 +49,7 @@ export default function Overlay() {
               <SunIcon size={20} />
             </span>
             <div className="overlay-body">
-              <span className="overlay-label">Brightness</span>
+              <span className="overlay-label">روشنایی</span>
               <span className="overlay-meter">
                 <span
                   className="overlay-meter-fill"
@@ -67,7 +68,7 @@ export default function Overlay() {
             </span>
             <div className="overlay-body">
               <span className="overlay-label">Caps Lock</span>
-              <span className="overlay-note">{payload.capsLock ? 'On' : 'Off'}</span>
+              <span className="overlay-note">{payload.capsLock ? 'روشن' : 'خاموش'}</span>
             </div>
           </>
         )}
@@ -78,7 +79,7 @@ export default function Overlay() {
               <KeyboardIcon size={20} />
             </span>
             <div className="overlay-body">
-              <span className="overlay-label">Keyboard</span>
+              <span className="overlay-label">صفحه‌کلید</span>
               <span className="overlay-note">{layoutLabel(payload.label ?? '')}</span>
             </div>
             <span className="overlay-value">{layoutLabel(payload.label ?? '')}</span>
@@ -91,7 +92,7 @@ export default function Overlay() {
               {payload.charging ? <BoltIcon size={20} /> : <BatteryIcon size={20} />}
             </span>
             <div className="overlay-body">
-              <span className="overlay-label">{payload.charging ? 'Charging' : 'Battery'}</span>
+              <span className="overlay-label">{payload.charging ? 'در حال شارژ' : 'باتری'}</span>
               <span className="overlay-meter">
                 <span
                   className="overlay-meter-fill"

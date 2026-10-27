@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { AppState } from '@shared/types'
-import { formatLitres } from '../lib/format'
+import { formatClock, formatLitres, weekdayNarrow } from '../lib/format'
+import { formatJalali, toPersianDigits } from '../lib/jalali'
 import { TrashIcon, WaterIcon } from './Icons'
 
 export function WaterPanel({ state }: { state: AppState | null }) {
@@ -8,7 +9,7 @@ export function WaterPanel({ state }: { state: AppState | null }) {
   const settings = state?.settings.water
   const [custom, setCustom] = useState('')
 
-  if (!water || !settings) return <p className="panel-hint">Loading…</p>
+  if (!water || !settings) return <p className="panel-hint">در حال بارگذاری…</p>
 
   const percent = water.goalMl > 0 ? water.total / water.goalMl : 0
   const reached = water.total >= water.goalMl
@@ -32,18 +33,18 @@ export function WaterPanel({ state }: { state: AppState | null }) {
             {formatLitres(water.total)} <small>/ {formatLitres(water.goalMl)}</small>
           </span>
           <span className={`water-state${reached ? ' ok' : ''}`}>
-            {reached ? 'Goal reached — nicely done' : `${Math.round(percent * 100)}% of today's goal`}
+            {reached ? 'به هدف رسیدی — آفرین' : `${toPersianDigits(Math.round(percent * 100))}٪ از هدف امروز`}
           </span>
 
           <div className="water-actions">
             <button type="button" className="button primary" onClick={() => add(settings.bottleMl)}>
-              <WaterIcon size={15} /> Bottle ({settings.bottleMl} ml)
+              <WaterIcon size={15} /> بطری ({toPersianDigits(settings.bottleMl)} میلی‌لیتر)
             </button>
             <button type="button" className="button" onClick={() => add(250)}>
-              +250 ml
+              +{toPersianDigits(250)} میلی‌لیتر
             </button>
             <button type="button" className="button" onClick={() => add(500)}>
-              +500 ml
+              +{toPersianDigits(500)} میلی‌لیتر
             </button>
             <form
               className="water-custom"
@@ -59,41 +60,46 @@ export function WaterPanel({ state }: { state: AppState | null }) {
                 min={10}
                 max={3000}
                 step={10}
-                placeholder="ml"
+                placeholder="میلی‌لیتر"
                 value={custom}
                 onChange={(event) => setCustom(event.target.value)}
               />
               <button type="submit" className="button">
-                Add
+                افزودن
               </button>
             </form>
           </div>
         </div>
       </div>
 
-      <div className="water-chart" role="img" aria-label="Water over the last two weeks">
-        {water.days.map((day) => (
-          <span className="chart-col" key={day.date} title={`${day.date}: ${day.total} ml`}>
-            <span className="chart-bar-wrap">
-              <span className="chart-bar" style={{ height: `${Math.max(2, (day.total / max) * 100)}%` }} />
+      <div className="water-chart" role="img" aria-label="مصرف آب در دو هفتهٔ گذشته">
+        {water.days.map((day) => {
+          const date = new Date(`${day.date}T12:00:00`)
+          return (
+            <span
+              className="chart-col"
+              key={day.date}
+              title={`${formatJalali(date, { weekday: false, year: false })}: ${toPersianDigits(day.total)} میلی‌لیتر`}
+            >
+              <span className="chart-bar-wrap">
+                <span className="chart-bar" style={{ height: `${Math.max(2, (day.total / max) * 100)}%` }} />
+              </span>
+              <span className="chart-label">{weekdayNarrow(date)}</span>
             </span>
-            <span className="chart-label">{new Date(`${day.date}T12:00:00`).toLocaleDateString([], { weekday: 'narrow' })}</span>
-          </span>
-        ))}
+          )
+        })}
       </div>
 
       <div className="water-log">
-        {water.entries.length === 0 && <span className="panel-hint">Nothing logged yet today.</span>}
+        {water.entries.length === 0 && <span className="panel-hint">هنوز چیزی امروز ثبت نشده است.</span>}
         {[...water.entries].reverse().map((entry) => (
           <span className="water-entry" key={entry.id}>
-            <span className="water-entry-ml">{entry.ml} ml</span>
-            <span className="water-entry-time">
-              {new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
+            <span className="water-entry-ml">{toPersianDigits(entry.ml)} میلی‌لیتر</span>
+            <span className="water-entry-time">{formatClock(new Date(entry.at))}</span>
             <button
               type="button"
               className="icon-button tiny"
-              title="Remove"
+              title="حذف"
               onClick={() => void window.qio.water.remove(entry.id)}
             >
               <TrashIcon size={13} />

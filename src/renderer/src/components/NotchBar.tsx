@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AppState } from '@shared/types'
-import { formatClock, formatDay, formatDuration, mediaAppName } from '../lib/format'
+import { formatClock, formatDay, formatDuration, formatLitres, mediaAppName } from '../lib/format'
+import { toPersianDigits } from '../lib/jalali'
 import { useClock, useCover, useMediaClock } from '../lib/state'
 import { BoltIcon, TimerIcon, WaterIcon } from './Icons'
 
@@ -64,7 +65,7 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
         className="bar bar-minimal"
         onClick={onOpen}
         onDoubleClick={onToggleMinimal}
-        title="Qio — click to open"
+        title="Qio — برای باز کردن کلیک کن"
       >
         <span className="bar-minimal-line" style={{ transform: `scaleX(${0.3 + progress * 0.7})` }} />
       </button>
@@ -73,7 +74,7 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
 
   return (
     <div className={`bar${expanded ? ' bar-open' : ''}`}>
-      <button type="button" className="bar-mascot" onClick={onOpen} title="Open Qio">
+      <button type="button" className="bar-mascot" onClick={onOpen} title="باز کردن Qio">
         {state?.settings.mascot ? (
           <span className={`eyes${sleepy ? ' eyes-sleepy' : ''}`} aria-hidden="true">
             <span className="eye" />
@@ -100,7 +101,7 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
             )}
           </span>
         ) : (
-          <button type="button" className="bar-clock" onClick={onOpen} title="Open Qio">
+          <button type="button" className="bar-clock" onClick={onOpen} title="باز کردن Qio">
             <span className="bar-time-main">{formatClock(now)}</span>
             <span className="bar-date">{formatDay(now)}</span>
           </button>
@@ -109,21 +110,21 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
 
       <div className="bar-chips">
         {focusRunning && (
-          <span className="chip chip-accent" title="Focus timer">
+          <span className="chip chip-accent" title="تایمر تمرین">
             <TimerIcon size={13} />
-            {Math.floor(focusLeft / 60)}:{`${Math.floor(focusLeft % 60)}`.padStart(2, '0')}
+            {toPersianDigits(`${Math.floor(focusLeft / 60)}:${`${Math.floor(focusLeft % 60)}`.padStart(2, '0')}`)}
           </span>
         )}
         {water && waterLeft > 0 && (
-          <span className="chip" title="Water left today">
+          <span className="chip" title="آب خوردهٔ امروز">
             <WaterIcon size={13} />
-            {Math.round(water.total / 100) / 10} L
+            {formatLitres(water.total)}
           </span>
         )}
         {battery != null && (charging || battery <= 30) && (
-          <span className={`chip${charging ? ' chip-accent' : ' chip-warn'}`} title={charging ? 'Charging' : 'Battery low'}>
+          <span className={`chip${charging ? ' chip-accent' : ' chip-warn'}`} title={charging ? 'در حال شارژ' : 'باتری کم'}>
             {charging ? <BoltIcon size={13} /> : null}
-            {battery}%
+            {toPersianDigits(battery)}٪
           </span>
         )}
       </div>

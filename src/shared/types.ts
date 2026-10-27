@@ -1,6 +1,6 @@
 /** Types shared by the main process, the preload bridge and the renderer. */
 
-export type PanelId = 'music' | 'lyrics' | 'focus' | 'water' | 'shelf' | 'todo' | 'settings'
+export type PanelId = 'calendar' | 'music' | 'lyrics' | 'focus' | 'water' | 'shelf' | 'todo' | 'settings'
 
 export interface WaterSettings {
   bottleMl: number

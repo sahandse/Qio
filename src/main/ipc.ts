@@ -86,7 +86,7 @@ export function registerIpc(ctx: IpcContext): void {
     const item = store.shelf.find((entry) => entry.id === id)
     if (!item) return false
     const error = await shell.openPath(item.path)
-    if (error) ctx.raiseNudge('lyrics', 'Could not open that file', error)
+    if (error) ctx.raiseNudge('lyrics', 'این فایل باز نشد', error)
     return !error
   })
 

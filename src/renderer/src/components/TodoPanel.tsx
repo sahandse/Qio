@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { AppState } from '@shared/types'
 import { formatDueTime } from '../lib/format'
+import { toPersianDigits } from '../lib/jalali'
 import { CloseIcon, TodoIcon } from './Icons'
 
 type DueKind = 'none' | '30m' | '1h' | '3h' | 'tonight' | 'tomorrow'
@@ -62,21 +63,21 @@ export function TodoPanel({ state }: { state: AppState | null }) {
       >
         <input
           className="input"
-          placeholder="Add a task…"
+          placeholder="یک کار اضافه کن…"
           value={text}
           maxLength={200}
           onChange={(event) => setText(event.target.value)}
         />
         <select className="select" value={due} onChange={(event) => setDue(event.target.value as DueKind)}>
-          <option value="none">No reminder</option>
-          <option value="30m">In 30 minutes</option>
-          <option value="1h">In 1 hour</option>
-          <option value="3h">In 3 hours</option>
-          <option value="tonight">Tonight 20:00</option>
-          <option value="tomorrow">Tomorrow 09:00</option>
+          <option value="none">بدون یادآور</option>
+          <option value="30m">۳۰ دقیقهٔ دیگر</option>
+          <option value="1h">۱ ساعت دیگر</option>
+          <option value="3h">۳ ساعت دیگر</option>
+          <option value="tonight">امشب ۲۰:۰۰</option>
+          <option value="tomorrow">فردا ۰۹:۰۰</option>
         </select>
         <button type="submit" className="button primary" disabled={!text.trim()}>
-          Add
+          افزودن
         </button>
       </form>
 
@@ -84,7 +85,9 @@ export function TodoPanel({ state }: { state: AppState | null }) {
         {open.length === 0 && (
           <div className="todo-empty">
             <TodoIcon size={24} />
-            <span className="panel-hint">Nothing left for today. Add a task with a time and Qio will tap you when it is due.</span>
+            <span className="panel-hint">
+              کاری برای امروز نمانده است. یک کار با زمان اضافه کن تا Qio موقعش خبرت کند.
+            </span>
           </div>
         )}
 
@@ -97,12 +100,14 @@ export function TodoPanel({ state }: { state: AppState | null }) {
                 checked={todo.done}
                 onChange={() => void window.qio.todos.update(todo.id, { done: true })}
               />
-              <span className="todo-text">{todo.text}</span>
+              <span className="todo-text" dir="auto">
+                {todo.text}
+              </span>
               {todo.dueAt && <span className="todo-due">{formatDueTime(todo.dueAt)}</span>}
               <button
                 type="button"
                 className="icon-button tiny"
-                title="Delete"
+                title="حذف"
                 onClick={(event) => {
                   event.preventDefault()
                   void window.qio.todos.remove(todo.id)
@@ -118,10 +123,10 @@ export function TodoPanel({ state }: { state: AppState | null }) {
       {done.length > 0 && (
         <div className="todo-done">
           <button type="button" className="button ghost" onClick={() => setShowDone((value) => !value)}>
-            {showDone ? 'Hide' : 'Show'} {done.length} completed
+            {showDone ? 'پنهان کردن' : 'نمایش'} {toPersianDigits(done.length)} کار انجام‌شده
           </button>
           <button type="button" className="button ghost" onClick={() => void window.qio.todos.clearDone()}>
-            Clear completed
+            پاک کردن انجام‌شده‌ها
           </button>
           {showDone && (
             <div className="todo-done-list">
@@ -132,7 +137,9 @@ export function TodoPanel({ state }: { state: AppState | null }) {
                     checked
                     onChange={() => void window.qio.todos.update(todo.id, { done: false })}
                   />
-                  <span className="todo-text">{todo.text}</span>
+                  <span className="todo-text" dir="auto">
+                    {todo.text}
+                  </span>
                 </label>
               ))}
             </div>

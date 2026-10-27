@@ -164,3 +164,23 @@ export const LinkIcon = (props: IconProps) => (
     <path d="M10.5 13.5a3.6 3.6 0 0 0 5.1 0l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.3 1.3M13.5 10.5a3.6 3.6 0 0 0-5.1 0L5.8 13a3.6 3.6 0 0 0 5.1 5.1l1.3-1.3" />
   </Icon>
 )
+
+export const CalendarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3.5" y="5.5" width="17" height="15" rx="2.4" />
+    <path d="M3.5 10h17M8 3.5v4M16 3.5v4" />
+    <path d="M7.6 13.6h.01M12 13.6h.01M16.4 13.6h.01M7.6 17h.01M12 17h.01" />
+  </Icon>
+)
+
+export const ChevronRightIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9.5 6.5l5.5 5.5-5.5 5.5" />
+  </Icon>
+)
+
+export const ChevronLeftIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14.5 6.5L9 12l5.5 5.5" />
+  </Icon>
+)

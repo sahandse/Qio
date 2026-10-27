@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import type { AppState, FocusMode } from '@shared/types'
 import { modeMinutes, pauseSession, remainingMs, resetSession, startSession } from '../lib/focus'
 import { playChime } from '../lib/chime'
+import { toPersianDigits } from '../lib/jalali'
 import { PauseIcon, PlayIcon, TimerIcon } from './Icons'
 
-const MODE_LABEL: Record<FocusMode, string> = { work: 'Focus', short: 'Short break', long: 'Long break' }
+const MODE_LABEL: Record<FocusMode, string> = { work: 'تمرین', short: 'استراحت کوتاه', long: 'استراحت بلند' }
 
 export function FocusPanel({ state }: { state: AppState | null }) {
   const focus = state?.focus
@@ -48,7 +49,7 @@ export function FocusPanel({ state }: { state: AppState | null }) {
         >
           <span className="focus-ring-inner">
             <span className="focus-time">
-              {`${minutes}`.padStart(2, '0')}:{`${seconds}`.padStart(2, '0')}
+              {toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)}
             </span>
             <span className="focus-mode">{MODE_LABEL[mode]}</span>
           </span>
@@ -64,7 +65,7 @@ export function FocusPanel({ state }: { state: AppState | null }) {
                 onClick={() => void resetSession(option)}
               >
                 {MODE_LABEL[option]}
-                <small>{modeMinutes(state, option)}m</small>
+                <small>{toPersianDigits(modeMinutes(state, option))} دقیقه</small>
               </button>
             ))}
           </div>
@@ -76,21 +77,22 @@ export function FocusPanel({ state }: { state: AppState | null }) {
               onClick={() => (running ? void pauseSession(left) : void begin())}
             >
               {running ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
-              {running ? 'Pause' : left > 0 && focus?.pausedMs ? 'Resume' : 'Start'}
+              {running ? 'توقف' : left > 0 && focus?.pausedMs ? 'ادامه' : 'شروع'}
             </button>
             <button type="button" className="button" onClick={() => void resetSession(mode)}>
-              Reset
+              از نو
             </button>
           </div>
 
           <p className="focus-stats">
-            <TimerIcon size={14} /> {focus?.completedToday ?? 0} sessions done today · round {focus?.round ?? 0}
-            {settings ? ` · long break every ${settings.longBreakEvery}` : ''}
+            <TimerIcon size={14} /> {toPersianDigits(focus?.completedToday ?? 0)} دوره امروز · دور{' '}
+            {toPersianDigits(focus?.round ?? 0)}
+            {settings ? ` · استراحت بلند هر ${toPersianDigits(settings.longBreakEvery)} دوره` : ''}
           </p>
         </div>
       </div>
       <p className="panel-hint">
-        The countdown lives in the notch, so it keeps running while Qio is closed down to a line.
+        شمارش معکوس در نچ می‌ماند، پس حتی وقتی Qio به یک خط جمع شده هم ادامه دارد.
       </p>
     </div>
   )

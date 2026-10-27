@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PanelId } from '@shared/types'
 import { NotchBar } from './components/NotchBar'
+import { CalendarPanel } from './components/CalendarPanel'
 import { LyricsPanel, MusicPanel } from './components/MusicPanel'
 import { FocusPanel } from './components/FocusPanel'
 import { WaterPanel } from './components/WaterPanel'
@@ -9,6 +10,7 @@ import { TodoPanel } from './components/TodoPanel'
 import { SettingsPanel } from './components/SettingsPanel'
 import { NudgePill } from './components/NudgePill'
 import {
+  CalendarIcon,
   CloseIcon,
   LyricsIcon,
   MusicIcon,
@@ -23,13 +25,14 @@ import { useFocusEngine } from './lib/focus'
 import { primeAudio } from './lib/chime'
 
 const TABS: { id: PanelId; label: string; Icon: typeof MusicIcon }[] = [
-  { id: 'music', label: 'Music', Icon: MusicIcon },
-  { id: 'lyrics', label: 'Lyrics', Icon: LyricsIcon },
-  { id: 'focus', label: 'Focus', Icon: TimerIcon },
-  { id: 'water', label: 'Water', Icon: WaterIcon },
-  { id: 'shelf', label: 'Shelf', Icon: ShelfIcon },
-  { id: 'todo', label: 'Tasks', Icon: TodoIcon },
-  { id: 'settings', label: 'Settings', Icon: SettingsIcon }
+  { id: 'calendar', label: 'تقویم', Icon: CalendarIcon },
+  { id: 'music', label: 'آهنگ', Icon: MusicIcon },
+  { id: 'lyrics', label: 'متن آهنگ', Icon: LyricsIcon },
+  { id: 'focus', label: 'تمرین', Icon: TimerIcon },
+  { id: 'water', label: 'آب', Icon: WaterIcon },
+  { id: 'shelf', label: 'قفسه', Icon: ShelfIcon },
+  { id: 'todo', label: 'کارها', Icon: TodoIcon },
+  { id: 'settings', label: 'تنظیمات', Icon: SettingsIcon }
 ]
 
 export default function App() {
@@ -117,8 +120,8 @@ export default function App() {
     if (added > 0) {
       void window.qio.notify(
         'shelf',
-        `${added} item${added === 1 ? '' : 's'} on the shelf`,
-        'Drag them out into any app whenever you need.'
+        `${added} مورد به قفسه اضافه شد`,
+        'هر وقت لازمشان داشتی، بیرونشان بکش.'
       )
     }
   }
@@ -175,7 +178,7 @@ export default function App() {
               <button
                 type="button"
                 className="icon-button tiny"
-                title="Close (Esc)"
+                title="بستن (Esc)"
                 onClick={() => {
                   setHover(false)
                   setPinned(false)
@@ -186,6 +189,7 @@ export default function App() {
             </div>
 
             <div className="panel-body" role="tabpanel">
+              {panel === 'calendar' && <CalendarPanel />}
               {panel === 'music' && <MusicPanel state={state} />}
               {panel === 'lyrics' && <LyricsPanel state={state} />}
               {panel === 'focus' && <FocusPanel state={state} />}
@@ -197,7 +201,7 @@ export default function App() {
           </div>
         )}
 
-        {dropping && <div className="drop-hint">Release to add to the shelf</div>}
+        {dropping && <div className="drop-hint">برای افزودن به قفسه رها کن</div>}
 
         {nudge && nudge.id !== dismissed && (
           <NudgePill nudge={nudge} onDismiss={() => setDismissed(nudge.id)} />

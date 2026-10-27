@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
+import { toPersianDigits } from '../lib/jalali'
 import { BoltIcon, LinkIcon, MuteIcon, SunIcon, VolumeIcon } from './Icons'
 
 function Toggle({
@@ -83,7 +84,7 @@ function HourRow({
       <select className="select" value={value} onChange={(event) => onChange(Number(event.target.value))}>
         {Array.from({ length: 25 }, (_, hour) => (
           <option key={hour} value={hour}>
-            {`${hour}`.padStart(2, '0')}:00
+            {toPersianDigits(`${hour}`.padStart(2, '0'))}:۰۰
           </option>
         ))}
       </select>
@@ -121,7 +122,7 @@ function SliderRow({
           disabled={disabled}
           onChange={(event) => onChange(Number(event.target.value))}
         />
-        <span className="row-suffix">{Math.round(value)}%</span>
+        <span className="row-suffix">{toPersianDigits(Math.round(value))}٪</span>
       </span>
     </label>
   )
@@ -134,7 +135,7 @@ export function SettingsPanel({ state }: { state: AppState | null }) {
     void window.qio.meta().then(setMeta)
   }, [])
 
-  if (!state) return <p className="panel-hint">Loading…</p>
+  if (!state) return <p className="panel-hint">در حال بارگذاری…</p>
   const { settings, system } = state
   const patch = (next: Partial<Settings>) => void window.qio.patchSettings(next)
 
@@ -143,160 +144,164 @@ export function SettingsPanel({ state }: { state: AppState | null }) {
       <section className="settings-group">
         <h3>Qio</h3>
         <Toggle
-          label="Start with Windows"
-          hint={meta?.packaged === false ? 'Available in the installed build' : 'Qio is waiting for you after every sign-in'}
+          label="اجرا هنگام ورود به ویندوز"
+          hint={
+            meta?.packaged === false
+              ? 'در نسخهٔ نصب‌شده در دسترس است'
+              : 'بعد از هر ورود به ویندوز، Qio منتظرت است'
+          }
           checked={settings.startWithWindows}
           onChange={(next) => patch({ startWithWindows: next })}
         />
         <Toggle
-          label="Mascot"
-          hint="Two eyes that doze off when your PC is quiet"
+          label="ماسکوت"
+          hint="دو چشم که وقتی کامپیوتر ساکت است چرت می‌زند"
           checked={settings.mascot}
           onChange={(next) => patch({ mascot: next })}
         />
         <Toggle
-          label="Minimal notch"
-          hint="A thin black line instead of the full bar — for thick laptop bezels"
+          label="نچ حداقلی"
+          hint="یک خط نازک سیاه به‌جای نوار کامل — برای لپ‌تاپ‌هایی با حاشیهٔ بالای ضخیم"
           checked={settings.minimalNotch}
           onChange={(next) => patch({ minimalNotch: next })}
         />
         <Toggle
-          label="Lyrics"
-          hint="Look up synced lyrics on LRCLIB when a song starts"
+          label="متن آهنگ"
+          hint="وقتی آهنگی شروع می‌شود، متن هم‌زمان را از LRCLIB بگیر"
           checked={settings.lyrics}
           onChange={(next) => patch({ lyrics: next })}
         />
       </section>
 
       <section className="settings-group">
-        <h3>Water</h3>
+        <h3>آب</h3>
         <NumberRow
-          label="Bottle size"
+          label="اندازهٔ بطری"
           value={settings.water.bottleMl}
           min={100}
           max={3000}
           step={50}
-          suffix="ml"
+          suffix="میلی‌لیتر"
           onChange={(next) => patch({ water: { ...settings.water, bottleMl: next } })}
         />
         <NumberRow
-          label="Daily goal"
+          label="هدف روزانه"
           value={settings.water.goalMl}
           min={250}
           max={8000}
           step={250}
-          suffix="ml"
+          suffix="میلی‌لیتر"
           onChange={(next) => patch({ water: { ...settings.water, goalMl: next } })}
         />
         <HourRow
-          label="Reminders start"
+          label="شروع یادآوری"
           value={settings.water.startHour}
           onChange={(next) => patch({ water: { ...settings.water, startHour: next } })}
         />
         <HourRow
-          label="Reminders stop"
+          label="پایان یادآوری"
           value={settings.water.endHour}
           onChange={(next) => patch({ water: { ...settings.water, endHour: next } })}
         />
         <NumberRow
-          label="Remind me every"
+          label="یادآوری هر"
           value={settings.water.remindEveryMin}
           min={15}
           max={240}
           step={15}
-          suffix="min"
+          suffix="دقیقه"
           onChange={(next) => patch({ water: { ...settings.water, remindEveryMin: next } })}
         />
         <Toggle
-          label="Water reminders"
-          hint="A quiet nudge in the notch while you are under your goal"
+          label="یادآوری آب"
+          hint="وقتی هنوز به هدف نرسیده‌ای، یک یادآوری آرام در نچ"
           checked={settings.water.reminders}
           onChange={(next) => patch({ water: { ...settings.water, reminders: next } })}
         />
       </section>
 
       <section className="settings-group">
-        <h3>Focus timer</h3>
+        <h3>تایمر تمرین</h3>
         <NumberRow
-          label="Focus length"
+          label="طول تمرین"
           value={settings.focus.workMin}
           min={5}
           max={120}
           step={5}
-          suffix="min"
+          suffix="دقیقه"
           onChange={(next) => patch({ focus: { ...settings.focus, workMin: next } })}
         />
         <NumberRow
-          label="Short break"
+          label="استراحت کوتاه"
           value={settings.focus.shortBreakMin}
           min={1}
           max={60}
-          suffix="min"
+          suffix="دقیقه"
           onChange={(next) => patch({ focus: { ...settings.focus, shortBreakMin: next } })}
         />
         <NumberRow
-          label="Long break"
+          label="استراحت بلند"
           value={settings.focus.longBreakMin}
           min={5}
           max={90}
           step={5}
-          suffix="min"
+          suffix="دقیقه"
           onChange={(next) => patch({ focus: { ...settings.focus, longBreakMin: next } })}
         />
         <NumberRow
-          label="Long break every"
+          label="استراحت بلند هر"
           value={settings.focus.longBreakEvery}
           min={2}
           max={12}
-          suffix="rounds"
+          suffix="دوره"
           onChange={(next) => patch({ focus: { ...settings.focus, longBreakEvery: next } })}
         />
         <Toggle
-          label="Chime"
-          hint="A soft two-note bell when a session ends"
+          label="صدای زنگ"
+          hint="دو نُت نرم وقتی یک دوره تمام می‌شود"
           checked={settings.focus.chime}
           onChange={(next) => patch({ focus: { ...settings.focus, chime: next } })}
         />
       </section>
 
       <section className="settings-group">
-        <h3>Sound and screen</h3>
+        <h3>صدا و صفحه</h3>
         <SliderRow
-          label="Volume"
+          label="صدا"
           icon={system.muted ? <MuteIcon size={14} /> : <VolumeIcon size={14} />}
           value={system.volume ?? 0}
           disabled={system.volume === null}
           onChange={(next) => void window.qio.system.setVolume(next)}
         />
         <Toggle
-          label="Mute"
+          label="بی‌صدا"
           checked={system.muted}
           onChange={(next) => void window.qio.system.setMute(next)}
         />
         <SliderRow
-          label="Brightness"
+          label="روشنایی"
           icon={<SunIcon size={14} />}
           value={system.brightness ?? 0}
           disabled={system.brightness === null}
           onChange={(next) => void window.qio.system.setBrightness(next)}
         />
         {system.brightness === null && (
-          <p className="panel-hint">Brightness works on built-in laptop displays; external monitors keep their own controls.</p>
+          <p className="panel-hint">روشنایی روی نمایشگر داخلی لپ‌تاپ کار می‌کند؛ مانیتورهای خارجی کنترل خودشان را دارند.</p>
         )}
       </section>
 
       <section className="settings-group">
-        <h3>About</h3>
+        <h3>درباره</h3>
         <div className="about-line">
-          <span>Qio {meta?.version ?? ''}</span>
+          <span>Qio {toPersianDigits(meta?.version ?? '')}</span>
           <span className="panel-hint">
-            Electron {meta?.electron} · Chromium {meta?.chrome}
+            Electron {toPersianDigits(meta?.electron ?? '')} · Chromium {toPersianDigits(meta?.chrome ?? '')}
           </span>
         </div>
         <p className="panel-hint">
-          Everything Qio remembers — tasks, water log, shelf and settings — stays in <code>{meta?.dataPath}</code>. No
-          account, no analytics. Lyrics are the only thing that leaves your PC, and only the song title and artist go to
-          LRCLIB.
+          هر چیزی که Qio به یاد می‌آورد — کارها، ثبت آب، قفسه و تنظیمات — در <code>{meta?.dataPath}</code> می‌ماند.
+          بدون حساب، بدون ردیابی. تنها چیزی که از کامپیوترت بیرون می‌رود متن آهنگ است، و فقط عنوان و خواننده به
+          LRCLIB می‌رود.
         </p>
         <div className="about-links">
           <button
@@ -311,13 +316,13 @@ export function SettingsPanel({ state }: { state: AppState | null }) {
             className="button"
             onClick={() => void window.qio.window.openExternal('https://github.com/sahandse/qio')}
           >
-            <LinkIcon size={14} /> GitHub
+            <LinkIcon size={14} /> گیت‌هاب
           </button>
           <button type="button" className="button" onClick={() => void window.qio.window.setVisible(false)}>
-            <BoltIcon size={14} /> Hide from screen
+            <BoltIcon size={14} /> پنهان کردن از صفحه
           </button>
           <button type="button" className="button danger" onClick={() => void window.qio.window.quit()}>
-            Quit Qio
+            خروج از Qio
           </button>
         </div>
       </section>

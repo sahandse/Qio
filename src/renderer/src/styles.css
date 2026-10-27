@@ -1,3 +1,75 @@
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./assets/fonts/vazirmatn-arabic-400.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./assets/fonts/vazirmatn-arabic-500.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('./assets/fonts/vazirmatn-arabic-600.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('./assets/fonts/vazirmatn-arabic-700.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./assets/fonts/vazirmatn-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./assets/fonts/vazirmatn-latin-500.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('./assets/fonts/vazirmatn-latin-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('./assets/fonts/vazirmatn-latin-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+FEFF, U+FFFD;
+}
+
 :root {
   --bg: rgba(11, 14, 19, 0.965);
   --bg-sunken: rgba(255, 255, 255, 0.04);
@@ -31,8 +103,9 @@ body,
 }
 
 body {
-  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Vazirmatn', 'Segoe UI Variable Text', 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
   font-size: 13px;
+  line-height: 1.45;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   cursor: default;
@@ -310,7 +383,8 @@ button {
   align-items: center;
   gap: 6px;
   height: 30px;
-  padding: 0 10px;
+  padding: 0 9px;
+  white-space: nowrap;
   border-radius: 9px;
   color: var(--text-dim);
   font-size: 12px;
@@ -570,8 +644,7 @@ button {
   margin-top: 4px;
   align-self: flex-start;
   font-size: 10.5px;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--accent);
   background: var(--accent-soft);
   border-radius: 6px;
@@ -593,7 +666,7 @@ button {
 }
 
 .scrub-time:last-child {
-  text-align: right;
+  text-align: end;
 }
 
 .music-controls {
@@ -664,8 +737,7 @@ button {
 
 .lyrics-source {
   font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: normal;
   color: var(--text-faint);
 }
 
@@ -764,8 +836,7 @@ button {
 
 .focus-mode {
   font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
+  letter-spacing: normal;
   color: var(--text-faint);
 }
 
@@ -906,7 +977,7 @@ button {
 }
 
 .water-custom .input {
-  width: 64px;
+  width: 84px;
 }
 
 .water-chart {
@@ -957,7 +1028,8 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 4px 3px 8px;
+  padding-block: 3px;
+  padding-inline: 8px 4px;
   border-radius: 8px;
   background: var(--bg-sunken);
   font-size: 11.5px;
@@ -1072,7 +1144,7 @@ button {
 .shelf-tools {
   position: absolute;
   top: 6px;
-  right: 6px;
+  inset-inline-end: 6px;
   display: none;
   gap: 2px;
   background: var(--bg);
@@ -1186,7 +1258,7 @@ button {
   gap: 14px;
   max-height: 420px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .settings-group {
@@ -1197,10 +1269,9 @@ button {
 
 .settings-group h3 {
   margin: 0 0 4px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--text-faint);
 }
 
@@ -1212,8 +1283,9 @@ button {
   min-height: 38px;
   padding: 5px 8px;
   border-radius: 9px;
-  text-align: left;
+  text-align: start;
   width: 100%;
+  box-sizing: border-box;
 }
 
 button.row:hover {
@@ -1250,8 +1322,9 @@ button.row:hover {
 .row-suffix {
   font-size: 11px;
   color: var(--text-faint);
-  width: 34px;
-  text-align: right;
+  min-width: 34px;
+  width: auto;
+  text-align: end;
 }
 
 .switch {
@@ -1296,6 +1369,194 @@ button.row:hover {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
+}
+
+/* -------------------------------------------------------------- calendar ---- */
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cal-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cal-title strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cal-sub {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal-main {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cal-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-weekday {
+  padding: 2px 0 4px;
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
+.cal-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.cal-blank {
+  visibility: hidden;
+}
+
+.cal-day:hover {
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+
+.cal-friday {
+  color: var(--danger);
+}
+
+.cal-today {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.cal-selected,
+.cal-selected.cal-friday {
+  background: var(--accent);
+  color: #08211a;
+  font-weight: 600;
+}
+
+.cal-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.cal-selected .cal-dot {
+  background: #08211a;
+}
+
+.cal-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 196px;
+  flex: none;
+}
+
+.cal-day-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--bg-sunken);
+}
+
+.cal-selected-day {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.cal-selected-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cal-selected-month {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cal-selected-week {
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
+.cal-event {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11.5px;
+}
+
+.cal-nowruz {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(138, 230, 192, 0.12), rgba(138, 230, 192, 0.03));
+}
+
+.cal-nowruz-label {
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
+.cal-nowruz-days {
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.cal-nowruz small {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.cal-note {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-faint);
 }
 
 /* ---------------------------------------------------------------- nudge ---- */
@@ -1418,8 +1679,7 @@ button.row:hover {
 
 .overlay-label {
   font-size: 11px;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--text-faint);
 }
 
@@ -1450,6 +1710,23 @@ button.row:hover {
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
   flex: none;
+}
+
+/* ------------------------------------------------------------------ rtl ---- */
+
+[dir='rtl'] .switch-knob {
+  left: auto;
+  right: 3px;
+}
+
+[dir='rtl'] .switch.on .switch-knob {
+  transform: translateX(-15px);
+}
+
+[dir='rtl'] .bar-progress,
+[dir='rtl'] .bar-minimal-line,
+[dir='rtl'] .overlay-meter-fill {
+  transform-origin: right center;
 }
 
 /* ----------------------------------------------------------- animations ---- */

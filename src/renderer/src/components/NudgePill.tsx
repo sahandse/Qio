@@ -20,7 +20,7 @@ export function NudgePill({ nudge, onDismiss }: { nudge: Nudge; onDismiss: () =>
         <strong>{nudge.title}</strong>
         {nudge.detail && <small>{nudge.detail}</small>}
       </span>
-      <button type="button" className="icon-button tiny" onClick={onDismiss} title="Dismiss">
+      <button type="button" className="icon-button tiny" onClick={onDismiss} title="بستن">
         <CloseIcon size={13} />
       </button>
     </div>

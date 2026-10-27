@@ -1,6 +1,7 @@
 import { BrowserWindow, Notification, app, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
 import type { AppState, MediaState, Nudge, OverlayPayload, SystemState } from '@shared/types'
+import { toPersianDigits } from '@shared/persian'
 import { WindowsBridge } from './bridge'
 import { registerIpc } from './ipc'
 import { Store, dateKey } from './store'
@@ -151,13 +152,13 @@ function wireBridge(): void {
     pushState()
 
     if (lastCharging !== null && payload.charging && !lastCharging) {
-      notify('Charger connected', `Battery at ${payload.battery}%`)
-      raiseNudge('power', 'Charger connected', `Battery at ${payload.battery}%`)
+      notify('شارژر وصل شد', `باتری روی ${toPersianDigits(payload.battery)}٪ است`)
+      raiseNudge('power', 'شارژر وصل شد', `باتری ${toPersianDigits(payload.battery)}٪`)
     }
     if (!payload.charging && payload.battery <= 20 && !lowBatteryWarned) {
       lowBatteryWarned = true
-      notify('Battery low', `${payload.battery}% left — plug in when you can.`)
-      raiseNudge('power', 'Battery low', `${payload.battery}% left`)
+      notify('باتری کم', `${toPersianDigits(payload.battery)}٪ باقی مانده — هر وقت توانستی وصلش کن.`)
+      raiseNudge('power', 'باتری کم', `${toPersianDigits(payload.battery)}٪ باقی مانده`)
     }
     if (payload.charging || payload.battery > 25) lowBatteryWarned = false
     lastCharging = payload.charging
@@ -168,8 +169,8 @@ function checkTodos(now: number): void {
   for (const todo of store.todos) {
     if (todo.done || !todo.dueAt || todo.notified || todo.dueAt > now) continue
     store.updateTodo(todo.id, { notified: true })
-    notify(todo.text, 'This task is due now.')
-    raiseNudge('todo', todo.text, 'Due now')
+    notify(todo.text, 'موعد این کار رسید.')
+    raiseNudge('todo', todo.text, 'همین حالا')
   }
 }
 
@@ -188,8 +189,15 @@ function checkWater(): void {
   if (now.getTime() < reference + settings.remindEveryMin * 60_000) return
 
   lastWaterReminderAt = now.getTime()
-  notify('Time for water', `${water.total} of ${water.goalMl} ml today.`)
-  raiseNudge('water', 'Time for water', `${water.total} / ${water.goalMl} ml`)
+  notify(
+    'وقت آب خوردن',
+    `${toPersianDigits(water.total)} از ${toPersianDigits(water.goalMl)} میلی‌لیتر امروز.`
+  )
+  raiseNudge(
+    'water',
+    'وقت آب خوردن',
+    `${toPersianDigits(water.total)} از ${toPersianDigits(water.goalMl)} میلی‌لیتر`
+  )
 }
 
 function startSchedulers(): void {

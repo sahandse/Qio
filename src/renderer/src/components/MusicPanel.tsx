@@ -8,6 +8,18 @@ function isLive(media: MediaState | null): boolean {
   return Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
 }
 
+const LYRIC_MESSAGES: Record<string, string> = {
+  'No lyrics found': 'متنی برای این آهنگ پیدا نشد.',
+  'Nothing playing': 'چیزی در حال پخش نیست.',
+  Instrumental: 'این قطعه بی‌کلام است.',
+  'Lyrics timed out': 'جست‌وجوی متن طول کشید.',
+  'Lyrics unavailable': 'متن در دسترس نیست.'
+}
+
+function lyricMessage(message?: string): string {
+  return (message && LYRIC_MESSAGES[message]) || message || 'متنی برای این آهنگ پیدا نشد.'
+}
+
 function useLyrics(media: MediaState | null): { result: LyricResult | null; loading: boolean } {
   const [result, setResult] = useState<LyricResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -68,7 +80,7 @@ function Scrubber({
         onChange={(event) => setScrub(Number(event.target.value))}
         onPointerUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
         onKeyUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
-        aria-label="Seek"
+        aria-label="جابه‌جایی"
       />
       <span className="scrub-time">{formatDuration(duration)}</span>
     </div>
@@ -93,10 +105,18 @@ export function MusicPanel({ state }: { state: AppState | null }) {
           </span>
         )}
         <div className="music-meta">
-          <span className="music-title">{media?.title || 'Nothing playing'}</span>
-          <span className="music-artist">{media?.artist || 'Start a song anywhere on Windows'}</span>
-          {media?.album && <span className="music-album">{media.album}</span>}
-          <span className="music-badge">{live ? mediaAppName(media?.app ?? '') : 'Waiting for Windows media'}</span>
+          <span className="music-title" dir="auto">
+            {media?.title || 'چیزی در حال پخش نیست'}
+          </span>
+          <span className="music-artist" dir="auto">
+            {media?.artist || 'هر جای ویندوز آهنگی پخش کن'}
+          </span>
+          {media?.album && (
+            <span className="music-album" dir="auto">
+              {media.album}
+            </span>
+          )}
+          <span className="music-badge">{live ? mediaAppName(media?.app ?? '') : 'در انتظار رسانهٔ ویندوز'}</span>
         </div>
       </div>
 
@@ -108,7 +128,7 @@ export function MusicPanel({ state }: { state: AppState | null }) {
           className="icon-button"
           onClick={() => void window.qio.media.command('previous')}
           disabled={!media?.canPrevious}
-          title="Previous"
+          title="قبلی"
         >
           <PrevIcon size={19} />
         </button>
@@ -117,7 +137,7 @@ export function MusicPanel({ state }: { state: AppState | null }) {
           className="icon-button primary"
           onClick={() => void window.qio.media.command('playpause')}
           disabled={!live}
-          title={playing ? 'Pause' : 'Play'}
+          title={playing ? 'توقف' : 'پخش'}
         >
           {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
         </button>
@@ -126,14 +146,14 @@ export function MusicPanel({ state }: { state: AppState | null }) {
           className="icon-button"
           onClick={() => void window.qio.media.command('next')}
           disabled={!media?.canNext}
-          title="Next"
+          title="بعدی"
         >
           <NextIcon size={19} />
         </button>
       </div>
 
       <p className="panel-hint">
-        Works with any player Windows knows about: Spotify, Apple Music, Media Player and tabs in Chrome, Edge or
+        با هر پخش‌کننده‌ای کار می‌کند که ویندوز می‌شناسد: Spotify، Apple Music، Media Player و تب‌های Chrome، Edge یا
         Firefox.
       </p>
     </div>
@@ -162,15 +182,15 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
   }, [activeIndex])
 
   if (!state?.settings.lyrics) {
-    return <p className="panel-hint">Lyrics are switched off. Turn them on in Settings.</p>
+    return <p className="panel-hint">متن آهنگ خاموش است. از تنظیمات روشنش کن.</p>
   }
 
   if (!live) {
     return (
       <div className="lyrics lyrics-empty">
         <LyricsIcon size={30} />
-        <p>Play something and Qio will find the words.</p>
-        <p className="panel-hint">Lyrics come from LRCLIB, a free community library.</p>
+        <p>آهنگی پخش کن تا Qio کلماتش را پیدا کند.</p>
+        <p className="panel-hint">متن‌ها از LRCLIB می‌آیند؛ یک کتابخانهٔ رایگان مردمی.</p>
       </div>
     )
   }
@@ -180,13 +200,17 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
       <div className="lyrics-head">
         {cover ? <img className="lyrics-cover" src={cover} alt="" /> : <span className="lyrics-cover lyrics-cover-empty" />}
         <div className="lyrics-meta">
-          <span className="lyrics-title">{media?.title}</span>
-          <span className="lyrics-artist">{media?.artist}</span>
+          <span className="lyrics-title" dir="auto">
+            {media?.title}
+          </span>
+          <span className="lyrics-artist" dir="auto">
+            {media?.artist}
+          </span>
         </div>
-        <span className="lyrics-source">{result?.synced ? 'synced' : result?.source === 'lrclib' ? 'plain' : ''}</span>
+        <span className="lyrics-source">{result?.synced ? 'هم‌زمان' : result?.source === 'lrclib' ? 'متنی' : ''}</span>
       </div>
 
-      {loading && <p className="panel-hint">Looking for lyrics…</p>}
+      {loading && <p className="panel-hint">در جست‌وجوی متن…</p>}
 
       {!loading && lines && (
         <>
@@ -197,29 +221,28 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
                 ref={index === activeIndex ? activeRef : null}
                 className={`lyric-line${index === activeIndex ? ' lyric-line-active' : ''}`}
                 onClick={() => void window.qio.media.command('seek', line.time)}
-                title="Jump to this line"
+                title="رفتن به این خط"
+                dir="auto"
               >
                 {line.text}
               </p>
             ))}
           </div>
-          <p className="panel-hint">Click a line to jump there.</p>
+          <p className="panel-hint">روی هر خط بزن تا آهنگ همان‌جا برود.</p>
         </>
       )}
 
       {!loading && !lines && result?.plain && (
         <div className="lyrics-list lyrics-plain">
           {result.plain.split(/\r?\n/).map((line, index) => (
-            <p key={index} className="lyric-line">
+            <p key={index} className="lyric-line" dir="auto">
               {line || '\u00a0'}
             </p>
           ))}
         </div>
       )}
 
-      {!loading && !lines && !result?.plain && (
-        <p className="panel-hint">{result?.message ?? 'No lyrics for this track yet.'}</p>
-      )}
+      {!loading && !lines && !result?.plain && <p className="panel-hint">{lyricMessage(result?.message)}</p>}
     </div>
   )
 }
