@@ -1,0 +1,31 @@
+appId: com.sahandse.qio
+productName: Qio
+copyright: © 2026 sahandse
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**/*
+  - package.json
+
+extraResources:
+  - from: resources/bridge
+    to: bridge
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icon-512.png
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Qio
+  deleteAppDataOnUninstall: false
