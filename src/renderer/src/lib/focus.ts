@@ -47,8 +47,12 @@ export function useFocusEngine(state: AppState | null): void {
       })
       void window.qio.notify(
         'focus',
-        finished === 'work' ? 'Focus session done' : 'Break over',
-        finished === 'work' ? `Take a ${nextMode} break.` : 'Back to it when you are ready.'
+        finished === 'work' ? 'تمرکز تمام شد' : 'استراحت تمام شد',
+        finished === 'work'
+          ? nextMode === 'long'
+            ? 'وقت استراحت بلند است.'
+            : 'یک استراحت کوتاه کن.'
+          : 'هر وقت آماده بودی ادامه بده.'
       )
     }
 

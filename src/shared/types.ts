@@ -24,6 +24,10 @@ export interface Settings {
   minimalNotch: boolean
   mascot: boolean
   lyrics: boolean
+  /** Scale of the notch, 1 = 420x140 pages. Larger by default on wide displays. */
+  notchScale: number
+  /** Step aside while a game or video is full screen. */
+  hideFullscreen: boolean
   water: WaterSettings
   focus: FocusSettings
 }
@@ -39,10 +43,13 @@ export interface Todo {
 
 export interface ShelfItem {
   id: string
+  kind: 'file' | 'text'
   path: string
   name: string
   size: number
   isDir: boolean
+  /** Only for text cards: the copied text. */
+  text?: string
   addedAt: number
 }
 
@@ -105,6 +112,9 @@ export interface SystemState {
   layout: string
   battery: number | null
   charging: boolean | null
+  /** Windows' 12/24-hour choice, so the Persian clock matches the taskbar. */
+  hour24: boolean
+  fullscreen: boolean
   startWithWindows: boolean
 }
 
@@ -134,7 +144,7 @@ export interface LyricResult {
   message?: string
 }
 
-export type NudgeKind = 'water' | 'focus' | 'todo' | 'power' | 'lyrics' | 'shelf'
+export type NudgeKind = 'water' | 'focus' | 'todo' | 'power' | 'lyrics' | 'shelf' | 'network' | 'headphones'
 
 export interface Nudge {
   id: string

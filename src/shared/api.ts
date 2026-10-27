@@ -53,12 +53,14 @@ export interface QioApi {
 
   shelf: {
     add(paths: string[]): Promise<number>
+    addText(): Promise<boolean>
+    copy(id: string): Promise<boolean>
     remove(id: string): Promise<void>
     clear(): Promise<void>
     open(id: string): Promise<boolean>
     reveal(id: string): Promise<boolean>
     icon(id: string): Promise<string>
-    drag(id: string): void
+    drag(ids: string[]): void
   }
 
   focus: {
@@ -80,6 +82,8 @@ export interface QioApi {
   window: {
     size(width: number, height: number): Promise<boolean>
     setVisible(visible: boolean): Promise<boolean>
+    openSettings(): Promise<boolean>
+    close(): Promise<void>
     quit(): Promise<void>
     openExternal(url: string): Promise<void>
   }

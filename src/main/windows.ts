@@ -2,13 +2,18 @@ import { BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
 import type { OverlayPayload } from '@shared/types'
 
-export const COLLAPSED_SIZE = { width: 460, height: 44 }
-const OVERLAY_SIZE = { width: 460, height: 190 }
-/** Space the renderer adds around its content for shadows; kept in sync with styles.css. */
-export const SHELL_CHROME = { x: 14, bottom: 14 }
+export const COLLAPSED_SIZE = { width: 150, height: 30 }
+const OVERLAY_SIZE = { width: 310, height: 60 }
+/** Room the renderer keeps around its content for the soft shadow; kept in sync with styles.css. */
+export const SHELL_CHROME = { x: 10, bottom: 9 }
+/** The peek window is a little larger than the drawn card so the shadow has room. */
+const OVERLAY_WINDOW = { width: OVERLAY_SIZE.width + 20, height: OVERLAY_SIZE.height + 18 }
+const OVERLAY_TOP = 36
+const SETTINGS_SIZE = { width: 720, height: 640 }
 
 let notchWindow: BrowserWindow | null = null
 let overlayWindow: BrowserWindow | null = null
+let settingsWindow: BrowserWindow | null = null
 let overlayTimer: NodeJS.Timeout | null = null
 
 const preloadPath = (): string => join(__dirname, '../preload/index.js')
@@ -27,7 +32,7 @@ function pipeRendererLogs(window: BrowserWindow): void {
   })
 }
 
-function loadPage(window: BrowserWindow, page: 'index' | 'overlay'): void {
+function loadPage(window: BrowserWindow, page: 'index' | 'overlay' | 'settings'): void {
   pipeRendererLogs(window)
   const url = devUrl()
   if (url) {
@@ -89,9 +94,9 @@ export function createOverlayWindow(): BrowserWindow {
   const display = screen.getPrimaryDisplay()
   const { bounds } = display
   const window = new BrowserWindow({
-    ...OVERLAY_SIZE,
-    x: Math.round(bounds.x + (bounds.width - OVERLAY_SIZE.width) / 2),
-    y: bounds.y + 46,
+    ...OVERLAY_WINDOW,
+    x: Math.round(bounds.x + (bounds.width - OVERLAY_WINDOW.width) / 2),
+    y: bounds.y + OVERLAY_TOP,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
@@ -115,6 +120,53 @@ export function createOverlayWindow(): BrowserWindow {
   window.setFocusable(false)
   loadPage(window, 'overlay')
   overlayWindow = window
+  return window
+}
+
+/** The settings page lives in its own window, like a small companion app. */
+export function openSettingsWindow(): BrowserWindow {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    if (settingsWindow.isMinimized()) settingsWindow.restore()
+    settingsWindow.show()
+    settingsWindow.focus()
+    return settingsWindow
+  }
+
+  const display = screen.getPrimaryDisplay()
+  const { workArea } = display
+  const width = Math.min(SETTINGS_SIZE.width, workArea.width - 40)
+  const height = Math.min(SETTINGS_SIZE.height, workArea.height - 40)
+  const window = new BrowserWindow({
+    width,
+    height,
+    minWidth: 560,
+    minHeight: 420,
+    x: Math.round(workArea.x + (workArea.width - width) / 2),
+    y: Math.round(workArea.y + (workArea.height - height) / 2),
+    frame: false,
+    backgroundColor: '#0a0a0e',
+    resizable: true,
+    maximizable: false,
+    fullscreenable: false,
+    show: false,
+    title: 'تنظیمات Qio',
+    icon: iconPath(),
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: preloadPath(),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+
+  window.setMenuBarVisibility(false)
+  loadPage(window, 'settings')
+  window.once('ready-to-show', () => window.show())
+  window.on('closed', () => {
+    settingsWindow = null
+  })
+  settingsWindow = window
   return window
 }
 
@@ -153,9 +205,9 @@ export function repositionWindows(): void {
   }
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.setBounds({
-      x: Math.round(bounds.x + (bounds.width - OVERLAY_SIZE.width) / 2),
-      y: bounds.y + 46,
-      ...OVERLAY_SIZE
+      x: Math.round(bounds.x + (bounds.width - OVERLAY_WINDOW.width) / 2),
+      y: bounds.y + OVERLAY_TOP,
+      ...OVERLAY_WINDOW
     })
   }
 }

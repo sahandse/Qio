@@ -41,12 +41,14 @@ const api: QioApi = {
 
   shelf: {
     add: (paths) => ipcRenderer.invoke('shelf:add', paths) as Promise<number>,
+    addText: () => ipcRenderer.invoke('shelf:add-text') as Promise<boolean>,
+    copy: (id) => ipcRenderer.invoke('shelf:copy', id) as Promise<boolean>,
     remove: (id) => ipcRenderer.invoke('shelf:remove', id) as Promise<void>,
     clear: () => ipcRenderer.invoke('shelf:clear') as Promise<void>,
     open: (id) => ipcRenderer.invoke('shelf:open', id) as Promise<boolean>,
     reveal: (id) => ipcRenderer.invoke('shelf:reveal', id) as Promise<boolean>,
     icon: (id) => ipcRenderer.invoke('shelf:icon', id) as Promise<string>,
-    drag: (id) => ipcRenderer.send('shelf:drag', id)
+    drag: (ids) => ipcRenderer.send('shelf:drag', ids)
   },
 
   focus: {
@@ -69,6 +71,8 @@ const api: QioApi = {
   window: {
     size: (width, height) => ipcRenderer.invoke('window:size', { width, height }) as Promise<boolean>,
     setVisible: (visible) => ipcRenderer.invoke('window:visible', visible) as Promise<boolean>,
+    openSettings: () => ipcRenderer.invoke('window:settings') as Promise<boolean>,
+    close: () => ipcRenderer.invoke('window:close') as Promise<void>,
     quit: () => ipcRenderer.invoke('window:quit') as Promise<void>,
     openExternal: (url) => ipcRenderer.invoke('window:external', url) as Promise<void>
   },

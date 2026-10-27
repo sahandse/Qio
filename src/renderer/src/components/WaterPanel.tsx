@@ -1,16 +1,17 @@
-import { useState } from 'react'
 import type { AppState } from '@shared/types'
-import { formatClock, formatLitres, weekdayNarrow } from '../lib/format'
-import { formatJalali, toPersianDigits } from '../lib/jalali'
-import { TrashIcon, WaterIcon } from './Icons'
-import { Stepper } from './Stepper'
+import { formatJalali, toPersianDigits, WEEKDAYS_NARROW, weekdayIndex } from '../lib/jalali'
+import { WaterIcon } from './Icons'
+
+function litres(ml: number): string {
+  const text = (ml / 1000).toFixed(2).replace(/\.?0+$/, '').replace('.', '٫')
+  return toPersianDigits(text)
+}
 
 export function WaterPanel({ state }: { state: AppState | null }) {
   const water = state?.water
   const settings = state?.settings.water
-  const [custom, setCustom] = useState(250)
 
-  if (!water || !settings) return <p className="panel-hint">در حال بارگذاری…</p>
+  if (!water || !settings || !state) return <p className="page-note">در حال بارگذاری…</p>
 
   const percent = water.goalMl > 0 ? water.total / water.goalMl : 0
   const reached = water.total >= water.goalMl
@@ -22,81 +23,71 @@ export function WaterPanel({ state }: { state: AppState | null }) {
   }
 
   return (
-    <div className="water">
-      <div className="water-top">
-        <div className="bottle" aria-hidden="true">
-          <span className="bottle-cap" />
-          <span className="bottle-fill" style={{ height: `${Math.min(100, percent * 100)}%` }} />
+    <div className="water-page">
+      <div className="water-main">
+        <div className="water-line">
+          <span className="water-big">{litres(water.total)}</span>
+          <span className="water-goal">/ {litres(water.goalMl)} لیتر</span>
+          <button
+            type="button"
+            className={`water-switch${settings.reminders ? ' on' : ''}`}
+            onClick={() =>
+              void window.qio.patchSettings({
+                water: { ...settings, reminders: !settings.reminders }
+              })
+            }
+            title={settings.reminders ? 'یادآوری روشن است' : 'یادآوری خاموش است'}
+            aria-pressed={settings.reminders}
+          >
+            <WaterIcon size={11} />
+          </button>
         </div>
 
-        <div className="water-summary">
-          <span className="water-total">
-            {formatLitres(water.total)} <small>/ {formatLitres(water.goalMl)}</small>
-          </span>
-          <span className={`water-state${reached ? ' ok' : ''}`}>
-            {reached ? 'به هدف رسیدی — آفرین' : `${toPersianDigits(Math.round(percent * 100))}٪ از هدف امروز`}
-          </span>
+        <span className={`water-status${reached ? ' ok' : ''}`}>
+          {reached
+            ? `امروز · ${toPersianDigits(100)}٪ · به هدف رسیدی`
+            : `امروز · ${toPersianDigits(Math.round(percent * 100))}٪ از ${litres(water.goalMl)} لیتر`}
+        </span>
 
-          <div className="water-actions">
-            <button type="button" className="button primary" onClick={() => add(settings.bottleMl)}>
-              <WaterIcon size={15} /> بطری ({toPersianDigits(settings.bottleMl)} میلی‌لیتر)
-            </button>
-            <button type="button" className="button" onClick={() => add(250)}>
-              +{toPersianDigits(250)} میلی‌لیتر
-            </button>
-            <button type="button" className="button" onClick={() => add(500)}>
-              +{toPersianDigits(500)} میلی‌لیتر
-            </button>
-            <form
-              className="water-custom"
-              onSubmit={(event) => {
-                event.preventDefault()
-                add(custom)
-              }}
-            >
-              <Stepper label="مقدار دلخواه" value={custom} min={50} max={3000} step={50} onChange={setCustom} />
-              <button type="submit" className="button">
-                افزودن
-              </button>
-            </form>
-          </div>
+        <span className="water-bar" aria-hidden="true">
+          <span style={{ width: `${Math.min(100, percent * 100)}%` }} />
+        </span>
+
+        <div className="water-actions">
+          <button type="button" className="pill primary" onClick={() => add(settings.bottleMl)}>
+            <WaterIcon size={12} /> نوشیدن
+          </button>
+          <button type="button" className="pill" onClick={() => add(250)}>
+            +{toPersianDigits(250)}
+          </button>
         </div>
       </div>
 
       <div className="water-chart" role="img" aria-label="مصرف آب در دو هفتهٔ گذشته">
-        {water.days.map((day) => {
-          const date = new Date(`${day.date}T12:00:00`)
-          return (
-            <span
-              className="chart-col"
-              key={day.date}
-              title={`${formatJalali(date, { weekday: false, year: false })}: ${toPersianDigits(day.total)} میلی‌لیتر`}
-            >
-              <span className="chart-bar-wrap">
-                <span className="chart-bar" style={{ height: `${Math.max(2, (day.total / max) * 100)}%` }} />
+        <div className="water-chart-body">
+          <span className="chart-goal" style={{ bottom: `${Math.min(100, (water.goalMl / max) * 100)}%` }} />
+          {water.days.map((day, index) => {
+            const date = new Date(`${day.date}T12:00:00`)
+            const height = Math.max(3, (day.total / max) * 100)
+            return (
+              <span
+                key={day.date}
+                className={`chart-col${index === water.days.length - 1 ? ' today' : ''}`}
+                title={`${formatJalali(date, { weekday: false, year: false })}: ${toPersianDigits(day.total)} میلی‌لیتر`}
+              >
+                <span className="chart-bar" style={{ height: `${height}%` }} />
               </span>
-              <span className="chart-label">{weekdayNarrow(date)}</span>
-            </span>
-          )
-        })}
-      </div>
-
-      <div className="water-log">
-        {water.entries.length === 0 && <span className="panel-hint">هنوز چیزی امروز ثبت نشده است.</span>}
-        {[...water.entries].reverse().map((entry) => (
-          <span className="water-entry" key={entry.id}>
-            <span className="water-entry-ml">{toPersianDigits(entry.ml)} میلی‌لیتر</span>
-            <span className="water-entry-time">{formatClock(new Date(entry.at))}</span>
-            <button
-              type="button"
-              className="icon-button tiny"
-              title="حذف"
-              onClick={() => void window.qio.water.remove(entry.id)}
-            >
-              <TrashIcon size={13} />
-            </button>
-          </span>
-        ))}
+            )
+          })}
+        </div>
+        <div className="chart-labels" aria-hidden="true">
+          {[0, 4, 8, 13].map((index) => {
+            const day = water.days[index]
+            if (!day) return null
+            const date = new Date(`${day.date}T12:00:00`)
+            return <span key={day.date}>{WEEKDAYS_NARROW[weekdayIndex(date)]}</span>
+          })}
+        </div>
       </div>
     </div>
   )

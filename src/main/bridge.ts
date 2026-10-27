@@ -255,6 +255,18 @@ export class WindowsBridge extends EventEmitter {
         this.emit('power', this.lastPower)
         break
       }
+      case 'hour24':
+        this.emit('hour24', Boolean(message.hour24))
+        break
+      case 'fullscreen':
+        this.emit('fullscreen', Boolean(message.fullscreen))
+        break
+      case 'headphones':
+        this.emit('headphones', {
+          connected: Boolean(message.connected),
+          name: String(message.name ?? '')
+        })
+        break
       case 'bridge-log':
         if (message.level === 'error') console.error('[qio] bridge:', message.message)
         else if (message.level === 'warn') console.warn('[qio] bridge:', message.message)

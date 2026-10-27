@@ -1,7 +1,6 @@
 import { Menu, Tray, app, nativeImage } from 'electron'
 import { join } from 'node:path'
 import type { Settings } from '@shared/types'
-import { toPersianDigits } from '@shared/persian'
 
 export interface TrayHandlers {
   getSettings(): Settings
@@ -51,6 +50,7 @@ export function refreshTray(): void {
         handlers?.onOpenPanel('music')
       }
     },
+    { label: 'تنظیمات Qio…', click: () => handlers?.onOpenPanel('settings') },
     { type: 'separator' },
     {
       label: 'اجرا هنگام ورود به ویندوز',
@@ -80,10 +80,6 @@ export function refreshTray(): void {
       }
     },
     { type: 'separator' },
-    {
-      label: `دربارهٔ Qio ${toPersianDigits(app.getVersion())}`,
-      click: () => handlers?.onOpenPanel('settings')
-    },
     { label: 'خروج از Qio', click: () => handlers?.onQuit() }
   ])
   tray.setContextMenu(menu)

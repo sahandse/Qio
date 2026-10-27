@@ -78,7 +78,7 @@ export function useMediaClock(media: MediaState | null): number {
 export function useClock(): Date {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 15_000)
+    const timer = setInterval(() => setNow(new Date()), 5_000)
     return () => clearInterval(timer)
   }, [])
   return now

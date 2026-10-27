@@ -11,6 +11,7 @@ import {
   createOverlayWindow,
   getNotchWindow,
   hideOverlay,
+  openSettingsWindow,
   repositionWindows,
   sendToNotch,
   sizeNotch,
@@ -31,6 +32,8 @@ let system: SystemState = {
   layout: '',
   battery: null,
   charging: null,
+  hour24: true,
+  fullscreen: false,
   startWithWindows: false
 }
 let lastCoverKey = ''
@@ -39,6 +42,9 @@ let overlayArmed = false
 let lastWaterReminderAt = 0
 let lowBatteryWarned = false
 let lastCharging: boolean | null = null
+let lastHeadphones: boolean | null = null
+let notchVisible = true
+let fullscreen = false
 const nudges = new Map<string, NodeJS.Timeout>()
 
 function getState(): AppState {
@@ -95,6 +101,7 @@ function applyLoginItem(): void {
 }
 
 function setNotchVisible(visible: boolean): void {
+  notchVisible = visible
   const window = getNotchWindow()
   if (!window || window.isDestroyed()) return
   if (visible) {
@@ -103,6 +110,18 @@ function setNotchVisible(visible: boolean): void {
     window.hide()
   }
   setTrayNotchVisible(visible)
+}
+
+/** Games and videos get the whole screen; Qio steps aside and comes back afterwards. */
+function applyFullscreen(active: boolean): void {
+  fullscreen = active
+  const window = getNotchWindow()
+  if (!window || window.isDestroyed()) return
+  if (active && store.settings.hideFullscreen) {
+    if (window.isVisible()) window.hide()
+  } else if (!active && notchVisible && !window.isVisible()) {
+    window.showInactive()
+  }
 }
 
 function routeOverlay(payload: OverlayPayload): void {
@@ -163,6 +182,24 @@ function wireBridge(): void {
     if (payload.charging || payload.battery > 25) lowBatteryWarned = false
     lastCharging = payload.charging
   })
+
+  bridge.on('hour24', (value: boolean) => {
+    system = { ...system, hour24: value }
+    pushState()
+  })
+
+  bridge.on('fullscreen', (value: boolean) => {
+    system = { ...system, fullscreen: value }
+    pushState()
+    applyFullscreen(value)
+  })
+
+  bridge.on('headphones', (payload: { connected: boolean; name: string }) => {
+    if (payload.connected && lastHeadphones === false) {
+      raiseNudge('headphones', 'هدفون وصل شد', payload.name.split('(')[0].trim())
+    }
+    lastHeadphones = payload.connected
+  })
 }
 
 function checkTodos(now: number): void {
@@ -201,7 +238,10 @@ function checkWater(): void {
 }
 
 function startSchedulers(): void {
-  store.onChange(() => pushState())
+  store.onChange(() => {
+    pushState()
+    applyFullscreen(fullscreen)
+  })
   let lastDay = dateKey()
 
   setInterval(() => {
@@ -229,6 +269,10 @@ function setupTrayAndWindow(): void {
       refreshTray()
     },
     onOpenPanel: (panel) => {
+      if (panel === 'settings') {
+        openSettingsWindow()
+        return
+      }
       pinsNotch()
       sendToNotch('notch:open', panel)
     },

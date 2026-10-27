@@ -1,200 +1,153 @@
-import { Fragment, useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
-import type { AppState } from '@shared/types'
-import { formatClock, formatDay, formatDuration, formatLitres, mediaAppName } from '../lib/format'
-import { shortEvent, toPersianDigits, upcomingEvent } from '../lib/jalali'
-import { useClock, useCover, useMediaClock } from '../lib/state'
-import { BoltIcon, CalendarIcon, TimerIcon, WaterIcon } from './Icons'
+import { useEffect, useState } from 'react'
+import type { AppState, MediaState } from '@shared/types'
+import { formatClock } from '../lib/format'
+import { formatJalali, toPersianDigits } from '../lib/jalali'
+import { useClock } from '../lib/state'
+import { MuteIcon, SettingsIcon } from './Icons'
 
 interface Props {
   state: AppState | null
   expanded: boolean
+  title: string
   onOpen: () => void
-  onToggleMinimal: () => void
+  onSettings: () => void
 }
 
-function useSecondsTick(active: boolean): number {
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    if (!active) return
-    const timer = setInterval(() => setTick((value) => value + 1), 1000)
-    return () => clearInterval(timer)
-  }, [active])
-  return Date.now()
+function isLive(media: MediaState | null): boolean {
+  return Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
 }
 
-export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
+function batteryColor(battery: number, charging: boolean): string {
+  if (charging) return '#7ee8a8'
+  if (battery <= 20) return '#f08a7a'
+  if (battery <= 40) return '#f2c879'
+  return 'rgba(255, 255, 255, 0.88)'
+}
+
+/** Two dots that blink now and then; they sit inside the battery ring when there is one. */
+function Eyes({ sleepy }: { sleepy: boolean }) {
+  return (
+    <span className={`eyes${sleepy ? ' eyes-sleepy' : ''}`} aria-hidden="true">
+      <span className="eye" />
+      <span className="eye" />
+    </span>
+  )
+}
+
+function BatteryRing({
+  battery,
+  charging,
+  mascot,
+  sleepy,
+  small
+}: {
+  battery: number
+  charging: boolean
+  mascot: boolean
+  sleepy: boolean
+  small?: boolean
+}) {
+  return (
+    <span
+      className={`battery-ring${charging ? ' charging' : ''}${small ? ' small' : ''}`}
+      style={{
+        ['--pct' as string]: `${Math.min(100, Math.max(0, battery))}%`,
+        ['--ring' as string]: batteryColor(battery, charging)
+      }}
+      title={`باتری ${toPersianDigits(battery)}٪${charging ? ' — در حال شارژ' : ''}`}
+    >
+      <span className="battery-core">{mascot && !small ? <Eyes sleepy={sleepy} /> : null}</span>
+    </span>
+  )
+}
+
+function Equalizer({ playing, muted }: { playing: boolean; muted: boolean }) {
+  if (muted) return <MuteIcon size={15} />
+  return (
+    <span className={`equalizer${playing ? ' playing' : ''}`} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+    </span>
+  )
+}
+
+export function NotchBar({ state, expanded, title, onOpen, onSettings }: Props) {
   const now = useClock()
   const media = state?.media ?? null
-  const isLive = Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
-  const cover = useCover(isLive && media ? media.coverKey : '')
-  const position = useMediaClock(isLive ? media : null)
-  const progress = media && media.duration > 0 ? Math.min(1, position / media.duration) : 0
-
-  const focus = state?.focus
-  const focusRunning = Boolean(focus?.running && focus.endsAt)
-  useSecondsTick(focusRunning)
-  const focusLeft = focusRunning && focus?.endsAt ? Math.max(0, (focus.endsAt - Date.now()) / 1000) : 0
-
-  const water = state?.water
-  const waterLeft = water ? Math.max(0, water.goalMl - water.total) : 0
-  const battery = state?.system.battery
-  const charging = state?.system.charging
+  const live = isLive(media)
+  const playing = live && media?.status === 'playing'
+  const battery = state?.system.battery ?? null
+  const charging = Boolean(state?.system.charging)
+  const muted = Boolean(state?.system.muted)
+  const hour24 = state?.system.hour24 ?? true
+  const mascot = state?.settings.mascot ?? true
   const minimal = state?.settings.minimalNotch ?? false
-  const event = upcomingEvent(now)
-
-  const chips: { key: string; label: string; node: ReactNode }[] = []
-  if (focusRunning) {
-    chips.push({
-      key: 'focus',
-      label: 'تایمر تمرین',
-      node: (
-        <span className="chip chip-accent" title="تایمر تمرین">
-          <TimerIcon size={13} />
-          {toPersianDigits(`${Math.floor(focusLeft / 60)}:${`${Math.floor(focusLeft % 60)}`.padStart(2, '0')}`)}
-        </span>
-      )
-    })
-  }
-  if (battery != null && !charging && battery <= 30) {
-    chips.push({
-      key: 'battery',
-      label: 'باتری کم',
-      node: (
-        <span className="chip chip-warn" title="باتری کم">
-          {toPersianDigits(battery)}٪
-        </span>
-      )
-    })
-  }
-  if (event) {
-    const name = shortEvent(event.title)
-    chips.push({
-      key: 'event',
-      label: event.title,
-      node: (
-        <span className="chip chip-event" title={event.title}>
-          <CalendarIcon size={12} />
-          <span className="chip-text">
-            {event.days === 0
-              ? name
-              : event.days === 1
-                ? `فردا · ${name}`
-                : `${toPersianDigits(event.days)} روز تا ${name}`}
-          </span>
-        </span>
-      )
-    })
-  }
-  if (water && waterLeft > 0) {
-    chips.push({
-      key: 'water',
-      label: 'آب خوردهٔ امروز',
-      node: (
-        <span className="chip" title="آب خوردهٔ امروز">
-          <WaterIcon size={13} />
-          {formatLitres(water.total)}
-        </span>
-      )
-    })
-  }
-  if (charging && battery != null) {
-    chips.push({
-      key: 'charging',
-      label: 'در حال شارژ',
-      node: (
-        <span className="chip chip-accent" title="در حال شارژ">
-          <BoltIcon size={13} />
-          {toPersianDigits(battery)}٪
-        </span>
-      )
-    })
-  }
-  const hiddenChips = chips.slice(2)
 
   const [sleepy, setSleepy] = useState(false)
   useEffect(() => {
-    let timer = setTimeout(() => setSleepy(true), 75_000)
+    let timer = window.setTimeout(() => setSleepy(true), 75_000)
     const wake = () => {
       setSleepy(false)
-      clearTimeout(timer)
-      timer = setTimeout(() => setSleepy(true), 75_000)
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => setSleepy(true), 75_000)
     }
     window.addEventListener('mousemove', wake)
     window.addEventListener('keydown', wake)
     return () => {
-      clearTimeout(timer)
+      window.clearTimeout(timer)
       window.removeEventListener('mousemove', wake)
       window.removeEventListener('keydown', wake)
     }
   }, [])
 
-  if (minimal) {
+  const clock = formatClock(now, false, hour24)
+
+  if (!expanded) {
     return (
-      <button
-        type="button"
-        className="bar bar-minimal"
-        onClick={onOpen}
-        onDoubleClick={onToggleMinimal}
-        title="Qio — برای باز کردن کلیک کن"
-      >
-        <span className="bar-minimal-line" style={{ transform: `scaleX(${0.3 + progress * 0.7})` }} />
-      </button>
+      <div className={`bar${minimal ? ' minimal' : ''}`} onClick={onOpen} title="باز کردن Qio">
+        <span className="bar-side">
+          {battery != null ? (
+            <BatteryRing battery={battery} charging={charging} mascot={mascot} sleepy={sleepy} />
+          ) : (
+            <span className="mascot-standalone">
+              {mascot ? <Eyes sleepy={sleepy} /> : <span className="status-pin" />}
+            </span>
+          )}
+        </span>
+        <span className="bar-clock">{clock}</span>
+        <span className={`bar-side bar-media${muted ? ' muted' : ''}`}>
+          <Equalizer playing={playing} muted={muted} />
+        </span>
+      </div>
     )
   }
 
   return (
-    <div className={`bar${expanded ? ' bar-open' : ''}`}>
-      <button type="button" className="bar-mascot" onClick={onOpen} title="باز کردن Qio">
-        {state?.settings.mascot ? (
-          <span className={`eyes${sleepy ? ' eyes-sleepy' : ''}`} aria-hidden="true">
-            <span className="eye" />
-            <span className="eye" />
-          </span>
-        ) : (
-          <span className="dot" aria-hidden="true" />
+    <header className="page-head">
+      <span className="page-title">{title}</span>
+      <span className="page-status">
+        {battery != null && (
+          <BatteryRing battery={battery} charging={charging} mascot={false} sleepy={sleepy} small />
         )}
-      </button>
-
-      <div className="bar-center">
-        {isLive && media ? (
-          <span className="bar-track">
-            {cover ? <img className="bar-cover" src={cover} alt="" /> : <span className="bar-cover bar-cover-empty" />}
-            <span className="bar-marquee">
-              <span className="bar-title">{media.title}</span>
-              <span className="bar-sep">·</span>
-              <span className="bar-artist">{media.artist || mediaAppName(media.app)}</span>
-            </span>
-            {media.duration > 0 && (
-              <span className="bar-time">
-                {formatDuration(position)} / {formatDuration(media.duration)}
-              </span>
-            )}
-          </span>
-        ) : (
-          <button type="button" className="bar-clock" onClick={onOpen} title="باز کردن Qio">
-            <span className="bar-time-main">{formatClock(now)}</span>
-            <span className="bar-date">{formatDay(now)}</span>
-          </button>
-        )}
-      </div>
-
-      <div className="bar-chips">
-        {chips.slice(0, 2).map((chip) => (
-          <Fragment key={chip.key}>{chip.node}</Fragment>
-        ))}
-        {hiddenChips.length > 0 && (
-          <span
-            className="chip chip-more"
-            title={hiddenChips.map((chip) => chip.label).join(' · ')}
-            aria-label={hiddenChips.map((chip) => chip.label).join('، ')}
-          />
-        )}
-      </div>
-
-      {media && media.duration > 0 && isLive && (
-        <span className="bar-progress" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
-      )}
-    </div>
+        <span className="page-date">{formatJalali(now)}</span>
+        <span className="page-clock">{clock}</span>
+      </span>
+      <span className="page-tools">
+        <button
+          type="button"
+          className={`tool-button${muted ? ' is-muted' : ''}`}
+          title={muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
+          aria-label={muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
+          onClick={() => void window.qio.system.setMute(!muted)}
+        >
+          <Equalizer playing={playing} muted={muted} />
+        </button>
+        <button type="button" className="tool-button" title="تنظیمات" aria-label="تنظیمات" onClick={onSettings}>
+          <SettingsIcon size={13} />
+        </button>
+      </span>
+    </header>
   )
 }

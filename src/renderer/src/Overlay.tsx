@@ -82,7 +82,6 @@ export default function Overlay() {
               <span className="overlay-label">صفحه‌کلید</span>
               <span className="overlay-note">{layoutLabel(payload.label ?? '')}</span>
             </div>
-            <span className="overlay-value">{layoutLabel(payload.label ?? '')}</span>
           </>
         )}
 

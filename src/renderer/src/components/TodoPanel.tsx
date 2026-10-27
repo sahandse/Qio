@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import type { AppState } from '@shared/types'
-import { formatDueTime } from '../lib/format'
+import type { AppState, Todo } from '@shared/types'
+import { formatClock, formatDueTime, relativeDay } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { CloseIcon, TodoIcon } from './Icons'
+import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, TrashIcon } from './Icons'
 
 type DueKind = 'none' | '30m' | '1h' | '3h' | 'tonight' | 'tomorrow'
 
@@ -32,120 +32,150 @@ function dueToTimestamp(kind: DueKind): number | null {
   }
 }
 
+function dueShort(todo: Todo, hour24: boolean): string {
+  if (!todo.dueAt) return ''
+  if (todo.dueAt < Date.now()) return 'گذشته'
+  const date = new Date(todo.dueAt)
+  const day = relativeDay(date)
+  return day === 'امروز' ? formatClock(date, false, hour24) : day
+}
+
 export function TodoPanel({ state }: { state: AppState | null }) {
   const todos = state?.todos ?? []
+  const hour24 = state?.system.hour24 ?? true
   const [text, setText] = useState('')
-  const [due, setDue] = useState<DueKind>('none')
-  const [showDone, setShowDone] = useState(false)
+  const [due, setDue] = useState<DueKind>('30m')
+  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState(false)
 
-  const open = useMemo(
-    () => todos.filter((todo) => !todo.done).sort((a, b) => (a.dueAt ?? Infinity) - (b.dueAt ?? Infinity)),
-    [todos]
-  )
   const done = useMemo(() => todos.filter((todo) => todo.done), [todos])
+  const list = useMemo(() => {
+    const open = todos
+      .filter((todo) => !todo.done)
+      .sort((a, b) => (a.dueAt ?? Infinity) - (b.dueAt ?? Infinity))
+    const finished = done.slice().sort((a, b) => (b.dueAt ?? b.createdAt) - (a.dueAt ?? a.createdAt))
+    return [...open, ...finished]
+  }, [todos, done])
 
   const submit = () => {
     const value = text.trim()
     if (!value) return
     void window.qio.todos.add(value, dueToTimestamp(due))
     setText('')
-    setDue('none')
+    setAdding(false)
   }
 
   return (
-    <div className="todo">
-      <form
-        className="todo-add"
-        onSubmit={(event) => {
-          event.preventDefault()
-          submit()
-        }}
-      >
-        <input
-          className="input"
-          placeholder="یک کار اضافه کن…"
-          value={text}
-          maxLength={200}
-          onChange={(event) => setText(event.target.value)}
-        />
-        <select className="select" value={due} onChange={(event) => setDue(event.target.value as DueKind)}>
-          <option value="none">بدون یادآور</option>
-          <option value="30m">۳۰ دقیقهٔ دیگر</option>
-          <option value="1h">۱ ساعت دیگر</option>
-          <option value="3h">۳ ساعت دیگر</option>
-          <option value="tonight">امشب ۲۰:۰۰</option>
-          <option value="tomorrow">فردا ۰۹:۰۰</option>
-        </select>
-        <button type="submit" className="button primary" disabled={!text.trim()}>
-          افزودن
-        </button>
-      </form>
+    <div className="todo-page">
+      <div className="todo-side">
+        <span className="todo-count">
+          {toPersianDigits(done.length)}
+          <span className="todo-slash">/</span>
+          {toPersianDigits(todos.length)}
+        </span>
+        <span className="todo-label">کار انجام‌شده</span>
+        <div className="todo-buttons">
+          <button
+            type="button"
+            className={`pill primary${adding ? ' on' : ''}`}
+            onClick={() => {
+              setAdding((value) => !value)
+              setEditing(false)
+            }}
+            title="افزودن کار"
+          >
+            <PlusIcon size={11} /> افزودن
+          </button>
+          <button
+            type="button"
+            className={`pill${editing ? ' on' : ''}`}
+            onClick={() => {
+              setEditing((value) => !value)
+              setAdding(false)
+            }}
+            title="ویرایش فهرست"
+          >
+            <PencilIcon size={11} />
+          </button>
+        </div>
+      </div>
 
-      <div className="todo-list">
-        {open.length === 0 && (
-          <div className="todo-empty">
-            <TodoIcon size={24} />
-            <span className="panel-hint">
-              کاری برای امروز نمانده است. یک کار با زمان اضافه کن تا Qio موقعش خبرت کند.
-            </span>
+      <div className="todo-content">
+        {adding ? (
+          <form
+            className="todo-form"
+            onSubmit={(event) => {
+              event.preventDefault()
+              submit()
+            }}
+          >
+            <div className="todo-form-top">
+              <input
+                className="mini-input"
+                autoFocus
+                placeholder="چه کاری؟"
+                value={text}
+                maxLength={200}
+                onChange={(event) => setText(event.target.value)}
+              />
+              <button type="button" className="round round-quiet" onClick={() => setAdding(false)} title="بستن">
+                <CloseIcon size={11} />
+              </button>
+            </div>
+            <div className="todo-form-row">
+              <select className="mini-select" value={due} onChange={(event) => setDue(event.target.value as DueKind)}>
+                <option value="none">بدون زمان</option>
+                <option value="30m">۳۰ دقیقه</option>
+                <option value="1h">۱ ساعت</option>
+                <option value="3h">۳ ساعت</option>
+                <option value="tonight">امشب</option>
+                <option value="tomorrow">فردا</option>
+              </select>
+              <button type="submit" className="pill primary" disabled={!text.trim()}>
+                ثبت
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="todo-list" data-scroll>
+            {list.length === 0 && <p className="page-note">فهرست خالی است — یک کار با زمان اضافه کن تا Qio خبرت کند.</p>}
+            {list.map((todo) => (
+              <div key={todo.id} className={`todo-row${todo.done ? ' done' : ''}`}>
+                <button
+                  type="button"
+                  className={`todo-check${todo.done ? ' on' : ''}`}
+                  onClick={() => void window.qio.todos.update(todo.id, { done: !todo.done })}
+                  title={todo.done ? 'برگرداندن' : 'انجام شد'}
+                  aria-label={todo.done ? 'برگرداندن' : 'انجام شد'}
+                >
+                  {todo.done && <CheckIcon size={10} />}
+                </button>
+                <span className="todo-text" dir="auto" title={todo.text}>
+                  {todo.text}
+                </span>
+                {todo.dueAt && <span className={`todo-due${todo.dueAt < Date.now() && !todo.done ? ' late' : ''}`}>{dueShort(todo, hour24)}</span>}
+                {editing && (
+                  <button
+                    type="button"
+                    className="todo-delete"
+                    onClick={() => void window.qio.todos.remove(todo.id)}
+                    title={todo.dueAt ? formatDueTime(todo.dueAt) : 'حذف'}
+                    aria-label="حذف"
+                  >
+                    <TrashIcon size={11} />
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
-        {open.map((todo) => {
-          const overdue = Boolean(todo.dueAt && todo.dueAt < Date.now())
-          return (
-            <label className={`todo-row${overdue ? ' overdue' : ''}`} key={todo.id}>
-              <input
-                type="checkbox"
-                checked={todo.done}
-                onChange={() => void window.qio.todos.update(todo.id, { done: true })}
-              />
-              <span className="todo-text" dir="auto">
-                {todo.text}
-              </span>
-              {todo.dueAt && <span className="todo-due">{formatDueTime(todo.dueAt)}</span>}
-              <button
-                type="button"
-                className="icon-button tiny"
-                title="حذف"
-                onClick={(event) => {
-                  event.preventDefault()
-                  void window.qio.todos.remove(todo.id)
-                }}
-              >
-                <CloseIcon size={13} />
-              </button>
-            </label>
-          )
-        })}
+        {editing && done.length > 0 && !adding && (
+          <button type="button" className="todo-clear" onClick={() => void window.qio.todos.clearDone()}>
+            پاک کردن {toPersianDigits(done.length)} کار انجام‌شده
+          </button>
+        )}
       </div>
-
-      {done.length > 0 && (
-        <div className="todo-done">
-          <button type="button" className="button ghost" onClick={() => setShowDone((value) => !value)}>
-            {showDone ? 'پنهان کردن' : 'نمایش'} {toPersianDigits(done.length)} کار انجام‌شده
-          </button>
-          <button type="button" className="button ghost" onClick={() => void window.qio.todos.clearDone()}>
-            پاک کردن انجام‌شده‌ها
-          </button>
-          {showDone && (
-            <div className="todo-done-list">
-              {done.map((todo) => (
-                <label className="todo-row done" key={todo.id}>
-                  <input
-                    type="checkbox"
-                    checked
-                    onChange={() => void window.qio.todos.update(todo.id, { done: false })}
-                  />
-                  <span className="todo-text" dir="auto">
-                    {todo.text}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }

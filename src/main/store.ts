@@ -26,6 +26,8 @@ export const defaultSettings: Settings = {
   minimalNotch: false,
   mascot: true,
   lyrics: true,
+  notchScale: 1,
+  hideFullscreen: true,
   water: {
     bottleMl: 500,
     goalMl: 2000,
@@ -56,6 +58,12 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
   return Math.min(max, Math.max(min, Math.round(n)))
 }
 
+function clampScale(value: unknown, fallback: number): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(n)) return fallback
+  return Math.round(Math.min(1.5, Math.max(0.85, n)) * 100) / 100
+}
+
 function mergeSettings(raw: unknown): Settings {
   const input = (raw ?? {}) as Partial<Settings>
   const water = (input.water ?? {}) as Partial<Settings['water']>
@@ -65,6 +73,8 @@ function mergeSettings(raw: unknown): Settings {
     minimalNotch: Boolean(input.minimalNotch ?? defaultSettings.minimalNotch),
     mascot: Boolean(input.mascot ?? defaultSettings.mascot),
     lyrics: Boolean(input.lyrics ?? defaultSettings.lyrics),
+    notchScale: clampScale(input.notchScale, defaultSettings.notchScale),
+    hideFullscreen: Boolean(input.hideFullscreen ?? defaultSettings.hideFullscreen),
     water: {
       bottleMl: clampNumber(water.bottleMl, 100, 3000, defaultSettings.water.bottleMl),
       goalMl: clampNumber(water.goalMl, 250, 8000, defaultSettings.water.goalMl),
@@ -122,7 +132,14 @@ export class Store {
         version: 1,
         settings: mergeSettings(parsed.settings),
         todos: Array.isArray(parsed.todos) ? parsed.todos.filter((t) => t && typeof t.text === 'string') : [],
-        shelf: Array.isArray(parsed.shelf) ? parsed.shelf.filter((s) => s && typeof s.path === 'string') : [],
+        shelf: Array.isArray(parsed.shelf)
+          ? parsed.shelf
+              .filter((item) => item && (item.kind === 'text' ? typeof item.text === 'string' : typeof item.path === 'string'))
+              .map((item) => ({
+                ...item,
+                kind: item.kind === 'text' ? ('text' as const) : ('file' as const)
+              }))
+          : [],
         water: {
           date: typeof parsed.water?.date === 'string' ? parsed.water.date : base.water.date,
           entries: Array.isArray(parsed.water?.entries) ? parsed.water.entries : [],
@@ -258,9 +275,17 @@ export class Store {
   }
 
   addShelf(items: Omit<ShelfItem, 'id' | 'addedAt'>[]): void {
-    const known = new Set(this.data.shelf.map((item) => item.path.toLowerCase()))
+    const keyOf = (item: Pick<ShelfItem, 'kind' | 'path' | 'text'>): string =>
+      item.kind === 'text' ? `text:${item.text ?? ''}` : item.path.toLowerCase()
+    const known = new Set(this.data.shelf.map(keyOf))
     const fresh = items
-      .filter((item) => item.path && !known.has(item.path.toLowerCase()))
+      .filter((item) => (item.kind === 'text' ? Boolean(item.text) : Boolean(item.path)))
+      .filter((item) => {
+        const key = keyOf(item)
+        if (known.has(key)) return false
+        known.add(key)
+        return true
+      })
       .map((item) => ({ ...item, id: randomUUID(), addedAt: Date.now() }))
     if (fresh.length === 0) return
     this.data.shelf = [...fresh, ...this.data.shelf].slice(0, 60)

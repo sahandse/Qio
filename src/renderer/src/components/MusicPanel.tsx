@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AppState, LyricResult, MediaState, PanelId } from '@shared/types'
-import { formatDuration, formatLitres, mediaAppName } from '../lib/format'
+import type { AppState, LyricResult, MediaState } from '@shared/types'
+import { formatDuration, formatLitres, formatRemaining, mediaAppName } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
 import { useCover, useMediaClock } from '../lib/state'
-import { LyricsIcon, MusicIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon, TimerIcon, WaterIcon } from './Icons'
+import {
+  LyricsIcon,
+  MusicIcon,
+  MuteIcon,
+  NextIcon,
+  PauseIcon,
+  PlayIcon,
+  PrevIcon,
+  VolumeIcon
+} from './Icons'
 
 function isLive(media: MediaState | null): boolean {
   return Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
@@ -51,16 +60,108 @@ function useLyrics(media: MediaState | null): { result: LyricResult | null; load
   return { result, loading }
 }
 
-function Scrubber({
-  media,
-  position
-}: {
-  media: MediaState | null
-  position: number
-}) {
-  const [scrub, setScrub] = useState<number | null>(null)
+function Cover({ cover, size }: { cover: string; size: 'big' | 'small' }) {
+  if (cover) return <img className={`cover cover-${size}`} src={cover} alt="" />
+  return (
+    <span className={`cover cover-${size} cover-empty`}>
+      <MusicIcon size={size === 'big' ? 22 : 18} />
+    </span>
+  )
+}
+
+function Transport({ media, playing, compact }: { media: MediaState | null; playing: boolean; compact?: boolean }) {
+  const size = compact ? 15 : 17
+  return (
+    <div className={`transport-center${compact ? ' compact' : ''}`}>
+      <button
+        type="button"
+        className="round"
+        onClick={() => void window.qio.media.command('previous')}
+        disabled={!media?.canPrevious}
+        title="قبلی"
+        aria-label="قبلی"
+      >
+        <PrevIcon size={size} />
+      </button>
+      <button
+        type="button"
+        className="round round-play"
+        onClick={() => void window.qio.media.command('playpause')}
+        disabled={!media}
+        title={playing ? 'توقف' : 'پخش'}
+        aria-label={playing ? 'توقف' : 'پخش'}
+      >
+        {playing ? <PauseIcon size={compact ? 17 : 19} /> : <PlayIcon size={compact ? 17 : 19} />}
+      </button>
+      <button
+        type="button"
+        className="round"
+        onClick={() => void window.qio.media.command('next')}
+        disabled={!media?.canNext}
+        title="بعدی"
+        aria-label="بعدی"
+      >
+        <NextIcon size={size} />
+      </button>
+    </div>
+  )
+}
+
+function Volume({ system }: { system: AppState['system'] }) {
+  const [draft, setDraft] = useState<number | null>(null)
+  const sentAt = useRef(0)
+  const volume = draft ?? system.volume
+  const known = volume !== null
+  const value = Math.round(volume ?? 0)
+
+  const commit = (next: number) => {
+    setDraft(next)
+    const now = Date.now()
+    if (now - sentAt.current < 90) return
+    sentAt.current = now
+    void window.qio.system.setVolume(next)
+  }
+
+  return (
+    <div className="track-volume">
+      <button
+        type="button"
+        className="round round-quiet"
+        onClick={() => void window.qio.system.setMute(!system.muted)}
+        title={system.muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
+        aria-label={system.muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
+      >
+        {system.muted ? <MuteIcon size={13} /> : <VolumeIcon size={13} />}
+      </button>
+      <input
+        className="rail vol-rail"
+        type="range"
+        min={0}
+        max={100}
+        step={1}
+        value={value}
+        disabled={!known}
+        style={{ ['--p' as string]: `${value}%` }}
+        onChange={(event) => commit(Number(event.target.value))}
+        onPointerUp={() => window.setTimeout(() => setDraft(null), 700)}
+        aria-label="صدا"
+      />
+    </div>
+  )
+}
+
+export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?: () => void }) {
+  const media = state?.media ?? null
+  const live = isLive(media)
+  const cover = useCover(live && media ? media.coverKey : '')
+  const position = useMediaClock(live ? media : null)
+  const playing = live && media?.status === 'playing'
   const duration = media?.duration ?? 0
-  const value = scrub ?? position
+  const [scrub, setScrub] = useState<number | null>(null)
+  const shown = scrub ?? position
+
+  const focusDone = state?.focus.completedToday ?? 0
+  const water = state?.water
 
   const commit = (next: number) => {
     setScrub(null)
@@ -68,120 +169,50 @@ function Scrubber({
   }
 
   return (
-    <div className="scrub">
-      <span className="scrub-time">{formatDuration(value)}</span>
-      <input
-        className="slider"
-        type="range"
-        min={0}
-        max={Math.max(1, Math.round(duration))}
-        step={1}
-        value={Math.min(value, Math.max(1, Math.round(duration)))}
-        disabled={!media || duration <= 0 || !media.canSeek}
-        onChange={(event) => setScrub(Number(event.target.value))}
-        onPointerUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
-        onKeyUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
-        aria-label="جابه‌جایی"
-      />
-      <span className="scrub-time">{formatDuration(duration)}</span>
-    </div>
-  )
-}
-
-export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?: (panel: PanelId) => void }) {
-  const media = state?.media ?? null
-  const live = isLive(media)
-  const cover = useCover(live && media ? media.coverKey : '')
-  const position = useMediaClock(live ? media : null)
-  const playing = media?.status === 'playing'
-  const focusDone = state?.focus.completedToday ?? 0
-  const waterPercent = state && state.water.goalMl > 0 ? state.water.total / state.water.goalMl : 0
-
-  return (
-    <div className="music">
-      <div className="music-head">
-        {cover ? (
-          <img className="music-cover" src={cover} alt="" />
-        ) : (
-          <span className="music-cover music-cover-empty">
-            <MusicIcon size={30} />
+    <div className="music-page">
+      <div className="track">
+        <Cover cover={cover} size="big" />
+        <div className="track-meta">
+          <span className="track-title" dir="auto">
+            {live ? media?.title : 'چیزی در حال پخش نیست'}
           </span>
-        )}
-        <div className="music-meta">
-          <span className="music-title" dir="auto">
-            {media?.title || 'چیزی در حال پخش نیست'}
+          <span className="track-sub" dir="auto">
+            {live
+              ? [media?.artist || 'بدون خواننده', mediaAppName(media?.app ?? '')].join(' · ')
+              : 'هرجای ویندوز آهنگی پخش کن'}
           </span>
-          <span className="music-artist" dir="auto">
-            {media?.artist || 'هر جای ویندوز آهنگی پخش کن'}
-          </span>
-          {media?.album && (
-            <span className="music-album" dir="auto">
-              {media.album}
-            </span>
-          )}
-          <span className="music-badge">{live ? mediaAppName(media?.app ?? '') : 'در انتظار رسانهٔ ویندوز'}</span>
         </div>
+        {state && <Volume system={state.system} />}
       </div>
 
-      <Scrubber media={live ? media : null} position={position} />
-
-      <div className="music-controls">
-        <button
-          type="button"
-          className="icon-button"
-          onClick={() => void window.qio.media.command('previous')}
-          disabled={!media?.canPrevious}
-          title="قبلی"
-        >
-          <PrevIcon size={19} />
-        </button>
-        <button
-          type="button"
-          className="icon-button primary"
-          onClick={() => void window.qio.media.command('playpause')}
-          disabled={!live}
-          title={playing ? 'توقف' : 'پخش'}
-        >
-          {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
-        </button>
-        <button
-          type="button"
-          className="icon-button"
-          onClick={() => void window.qio.media.command('next')}
-          disabled={!media?.canNext}
-          title="بعدی"
-        >
-          <NextIcon size={19} />
-        </button>
+      <div className="progress-row">
+        <span className="time">{formatDuration(shown)}</span>
+        <input
+          className="rail"
+          type="range"
+          min={0}
+          max={Math.max(1, Math.round(duration))}
+          step={1}
+          value={Math.min(shown, Math.max(1, Math.round(duration)))}
+          disabled={!live || duration <= 0 || !media?.canSeek}
+          style={{ ['--p' as string]: `${duration > 0 ? Math.min(100, (shown / duration) * 100) : 0}%` }}
+          onChange={(event) => setScrub(Number(event.target.value))}
+          onPointerUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
+          onKeyUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
+          aria-label="جابه‌جایی در آهنگ"
+        />
+        <span className="time">{formatRemaining(Math.max(0, duration - shown))}</span>
       </div>
 
-      <p className="panel-hint">
-        با هر پخش‌کننده‌ای کار می‌کند که ویندوز می‌شناسد: Spotify، Apple Music، Media Player و تب‌های Chrome، Edge یا
-        Firefox.
-      </p>
-
-      {!live && state && (
-        <div className="music-idle">
-          <button type="button" className="music-stat" onClick={() => onOpen?.('focus')}>
-            <span className="music-stat-label">
-              <TimerIcon size={13} /> تمرین امروز
-            </span>
-            <span className="music-stat-value">{toPersianDigits(focusDone)} دوره</span>
-            <small>{focusDone > 0 ? 'وقتی برگشتی، یک دورهٔ دیگر' : '۲۵ دقیقهٔ تمرین آماده است'}</small>
-          </button>
-          <button type="button" className="music-stat" onClick={() => onOpen?.('water')}>
-            <span className="music-stat-label">
-              <WaterIcon size={13} /> آب امروز
-            </span>
-            <span className="music-stat-value">
-              {formatLitres(state.water.total)} <small>از {formatLitres(state.water.goalMl)}</small>
-            </span>
-            <span className="music-stat-bar" aria-hidden="true">
-              <span className="music-stat-fill" style={{ width: `${Math.min(100, waterPercent * 100)}%` }} />
-            </span>
-          </button>
-        </div>
-      )}
+      <div className="transport">
+        <button type="button" className="transport-side" onClick={onOpen} title="متن آهنگ" aria-label="متن آهنگ">
+          <LyricsIcon size={14} />
+        </button>
+        <Transport media={live ? media : null} playing={playing} />
+        <span className="transport-stats">
+          {toPersianDigits(focusDone)} تمرکز · {water ? formatLitres(water.total) : '۰ لیتر'}
+        </span>
+      </div>
     </div>
   )
 }
@@ -194,9 +225,13 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
   const { result, loading } = useLyrics(live ? media : null)
   const listRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef<HTMLParagraphElement>(null)
+  const playing = live && media?.status === 'playing'
+  const duration = media?.duration ?? 0
+  const [scrub, setScrub] = useState<number | null>(null)
+  const shown = scrub ?? position
 
   const lines = result?.synced ?? null
-  const activeIndex = lines ? lines.reduce((index, line, i) => (line.time <= position ? i : index), -1) : -1
+  const activeIndex = lines ? lines.reduce((index, line, i) => (line.time <= shown ? i : index), -1) : -1
 
   useEffect(() => {
     if (activeIndex < 0) return
@@ -207,68 +242,85 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
     list.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   }, [activeIndex])
 
-  if (!state?.settings.lyrics) {
-    return <p className="panel-hint">متن آهنگ خاموش است. از تنظیمات روشنش کن.</p>
-  }
-
-  if (!live) {
-    return (
-      <div className="lyrics lyrics-empty">
-        <LyricsIcon size={30} />
-        <p>آهنگی پخش کن تا Qio کلماتش را پیدا کند.</p>
-        <p className="panel-hint">متن‌ها از LRCLIB می‌آیند؛ یک کتابخانهٔ رایگان مردمی.</p>
-      </div>
-    )
+  const commit = (next: number) => {
+    setScrub(null)
+    void window.qio.media.command('seek', next)
   }
 
   return (
-    <div className="lyrics">
-      <div className="lyrics-head">
-        {cover ? <img className="lyrics-cover" src={cover} alt="" /> : <span className="lyrics-cover lyrics-cover-empty" />}
-        <div className="lyrics-meta">
-          <span className="lyrics-title" dir="auto">
-            {media?.title}
-          </span>
-          <span className="lyrics-artist" dir="auto">
-            {media?.artist}
-          </span>
+    <div className="lyrics-page">
+      <div className="lyrics-side">
+        <div className="track lyrics-track">
+          <Cover cover={cover} size="small" />
+          <div className="track-meta">
+            <span className="track-title" dir="auto">
+              {live ? media?.title : 'چیزی در حال پخش نیست'}
+            </span>
+            <span className="track-sub" dir="auto">
+              {live ? media?.artist || 'بدون خواننده' : 'یک آهنگ پخش کن'}
+            </span>
+          </div>
         </div>
-        <span className="lyrics-source">{result?.synced ? 'هم‌زمان' : result?.source === 'lrclib' ? 'متنی' : ''}</span>
+
+        <div className="progress-row compact">
+          <span className="time">{formatDuration(shown)}</span>
+          <input
+            className="rail"
+            type="range"
+            min={0}
+            max={Math.max(1, Math.round(duration))}
+            step={1}
+            value={Math.min(shown, Math.max(1, Math.round(duration)))}
+            disabled={!live || duration <= 0 || !media?.canSeek}
+            style={{ ['--p' as string]: `${duration > 0 ? Math.min(100, (shown / duration) * 100) : 0}%` }}
+            onChange={(event) => setScrub(Number(event.target.value))}
+            onPointerUp={(event) => commit(Number((event.target as HTMLInputElement).value))}
+            aria-label="جابه‌جایی در آهنگ"
+          />
+          <span className="time">{formatRemaining(Math.max(0, duration - shown))}</span>
+        </div>
+
+        <Transport media={live ? media : null} playing={playing} compact />
       </div>
 
-      {loading && <p className="panel-hint">در جست‌وجوی متن…</p>}
+      <div className="lyrics-scroll" ref={listRef} data-scroll>
+        {state && !state.settings.lyrics && <p className="lyrics-note">متن آهنگ از تنظیمات خاموش است.</p>}
+        {state?.settings.lyrics && !live && (
+          <p className="lyrics-note">آهنگی پخش کن تا Qio کلماتش را پیدا کند. متن‌ها از LRCLIB می‌آیند.</p>
+        )}
+        {state?.settings.lyrics && live && loading && <p className="lyrics-note">در جست‌وجوی متن…</p>}
 
-      {!loading && lines && (
-        <>
-          <div className="lyrics-list" ref={listRef}>
+        {lines && (
+          <>
             {lines.map((line, index) => (
               <p
                 key={`${line.time}-${index}`}
                 ref={index === activeIndex ? activeRef : null}
-                className={`lyric-line${index === activeIndex ? ' lyric-line-active' : ''}`}
+                className={`lyric-line${index === activeIndex ? ' active' : ''}`}
                 onClick={() => void window.qio.media.command('seek', line.time)}
                 title="رفتن به این خط"
                 dir="auto"
               >
-                {line.text}
+                {line.text || '\u00a0'}
               </p>
             ))}
-          </div>
-          <p className="panel-hint">روی هر خط بزن تا آهنگ همان‌جا برود.</p>
-        </>
-      )}
+          </>
+        )}
 
-      {!loading && !lines && result?.plain && (
-        <div className="lyrics-list lyrics-plain">
-          {result.plain.split(/\r?\n/).map((line, index) => (
-            <p key={index} className="lyric-line" dir="auto">
-              {line || '\u00a0'}
-            </p>
-          ))}
-        </div>
-      )}
+        {!loading && !lines && result?.plain && (
+          <>
+            {result.plain.split(/\r?\n/).map((line, index) => (
+              <p key={index} className="lyric-line plain" dir="auto">
+                {line || '\u00a0'}
+              </p>
+            ))}
+          </>
+        )}
 
-      {!loading && !lines && !result?.plain && <p className="panel-hint">{lyricMessage(result?.message)}</p>}
+        {!loading && !lines && !result?.plain && live && state?.settings.lyrics && (
+          <p className="lyrics-note">{lyricMessage(result?.message)}</p>
+        )}
+      </div>
     </div>
   )
 }

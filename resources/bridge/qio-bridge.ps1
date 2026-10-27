@@ -216,6 +216,19 @@ public static class QioNative {
     if (!GetSystemPowerStatus(out status)) return false;
     return status.ACLineStatus == 1;
   }
+
+  // --- Full screen detection ---------------------------------------------
+  [DllImport("shell32.dll")]
+  private static extern int SHQueryUserNotificationState(out int state);
+
+  public static bool Fullscreen() {
+    try {
+      int state;
+      if (SHQueryUserNotificationState(out state) != 0) return false;
+      // QUNS_BUSY covers a full-screen app; QUNS_RUNNING_D3D_FULL_SCREEN covers games.
+      return state == 2 || state == 3;
+    } catch { return false; }
+  }
 }
 '@
 
@@ -248,6 +261,33 @@ $script:LastCaps = $null
 $script:LastLayout = $null
 $script:LastBattery = $null
 $script:LastCharging = $null
+$script:LastHour24 = $null
+$script:LastFullscreen = $null
+$script:LastHeadphones = $null
+$script:LastHeadphoneAt = [Environment]::TickCount
+
+function Test-Hour24 {
+  try {
+    $value = (Get-ItemProperty -LiteralPath 'HKCU:\Control Panel\International' -Name iTime -ErrorAction Stop).iTime
+    return ([string]$value -eq '1')
+  } catch { return $true }
+}
+
+# Active render endpoints live in the registry; headphones are whichever one
+# carries a headphone-ish friendly name. Cheaper and steadier than WMI pollers.
+function Test-Headphones {
+  $root = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio\Render'
+  try {
+    foreach ($key in Get-ChildItem -LiteralPath $root -ErrorAction Stop) {
+      $state = (Get-ItemProperty -LiteralPath $key.PSPath -Name DeviceState -ErrorAction SilentlyContinue).DeviceState
+      if ($state -ne 1) { continue }
+      $props = Join-Path $key.PSPath 'Properties'
+      $name = (Get-ItemProperty -LiteralPath $props -ErrorAction SilentlyContinue).'{a45c254e-df1c-4efd-8020-67d146a850e0},2'
+      if ($name -and $name -match '(?i)headphone|headset|earphone|هدفون') { return [string]$name }
+    }
+  } catch { }
+  return ''
+}
 
 function Send-NativeSnapshot {
   param([switch]$IncludeSlow)
@@ -284,6 +324,29 @@ function Send-NativeSnapshot {
     Send-Event 'power' @{ battery = $battery; charging = $charging }
     $script:LastBattery = $battery
     $script:LastCharging = $charging
+  }
+
+  $hour24 = Test-Hour24
+  if ($hour24 -ne $script:LastHour24) {
+    Send-Event 'hour24' @{ hour24 = $hour24 }
+    $script:LastHour24 = $hour24
+  }
+
+  $fullscreen = [QioNative]::Fullscreen()
+  if ($fullscreen -ne $script:LastFullscreen) {
+    Send-Event 'fullscreen' @{ fullscreen = $fullscreen }
+    $script:LastFullscreen = $fullscreen
+  }
+
+  $tick = [Environment]::TickCount
+  if (($tick - $script:LastHeadphoneAt) -ge 10000) {
+    $script:LastHeadphoneAt = $tick
+    $name = Test-Headphones
+    $connected = [bool]$name
+    if ($connected -ne $script:LastHeadphones) {
+      Send-Event 'headphones' @{ connected = $connected; name = $name }
+      $script:LastHeadphones = $connected
+    }
   }
 }
 

@@ -1,7 +1,8 @@
 import { formatJalali, toPersianDigits, WEEKDAYS_NARROW, weekdayIndex } from './jalali'
 
-export function formatClock(date: Date, withSeconds = false): string {
-  const hours = `${date.getHours()}`.padStart(2, '0')
+export function formatClock(date: Date, withSeconds = false, hour24 = true): string {
+  const rawHours = hour24 ? date.getHours() : ((date.getHours() + 11) % 12) + 1
+  const hours = `${rawHours}`.padStart(2, '0')
   const minutes = `${date.getMinutes()}`.padStart(2, '0')
   const seconds = `${date.getSeconds()}`.padStart(2, '0')
   return toPersianDigits(withSeconds ? `${hours}:${minutes}:${seconds}` : `${hours}:${minutes}`)

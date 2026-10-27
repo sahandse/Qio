@@ -184,3 +184,51 @@ export const ChevronLeftIcon = (props: IconProps) => (
     <path d="M14.5 6.5L9 12l5.5 5.5" />
   </Icon>
 )
+
+export const ResetIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M19 12a7 7 0 1 1-2.1-5M19 4.5V9h-4.5" />
+  </Icon>
+)
+
+export const CopyIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="8.5" y="8.5" width="11" height="11" rx="2.2" />
+    <path d="M15.5 8.5v-2A2 2 0 0 0 13.5 4.5h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" />
+  </Icon>
+)
+
+export const CheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5.5 12.5l4.2 4.2L18.5 8" strokeWidth={2.4} />
+  </Icon>
+)
+
+export const PencilIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4.5 19.5l.9-4.2L15.9 4.8a2 2 0 0 1 2.8 0l.5.5a2 2 0 0 1 0 2.8L8.7 18.6z" />
+    <path d="M13.8 6.9l3.3 3.3" />
+  </Icon>
+)
+
+export const HeadphonesIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2" />
+    <rect x="3.5" y="13.5" width="4" height="6.5" rx="2" />
+    <rect x="16.5" y="13.5" width="4" height="6.5" rx="2" />
+  </Icon>
+)
+
+export const WifiIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3.5 9.5a13 13 0 0 1 17 0M6.5 13a8.5 8.5 0 0 1 11 0M9.6 16.4a4 4 0 0 1 4.8 0" />
+    <path d="M12 19.4h.01" />
+  </Icon>
+)
+
+export const TextCardIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="4" y="4.5" width="16" height="15" rx="2.4" />
+    <path d="M8 9h8M8 12.5h8M8 16h5" />
+  </Icon>
+)

@@ -1,11 +1,11 @@
-import { app, ipcMain, nativeImage, shell } from 'electron'
-import { statSync } from 'node:fs'
+import { BrowserWindow, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
+import { existsSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import type { AppState, MediaCommand, Nudge, Settings } from '@shared/types'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
 import { fetchLyrics } from './lyrics'
-import { hideOverlay, sendToNotch, sizeNotch } from './windows'
+import { hideOverlay, openSettingsWindow, sendToNotch, sizeNotch } from './windows'
 
 export interface IpcContext {
   store: Store
@@ -61,11 +61,12 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('water:remove', (_event, id: string) => store.removeWaterEntry(id))
 
   ipcMain.handle('shelf:add', (_event, paths: string[]) => {
-    const items: { path: string; name: string; size: number; isDir: boolean }[] = []
+    const items: { kind: 'file'; path: string; name: string; size: number; isDir: boolean }[] = []
     for (const path of Array.isArray(paths) ? paths : []) {
       try {
         const info = statSync(path)
         items.push({
+          kind: 'file',
           path,
           name: basename(path) || path,
           size: info.isDirectory() ? 0 : info.size,
@@ -79,20 +80,49 @@ export function registerIpc(ctx: IpcContext): void {
     return items.length
   })
 
+  ipcMain.handle('shelf:add-text', async () => {
+    const text = (await clipboard.readText()).trim()
+    if (!text) return false
+    const firstLine = text.split(/\r?\n/).find((line: string) => line.trim()) ?? text
+    store.addShelf([
+      {
+        kind: 'text',
+        path: '',
+        name: firstLine.trim().slice(0, 80),
+        size: text.length,
+        isDir: false,
+        text: text.slice(0, 20_000)
+      }
+    ])
+    return true
+  })
+
+  ipcMain.handle('shelf:copy', async (_event, id: string) => {
+    const item = store.shelf.find((entry) => entry.id === id)
+    if (!item) return false
+    await clipboard.writeText(item.kind === 'text' ? (item.text ?? '') : item.path)
+    return true
+  })
+
   ipcMain.handle('shelf:remove', (_event, id: string) => store.removeShelf(id))
   ipcMain.handle('shelf:clear', () => store.clearShelf())
 
   ipcMain.handle('shelf:open', async (_event, id: string) => {
     const item = store.shelf.find((entry) => entry.id === id)
     if (!item) return false
+    if (item.kind === 'text') {
+      clipboard.writeText(item.text ?? '')
+      return true
+    }
     const error = await shell.openPath(item.path)
-    if (error) ctx.raiseNudge('lyrics', 'این فایل باز نشد', error)
+    if (error) ctx.raiseNudge('shelf', 'این فایل باز نشد', error)
     return !error
   })
 
   ipcMain.handle('shelf:reveal', (_event, id: string) => {
     const item = store.shelf.find((entry) => entry.id === id)
     if (!item) return false
+    if (item.kind === 'text') return false
     if (item.isDir) {
       void shell.openPath(item.path)
     } else {
@@ -103,7 +133,7 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.handle('shelf:icon', async (_event, id: string) => {
     const item = store.shelf.find((entry) => entry.id === id)
-    if (!item) return ''
+    if (!item || item.kind === 'text') return ''
     const cached = iconCache.get(item.path)
     if (cached) return cached
     try {
@@ -116,19 +146,20 @@ export function registerIpc(ctx: IpcContext): void {
     }
   })
 
-  ipcMain.on('shelf:drag', async (event, id: string) => {
-    const item = store.shelf.find((entry) => entry.id === id)
-    if (!item) return
+  ipcMain.on('shelf:drag', async (event, ids: string[]) => {
+    const items = store.shelf.filter((entry) => Array.isArray(ids) && ids.includes(entry.id))
+    const files = items.filter((item) => item.kind === 'file' && existsSync(item.path)).map((item) => item.path)
+    if (files.length === 0) return
     const fallback = nativeImage.createFromPath(join(app.getAppPath(), 'resources', 'tray.png'))
     let icon = fallback
     try {
-      const fileIcon = await app.getFileIcon(item.path, { size: 'normal' })
+      const fileIcon = await app.getFileIcon(files[0], { size: 'normal' })
       if (!fileIcon.isEmpty()) icon = fileIcon
     } catch {
       // Keep the Qio icon when Windows has no file icon to offer.
     }
     try {
-      event.sender.startDrag({ file: item.path, icon })
+      event.sender.startDrag({ file: files[0], files, icon })
     } catch (error) {
       console.error('[qio] drag out failed', error)
     }
@@ -157,6 +188,13 @@ export function registerIpc(ctx: IpcContext): void {
     return true
   })
   ipcMain.handle('window:visible', (_event, visible: boolean) => ctx.setNotchVisible(Boolean(visible)))
+  ipcMain.handle('window:settings', () => {
+    openSettingsWindow()
+    return true
+  })
+  ipcMain.handle('window:close', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close()
+  })
   ipcMain.handle('window:quit', () => app.quit())
   ipcMain.handle('window:external', async (_event, url: string) => {
     if (typeof url === 'string' && isWebUrl(url)) await shell.openExternal(url)
