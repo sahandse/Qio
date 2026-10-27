@@ -1,0 +1,154 @@
+/** Types shared by the main process, the preload bridge and the renderer. */
+
+export type PanelId = 'music' | 'lyrics' | 'focus' | 'water' | 'shelf' | 'todo' | 'settings'
+
+export interface WaterSettings {
+  bottleMl: number
+  goalMl: number
+  startHour: number
+  endHour: number
+  remindEveryMin: number
+  reminders: boolean
+}
+
+export interface FocusSettings {
+  workMin: number
+  shortBreakMin: number
+  longBreakMin: number
+  longBreakEvery: number
+  chime: boolean
+}
+
+export interface Settings {
+  startWithWindows: boolean
+  minimalNotch: boolean
+  mascot: boolean
+  lyrics: boolean
+  water: WaterSettings
+  focus: FocusSettings
+}
+
+export interface Todo {
+  id: string
+  text: string
+  done: boolean
+  createdAt: number
+  dueAt: number | null
+  notified: boolean
+}
+
+export interface ShelfItem {
+  id: string
+  path: string
+  name: string
+  size: number
+  isDir: boolean
+  addedAt: number
+}
+
+export interface WaterEntry {
+  id: string
+  ml: number
+  at: number
+}
+
+export interface WaterDay {
+  date: string
+  total: number
+}
+
+export interface WaterState {
+  date: string
+  entries: WaterEntry[]
+  total: number
+  goalMl: number
+  days: WaterDay[]
+  lastDrinkAt: number | null
+}
+
+export type FocusMode = 'work' | 'short' | 'long'
+
+export interface FocusState {
+  mode: FocusMode
+  /** Wall-clock end of the running session, or null when idle. */
+  endsAt: number | null
+  running: boolean
+  /** Milliseconds left in a paused session, so pause survives a restart. */
+  pausedMs: number
+  round: number
+  completedToday: number
+  day: string
+}
+
+export type PlaybackStatus = 'playing' | 'paused' | 'stopped' | 'unavailable'
+
+export interface MediaState {
+  status: PlaybackStatus
+  title: string
+  artist: string
+  album: string
+  duration: number
+  position: number
+  app: string
+  coverKey: string
+  canNext: boolean
+  canPrevious: boolean
+  canSeek: boolean
+  receivedAt: number
+}
+
+export interface SystemState {
+  volume: number | null
+  muted: boolean
+  brightness: number | null
+  capsLock: boolean
+  layout: string
+  battery: number | null
+  charging: boolean | null
+  startWithWindows: boolean
+}
+
+export interface AppState {
+  settings: Settings
+  todos: Todo[]
+  shelf: ShelfItem[]
+  water: WaterState
+  focus: FocusState
+  media: MediaState | null
+  system: SystemState
+  version: string
+}
+
+export type MediaCommand = 'playpause' | 'play' | 'pause' | 'next' | 'previous' | 'seek'
+
+export interface LyricLine {
+  time: number
+  text: string
+}
+
+export interface LyricResult {
+  synced: LyricLine[] | null
+  plain: string | null
+  instrumental: boolean
+  source: 'lrclib' | 'none'
+  message?: string
+}
+
+export type NudgeKind = 'water' | 'focus' | 'todo' | 'power' | 'lyrics' | 'shelf'
+
+export interface Nudge {
+  id: string
+  kind: NudgeKind
+  title: string
+  detail?: string
+}
+
+export interface OverlayPayload {
+  kind: 'volume' | 'brightness' | 'capslock' | 'layout' | 'power'
+  value?: number
+  muted?: boolean
+  capsLock?: boolean
+  label?: string
+  battery?: number
+  charging?: boolean
+}
