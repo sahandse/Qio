@@ -1,78 +1,106 @@
 # Qio
 
-A living notch for the top edge of your Windows screen. Qio shows what's playing with
-synced lyrics, a Pomodoro timer, a water reminder, a file shelf and a to-do list — then
-quietly gets out of the way when you are not looking.
+**یک نچ زنده بالای صفحه ویندوز.**
 
-Windows 10 (1809+) and Windows 11, 64-bit. Electron + Vite + React + TypeScript, no
-native modules.
+Qio لبهٔ بالایی صفحهٔ ویندوز را به یک نچ کوچک و زنده تبدیل می‌کند: آهنگ در حال پخش با متن هم‌زمان، تایمر پومودورو، یادآور آب، قفسهٔ فایل و لیست کارها — و وقتی کاری ندارید، بی‌صدا کنار می‌رود.
 
-## Features
+ویندوز ۱۰ (نسخه ۱۸۰۹ به بعد) و ویندوز ۱۱، ۶۴ بیت. ساخته‌شده با Electron + Vite + React + TypeScript، بدون ماژول نیتیو.
 
-- **Notch window** — frameless, transparent, always on top, pinned to the top centre of
-  the screen. It sits collapsed until you hover it, expands to the active panel, and
-  collapses again when you move away. `Minimal notch` turns the collapsed state into a
-  thin line for laptops with a thick top bezel.
-- **Now playing** — anything that appears in the Windows media overlay (Spotify, Apple
-  Music, browsers, Windows Media Player): artwork, title/artist, play/pause, next,
-  previous and seek, driven by SMTC.
-- **Synced lyrics** — fetched from [LRCLIB](https://lrclib.net); each line lights up as
-  it is sung and clicking a line jumps to that point in the song.
-- **Focus timer** — Pomodoro work/short/long rounds with a soft chime when a round ends;
-  the countdown stays visible in the collapsed notch.
-- **Water reminder** — bottle size, daily goal and reminder hours, a per-day chart, and a
-  nudge when a reminder is due.
-- **File shelf** — drag files onto the notch to keep them close, drag them back out into
-  a chat or folder. Qio stores the paths, never copies the files.
-- **To-do** — tasks with an optional due time; the notch nudges you when one is due.
-- **Overlays** — volume, brightness, Caps Lock and keyboard-layout changes show a small
-  pill under the notch; battery, charging and headphone events raise a nudge.
-- **Mascot** — when the PC has been quiet, the clock fades and a pair of eyes appears,
-  dozes off, and waves hello when you come back.
-- **Tray + settings** — start with Windows, mascot, minimal notch, lyrics and the
-  reminder/focus timings, all reachable from the tray icon.
+---
 
-Everything is stored locally (a JSON file in the app data folder). No accounts, no
-analytics; the only network calls are to LRCLIB for lyrics.
+## قابلیت‌ها
 
-## Development
+- **پنجرهٔ نچ** — بدون قاب، شفاف، همیشه روی بقیه پنجره‌ها، در مرکز بالای صفحه. جمع‌شده منتظر می‌ماند، با حرکت ماوس باز می‌شود و با دور شدن دوباره جمع می‌شود. حالت «نچ حداقلی» حالت جمع‌شده را به یک خط نازک تبدیل می‌کند (برای لپ‌تاپ‌هایی با حاشیهٔ بالای ضخیم).
+- **آهنگ در حال پخش** — هر پخش‌کننده‌ای که در پنل رسانهٔ ویندوز دیده شود (Spotify، Apple Music، مرورگرها، Windows Media Player): تصویر آلبوم، عنوان/خواننده، پخش/توقف، بعدی/قبلی و جابه‌جایی موقعیت، همه از طریق SMTC.
+- **متن هم‌زمان آهنگ** — دریافت متن از [LRCLIB](https://lrclib.net)؛ هر خط هنگام خوانده‌شدن روشن می‌شود و کلیک روی هر خط به همان نقطهٔ آهنگ می‌رود.
+- **تایمر تمرین (پومودورو)** — دوره‌های کار/استراحت کوتاه/استراحت بلند با صدای زنگ نرم؛ شمارش معکوس در حالت جمع‌شدهٔ نچ هم دیده می‌شود.
+- **یادآور آب** — اندازهٔ بطری، هدف روزانه و ساعات یادآوری، نمودار روزانه و یک یادداشت کوتاه داخل نچ وقتی زمان نوشیدن رسید.
+- **قفسهٔ فایل** — فایل‌ها را روی نچ بکشید تا نزدیکتان بماند، بعد بیرون بکشید داخل چت یا پوشهٔ دیگر. Qio فقط مسیر فایل را نگه می‌دارد، کپی نمی‌کند.
+- **لیست کارها** — وظیفه با زمان دلخواه؛ وقتی موعد رسید نچ به شما یادآوری می‌کند.
+- **اورلی‌ها** — صدا، روشنایی، Caps Lock و تغییر زبان صفحه‌کلید یک کوچک زیر نچ نشان می‌دهند؛ باتری، شارژ و اتصال هدفون هم یک اعلان کوتاه می‌دهند.
+- **ماسکوت** — وقتی سیستم مدتی بی‌کار بود، ساعت کنار می‌رود و یک جفت چشم ظاهر می‌شود، خوابش می‌گیرد و با برگشتن شما سلام می‌کند.
+- **سینی (Tray) و تنظیمات** — اجرا هنگام ورود به ویندوز، ماسکوت، نچ حداقلی، متن آهنگ و تنظیمات یادآوری/تایمر، همه از آیکون کنار ساعت.
+
+همهٔ داده‌ها به‌صورت محلی (یک فایل JSON در پوشهٔ دادهٔ برنامه) ذخیره می‌شوند؛ بدون حساب کاربری و بدون ردیابی. تنها ارتباط شبکه، دریافت متن آهنگ از LRCLIB است.
+
+---
+
+## نصب
+
+### روش ۱: نصب‌کنندهٔ آماده (پیشنهادی)
+
+1. به بخش [Releases](../../releases) مخزن بروید و فایل `Qio-Setup-x.y.z.exe` (یا ZIP آن) را دانلود کنید.
+2. فایل را اجرا کنید. نصب بدون دسترسی Administrator انجام می‌شود (نصب فقط برای کاربر فعلی).
+3. بعد از نصب، آیکون Qio در کنار ساعت دیده می‌شود و نچ بالای صفحه ظاهر می‌شود.
+
+> اگر ویندوز هشدار «Windows protected your PC» را نشان داد: روی **More info** بزنید و سپس **Run anyway** را بزنید. این هشدار برای برنامه‌های جدید و امضا‌نشدهٔ عادی است.
+
+برای حذف برنامه: **Settings → Apps → Qio → Uninstall**.
+
+### روش ۲: ساخت از روی کد
+
+پیش‌نیازها: **Node.js 20 یا جدیدتر** و **npm**، روی ویندوز ۱۰/۱۱ (۶۴ بیت).
+
+```bash
+git clone https://github.com/sahandse/qio.git
+cd qio
+npm install        # نصب وابستگی‌ها
+npm run dist       # ساخت نصب‌کنندهٔ ویندوز (NSIS)
+```
+
+نصب‌کنندهٔ ساخته‌شده در پوشهٔ `release/` قرار می‌گیرد؛ آن را اجرا کنید و تمام.
+
+---
+
+## اجرا برای توسعه
 
 ```bash
 npm install
-npm run dev        # electron-vite dev with hot reload
-npm run typecheck  # tsc over the node and web projects
+npm run dev        # اجرای dev با hot reload
+npm run typecheck  # بررسی انواع (tsc) روی پروژه‌های node و web
 ```
 
-`QIO_SELFCHECK=1 npm run dev` prints one line of runtime state (media, volume, battery)
-to the console — a quick smoke test that the Windows bridge is connected.
-
-## Build
+اجرای smoke-test و بررسی اتصال پل ویندوز:
 
 ```bash
-npm run icons      # regenerate resources/*.png from the script in scripts/
-npm run dist       # electron-vite build + electron-builder --win (NSIS installer)
+QIO_SELFCHECK=1 npm run dev
 ```
 
-The installer lands in `release/`. Building a Windows installer must run on Windows.
+یک خط وضعیت (آهنگ، صدا، باتری) در کنسول چاپ می‌شود.
 
-## How it is put together
+### دستورهای دیگر
+
+| دستور | کار |
+| --- | --- |
+| `npm run build` | ساخت خروجی نهایی در `out/` |
+| `npm run start` | پیش‌نمایش نسخهٔ ساخته‌شده |
+| `npm run icons` | بازتولید آیکون‌ها با `scripts/make-icons.mjs` |
+| `npm run dist` | ساخت نصب‌کنندهٔ ویندوز (فقط روی ویندوز) |
+
+---
+
+## ساختار پروژه
 
 ```
-src/main/       Electron main: notch/overlay windows, tray, store, nudges, IPC
+src/main/        فرآیند اصلی الکترون: پنجره‌های نچ و اورلی، سینی، ذخیره‌سازی، اعلان‌ها، IPC
 src/main/bridge.ts
-                Spawns resources/bridge/qio-bridge.ps1 (one long-lived PowerShell
-                process) and talks to it over a local TCP socket with newline-delimited
-                JSON. The bridge is what knows Windows: SMTC media transport and
-                metadata, core audio volume, brightness, Caps Lock, keyboard layout,
-                battery and charging.
-src/preload/    contextBridge API exposed to the renderer
-src/renderer/   React UI: the notch bar and its panels, plus the overlay pill window
-src/shared/     Types shared by all three processes
+                 اسکریپت resources/bridge/qio-bridge.ps1 را اجرا می‌کند (یک پروسهٔ
+                 PowerShell بلندمدت) و از طریق سوکت TCP محلی با JSON هر خطی
+                 (JSONL) با آن حرف می‌زند. این پل همان بخشی است که ویندوز را می‌شناسد:
+                 پخش SMTC، صدا، روشنایی، Caps Lock، زبان صفحه‌کلید، باتری و شارژ.
+src/preload/     API پل (`contextBridge`) که در اختیار رندرر است
+src/renderer/    رابط کاربری React: نوار نچ و پنل‌ها + پنجرهٔ اورلی
+src/shared/      انواع (Types) مشترک بین هر سه فرآیند
 ```
 
-The bridge script is shipped as a resource (`resources/bridge` → `bridge/` next to the
-app), so it is read from disk at runtime rather than bundled into `out/`.
+اسکریپت پل به‌عنوان منبع همراه برنامه ارسال می‌شود (`resources/bridge` → `bridge/` کنار فایل اجرایی)، پس در نسخهٔ بسته‌بندی‌شده از روی دیسک خوانده می‌شود و داخل `out/` بسته‌بندی نمی‌شود.
 
-## License
+---
+
+## مشارکت
+
+issue و pull request فرقی نمی‌کند؛ هر ایده یا گزارش باگ خوش‌آمد است.
+
+## مجوز
 
 MIT
