@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AppState, LyricResult, MediaState } from '@shared/types'
-import { formatDuration, mediaAppName } from '../lib/format'
+import type { AppState, LyricResult, MediaState, PanelId } from '@shared/types'
+import { formatDuration, formatLitres, mediaAppName } from '../lib/format'
+import { toPersianDigits } from '../lib/jalali'
 import { useCover, useMediaClock } from '../lib/state'
-import { LyricsIcon, MusicIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon } from './Icons'
+import { LyricsIcon, MusicIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon, TimerIcon, WaterIcon } from './Icons'
 
 function isLive(media: MediaState | null): boolean {
   return Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
@@ -87,12 +88,14 @@ function Scrubber({
   )
 }
 
-export function MusicPanel({ state }: { state: AppState | null }) {
+export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?: (panel: PanelId) => void }) {
   const media = state?.media ?? null
   const live = isLive(media)
   const cover = useCover(live && media ? media.coverKey : '')
   const position = useMediaClock(live ? media : null)
   const playing = media?.status === 'playing'
+  const focusDone = state?.focus.completedToday ?? 0
+  const waterPercent = state && state.water.goalMl > 0 ? state.water.total / state.water.goalMl : 0
 
   return (
     <div className="music">
@@ -156,6 +159,29 @@ export function MusicPanel({ state }: { state: AppState | null }) {
         با هر پخش‌کننده‌ای کار می‌کند که ویندوز می‌شناسد: Spotify، Apple Music، Media Player و تب‌های Chrome، Edge یا
         Firefox.
       </p>
+
+      {!live && state && (
+        <div className="music-idle">
+          <button type="button" className="music-stat" onClick={() => onOpen?.('focus')}>
+            <span className="music-stat-label">
+              <TimerIcon size={13} /> تمرین امروز
+            </span>
+            <span className="music-stat-value">{toPersianDigits(focusDone)} دوره</span>
+            <small>{focusDone > 0 ? 'وقتی برگشتی، یک دورهٔ دیگر' : '۲۵ دقیقهٔ تمرین آماده است'}</small>
+          </button>
+          <button type="button" className="music-stat" onClick={() => onOpen?.('water')}>
+            <span className="music-stat-label">
+              <WaterIcon size={13} /> آب امروز
+            </span>
+            <span className="music-stat-value">
+              {formatLitres(state.water.total)} <small>از {formatLitres(state.water.goalMl)}</small>
+            </span>
+            <span className="music-stat-bar" aria-hidden="true">
+              <span className="music-stat-fill" style={{ width: `${Math.min(100, waterPercent * 100)}%` }} />
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,11 +3,12 @@ import type { AppState } from '@shared/types'
 import { formatClock, formatLitres, weekdayNarrow } from '../lib/format'
 import { formatJalali, toPersianDigits } from '../lib/jalali'
 import { TrashIcon, WaterIcon } from './Icons'
+import { Stepper } from './Stepper'
 
 export function WaterPanel({ state }: { state: AppState | null }) {
   const water = state?.water
   const settings = state?.settings.water
-  const [custom, setCustom] = useState('')
+  const [custom, setCustom] = useState(250)
 
   if (!water || !settings) return <p className="panel-hint">در حال بارگذاری…</p>
 
@@ -50,20 +51,10 @@ export function WaterPanel({ state }: { state: AppState | null }) {
               className="water-custom"
               onSubmit={(event) => {
                 event.preventDefault()
-                add(Number(custom))
-                setCustom('')
+                add(custom)
               }}
             >
-              <input
-                className="input"
-                type="number"
-                min={10}
-                max={3000}
-                step={10}
-                placeholder="میلی‌لیتر"
-                value={custom}
-                onChange={(event) => setCustom(event.target.value)}
-              />
+              <Stepper label="مقدار دلخواه" value={custom} min={50} max={3000} step={50} onChange={setCustom} />
               <button type="submit" className="button">
                 افزودن
               </button>

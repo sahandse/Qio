@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { AppState } from '@shared/types'
 import { formatClock, formatDay, formatDuration, formatLitres, mediaAppName } from '../lib/format'
-import { toPersianDigits } from '../lib/jalali'
+import { shortEvent, toPersianDigits, upcomingEvent } from '../lib/jalali'
 import { useClock, useCover, useMediaClock } from '../lib/state'
-import { BoltIcon, TimerIcon, WaterIcon } from './Icons'
+import { BoltIcon, CalendarIcon, TimerIcon, WaterIcon } from './Icons'
 
 interface Props {
   state: AppState | null
@@ -40,6 +41,76 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
   const battery = state?.system.battery
   const charging = state?.system.charging
   const minimal = state?.settings.minimalNotch ?? false
+  const event = upcomingEvent(now)
+
+  const chips: { key: string; label: string; node: ReactNode }[] = []
+  if (focusRunning) {
+    chips.push({
+      key: 'focus',
+      label: 'تایمر تمرین',
+      node: (
+        <span className="chip chip-accent" title="تایمر تمرین">
+          <TimerIcon size={13} />
+          {toPersianDigits(`${Math.floor(focusLeft / 60)}:${`${Math.floor(focusLeft % 60)}`.padStart(2, '0')}`)}
+        </span>
+      )
+    })
+  }
+  if (battery != null && !charging && battery <= 30) {
+    chips.push({
+      key: 'battery',
+      label: 'باتری کم',
+      node: (
+        <span className="chip chip-warn" title="باتری کم">
+          {toPersianDigits(battery)}٪
+        </span>
+      )
+    })
+  }
+  if (event) {
+    const name = shortEvent(event.title)
+    chips.push({
+      key: 'event',
+      label: event.title,
+      node: (
+        <span className="chip chip-event" title={event.title}>
+          <CalendarIcon size={12} />
+          <span className="chip-text">
+            {event.days === 0
+              ? name
+              : event.days === 1
+                ? `فردا · ${name}`
+                : `${toPersianDigits(event.days)} روز تا ${name}`}
+          </span>
+        </span>
+      )
+    })
+  }
+  if (water && waterLeft > 0) {
+    chips.push({
+      key: 'water',
+      label: 'آب خوردهٔ امروز',
+      node: (
+        <span className="chip" title="آب خوردهٔ امروز">
+          <WaterIcon size={13} />
+          {formatLitres(water.total)}
+        </span>
+      )
+    })
+  }
+  if (charging && battery != null) {
+    chips.push({
+      key: 'charging',
+      label: 'در حال شارژ',
+      node: (
+        <span className="chip chip-accent" title="در حال شارژ">
+          <BoltIcon size={13} />
+          {toPersianDigits(battery)}٪
+        </span>
+      )
+    })
+  }
+  const hiddenChips = chips.slice(2)
 
   const [sleepy, setSleepy] = useState(false)
   useEffect(() => {
@@ -109,23 +180,15 @@ export function NotchBar({ state, expanded, onOpen, onToggleMinimal }: Props) {
       </div>
 
       <div className="bar-chips">
-        {focusRunning && (
-          <span className="chip chip-accent" title="تایمر تمرین">
-            <TimerIcon size={13} />
-            {toPersianDigits(`${Math.floor(focusLeft / 60)}:${`${Math.floor(focusLeft % 60)}`.padStart(2, '0')}`)}
-          </span>
-        )}
-        {water && waterLeft > 0 && (
-          <span className="chip" title="آب خوردهٔ امروز">
-            <WaterIcon size={13} />
-            {formatLitres(water.total)}
-          </span>
-        )}
-        {battery != null && (charging || battery <= 30) && (
-          <span className={`chip${charging ? ' chip-accent' : ' chip-warn'}`} title={charging ? 'در حال شارژ' : 'باتری کم'}>
-            {charging ? <BoltIcon size={13} /> : null}
-            {toPersianDigits(battery)}٪
-          </span>
+        {chips.slice(0, 2).map((chip) => (
+          <Fragment key={chip.key}>{chip.node}</Fragment>
+        ))}
+        {hiddenChips.length > 0 && (
+          <span
+            className="chip chip-more"
+            title={hiddenChips.map((chip) => chip.label).join(' · ')}
+            aria-label={hiddenChips.map((chip) => chip.label).join('، ')}
+          />
         )}
       </div>
 

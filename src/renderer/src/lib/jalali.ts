@@ -239,3 +239,22 @@ export function formatCountdown(days: number): string {
   if (days === 1) return 'فردا'
   return `${toPersianDigits(days)} روز دیگر`
 }
+
+/** First fixed event from today onward, so the notch can mention it. */
+export function upcomingEvent(
+  now = new Date(),
+  lookahead = 10
+): { days: number; title: string } | null {
+  for (let offset = 0; offset <= lookahead; offset += 1) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, 12)
+    const j = toJalali(day)
+    const title = eventOn(j.jm, j.jd)
+    if (title) return { days: offset, title }
+  }
+  return null
+}
+
+/** «روز دانش‌آموز» → «دانش‌آموز» and «سیزده‌به‌در — روز طبیعت» → «سیزده‌به‌در» so chips stay short. */
+export function shortEvent(title: string): string {
+  return title.split('—')[0].replace(/^روز\s+/, '').trim()
+}

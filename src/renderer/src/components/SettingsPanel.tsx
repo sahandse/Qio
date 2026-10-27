@@ -4,6 +4,7 @@ import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { BoltIcon, LinkIcon, MuteIcon, SunIcon, VolumeIcon } from './Icons'
+import { Stepper } from './Stepper'
 
 function Toggle({
   label,
@@ -47,23 +48,15 @@ function NumberRow({
   onChange: (next: number) => void
 }) {
   return (
-    <label className="row">
+    <div className="row">
       <span className="row-text">
         <strong>{label}</strong>
       </span>
       <span className="row-control">
-        <input
-          className="input number"
-          type="number"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(event) => onChange(Number(event.target.value))}
-        />
+        <Stepper label={label} value={value} min={min} max={max} step={step} onChange={onChange} />
         {suffix && <span className="row-suffix">{suffix}</span>}
       </span>
-    </label>
+    </div>
   )
 }
 
@@ -155,7 +148,7 @@ export function SettingsPanel({ state }: { state: AppState | null }) {
         />
         <Toggle
           label="ماسکوت"
-          hint="دو چشم که وقتی کامپیوتر ساکت است چرت می‌زند"
+          hint="دو نقطهٔ کوچک که وقتی کامپیوتر ساکت است چرت می‌زنند"
           checked={settings.mascot}
           onChange={(next) => patch({ mascot: next })}
         />

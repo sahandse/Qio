@@ -44,6 +44,7 @@ export default function App() {
   const [dismissed, setDismissed] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
   const shellRef = useRef<HTMLDivElement>(null)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const pinTimer = useRef<number | null>(null)
   const dragDepth = useRef(0)
 
@@ -76,7 +77,17 @@ export default function App() {
       if (event.key === 'Escape') {
         setHover(false)
         setPinned(false)
+        return
       }
+      if (event.ctrlKey || event.altKey || event.metaKey) return
+      const target = event.target as HTMLElement | null
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
+      const slot = '12345678'.indexOf(event.key) >= 0 ? '12345678'.indexOf(event.key) : '۱۲۳۴۵۶۷۸'.indexOf(event.key)
+      if (slot < 0 || !TABS[slot]) return
+      event.preventDefault()
+      setPanel(TABS[slot].id)
+      setHover(true)
+      pin()
     }
     window.addEventListener('keydown', onKey)
     const prime = () => primeAudio()
@@ -85,7 +96,7 @@ export default function App() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('pointerdown', prime)
     }
-  }, [])
+  }, [pin])
 
   /** The main process resizes the window to whatever this element measures. */
   useEffect(() => {
@@ -159,21 +170,47 @@ export default function App() {
 
         {expanded && (
           <div className="panel">
-            <div className="tabs" role="tablist">
-              {TABS.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={panel === id}
-                  className={`tab${panel === id ? ' active' : ''}`}
-                  onClick={() => setPanel(id)}
-                  title={label}
-                >
-                  <Icon size={16} />
-                  <span>{label}</span>
-                </button>
-              ))}
+          <div
+            className="tabs"
+            role="tablist"
+            onKeyDown={(event) => {
+              const current = TABS.findIndex((tab) => tab.id === panel)
+              const offset =
+                event.key === 'ArrowRight' ? -1 : event.key === 'ArrowLeft' ? 1 : 0
+              const next =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? TABS.length - 1
+                    : offset
+                      ? current + offset
+                      : -1
+              if (next < 0 || next >= TABS.length) return
+              event.preventDefault()
+              setPanel(TABS[next].id)
+              tabRefs.current[next]?.focus()
+            }}
+          >
+            {TABS.map(({ id, label, Icon }, index) => (
+              <button
+                key={id}
+                id={`tab-${id}`}
+                ref={(node) => {
+                  tabRefs.current[index] = node
+                }}
+                type="button"
+                role="tab"
+                aria-selected={panel === id}
+                aria-controls="qio-panel"
+                tabIndex={panel === id ? 0 : -1}
+                className={`tab${panel === id ? ' active' : ''}`}
+                onClick={() => setPanel(id)}
+                title={label}
+              >
+                <Icon size={16} />
+                <span>{label}</span>
+              </button>
+            ))}
               <span className="tabs-spacer" />
               <button
                 type="button"
@@ -188,9 +225,14 @@ export default function App() {
               </button>
             </div>
 
-            <div className="panel-body" role="tabpanel">
+            <div
+              className="panel-body"
+              role="tabpanel"
+              id="qio-panel"
+              aria-labelledby={`tab-${panel}`}
+            >
               {panel === 'calendar' && <CalendarPanel />}
-              {panel === 'music' && <MusicPanel state={state} />}
+              {panel === 'music' && <MusicPanel state={state} onOpen={setPanel} />}
               {panel === 'lyrics' && <LyricsPanel state={state} />}
               {panel === 'focus' && <FocusPanel state={state} />}
               {panel === 'water' && <WaterPanel state={state} />}
