@@ -1,4 +1,4 @@
-import { BrowserWindow, Notification, app, screen } from 'electron'
+import { BrowserWindow, Notification, app, dialog, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
 import type { AppState, MediaState, Nudge, OverlayPayload, SystemState } from '@shared/types'
 import { toPersianDigits } from '@shared/persian'
@@ -318,15 +318,22 @@ function pinsNotch(): void {
 }
 
 if (!app.requestSingleInstanceLock()) {
-  app.quit()
+  void app.whenReady().then(() => {
+    dialog.showMessageBoxSync({
+      type: 'info',
+      title: 'Qio',
+      message: 'Qio از قبل در حال اجراست.',
+      detail:
+        'نمونهٔ دیگری از Qio باز است و نچ آن بالای صفحه قرار دارد. برای اجرای این نسخه، اول از منوی آیکون Qio کنار ساعت «خروج از Qio» را بزنید.',
+      buttons: ['باشه'],
+      noLink: true
+    })
+    app.quit()
+  })
 } else {
   app.setAppUserModelId(APP_ID)
 
-  app.on('second-instance', () => {
-    const window = getNotchWindow()
-    if (window && !window.isDestroyed()) window.showInactive()
-    sendToNotch('notch:pulse', Date.now())
-  })
+  app.on('second-instance', () => pinsNotch())
 
   app.whenReady().then(() => {
     store = new Store()

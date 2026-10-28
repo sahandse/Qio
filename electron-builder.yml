@@ -9,6 +9,7 @@ directories:
 files:
   - out/**/*
   - package.json
+  - resources/*.png
 
 extraResources:
   - from: resources/bridge
