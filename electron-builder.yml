@@ -22,6 +22,7 @@ win:
   icon: resources/icon-512.png
 
 nsis:
+  artifactName: Qio-Setup-${version}.${ext}
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
