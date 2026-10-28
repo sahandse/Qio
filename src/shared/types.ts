@@ -28,10 +28,37 @@ export interface FocusSettings {
   chime: boolean
 }
 
+export type MascotShape = 'oval' | 'round' | 'soft' | 'tall'
+
+export type MascotState = 'idle' | 'sleep' | 'wave' | 'think' | 'work' | 'success' | 'error' | 'perm'
+
+/** The pair of eyes that lives on the notch, plus how it is drawn. */
+export interface MascotSettings {
+  shape: MascotShape
+  /** Hex color of the eyes and their small decorations. */
+  color: string
+  /** Eye height in the 44-unit tall artwork. */
+  size: number
+  /** Distance between the two eye centers. */
+  gap: number
+  /** Seconds between blinks. */
+  blink: number
+  glow: boolean
+  pupil: boolean
+  brows: boolean
+  blush: boolean
+  hand: boolean
+  zzz: boolean
+  /** Seconds of stillness before the eyes close. */
+  sleepAfter: number
+  reducedMotion: boolean
+}
+
 export interface Settings {
   startWithWindows: boolean
   minimalNotch: boolean
   mascot: boolean
+  mascotStyle: MascotSettings
   lyrics: boolean
   /** Scale of the notch, 1 = 420x140 pages. Larger by default on wide displays. */
   notchScale: number

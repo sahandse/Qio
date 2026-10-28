@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
-import type { AppState, MediaState } from '@shared/types'
+import { useEffect, useRef, useState } from 'react'
+import type { AppState, MascotState, MediaState } from '@shared/types'
 import { formatClock } from '../lib/format'
 import { formatJalali, toPersianDigits } from '../lib/jalali'
 import { useClock } from '../lib/state'
 import { MuteIcon, SettingsIcon } from './Icons'
+import { Mascot } from './Mascot'
 
 interface Props {
   state: AppState | null
@@ -11,6 +12,24 @@ interface Props {
   title: string
   onOpen: () => void
   onSettings: () => void
+  /** Overrides the resting face, e.g. thinking while a focus round runs. */
+  mascotState?: MascotState | null
+}
+
+const FALLBACK_STYLE = {
+  shape: 'oval' as const,
+  color: '#eef3f8',
+  size: 22,
+  gap: 30,
+  blink: 5,
+  glow: true,
+  pupil: false,
+  brows: false,
+  blush: false,
+  hand: true,
+  zzz: true,
+  sleepAfter: 15,
+  reducedMotion: false
 }
 
 function isLive(media: MediaState | null): boolean {
@@ -24,27 +43,13 @@ function batteryColor(battery: number, charging: boolean): string {
   return 'rgba(255, 255, 255, 0.88)'
 }
 
-/** Two dots that blink now and then; they sit inside the battery ring when there is one. */
-function Eyes({ sleepy }: { sleepy: boolean }) {
-  return (
-    <span className={`eyes${sleepy ? ' eyes-sleepy' : ''}`} aria-hidden="true">
-      <span className="eye" />
-      <span className="eye" />
-    </span>
-  )
-}
-
 function BatteryRing({
   battery,
   charging,
-  mascot,
-  sleepy,
   small
 }: {
   battery: number
   charging: boolean
-  mascot: boolean
-  sleepy: boolean
   small?: boolean
 }) {
   return (
@@ -56,7 +61,7 @@ function BatteryRing({
       }}
       title={`باتری ${toPersianDigits(battery)}٪${charging ? ' — در حال شارژ' : ''}`}
     >
-      <span className="battery-core">{mascot && !small ? <Eyes sleepy={sleepy} /> : null}</span>
+      <span className="battery-core" />
     </span>
   )
 }
@@ -73,7 +78,7 @@ function Equalizer({ playing, muted }: { playing: boolean; muted: boolean }) {
   )
 }
 
-export function NotchBar({ state, expanded, title, onOpen, onSettings }: Props) {
+export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotState }: Props) {
   const now = useClock()
   const media = state?.media ?? null
   const live = isLive(media)
@@ -83,37 +88,86 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings }: Props) 
   const muted = Boolean(state?.system.muted)
   const hour24 = state?.system.hour24 ?? true
   const mascot = state?.settings.mascot ?? true
+  const mascotStyle = state?.settings.mascotStyle ?? FALLBACK_STYLE
   const minimal = state?.settings.minimalNotch ?? false
 
-  const [sleepy, setSleepy] = useState(false)
+  const [face, setFace] = useState<MascotState>('idle')
+  const faceRef = useRef<MascotState>('idle')
+  const lastMove = useRef(Date.now())
+  const slot = useRef<HTMLSpanElement>(null)
+  const faceTimer = useRef<number | null>(null)
+
+  const show = (next: MascotState, hold?: number) => {
+    if (faceTimer.current) window.clearTimeout(faceTimer.current)
+    faceRef.current = next
+    setFace(next)
+    if (hold) faceTimer.current = window.setTimeout(() => show('idle'), hold)
+  }
+
+  const sleepAfter = mascotStyle.sleepAfter
+
   useEffect(() => {
-    let timer = window.setTimeout(() => setSleepy(true), 75_000)
-    const wake = () => {
-      setSleepy(false)
-      window.clearTimeout(timer)
-      timer = window.setTimeout(() => setSleepy(true), 75_000)
+    const id = window.setInterval(() => {
+      const current = faceRef.current
+      if (current !== 'idle' && current !== 'sleep') return
+      const still = Date.now() - lastMove.current
+      const shouldSleep = still > sleepAfter * 1000
+      if (shouldSleep && current !== 'sleep') show('sleep')
+      if (!shouldSleep && current === 'sleep') show('idle')
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [sleepAfter])
+
+  useEffect(() => {
+    const awake = () => {
+      lastMove.current = Date.now()
+      if (faceRef.current === 'sleep') {
+        show('wave', 2400)
+      } else if (faceRef.current !== 'idle' && faceRef.current !== 'wave') {
+        return
+      }
     }
-    window.addEventListener('mousemove', wake)
-    window.addEventListener('keydown', wake)
+    const follow = (event: PointerEvent) => {
+      const element = slot.current
+      if (!element) return
+      const rect = element.getBoundingClientRect()
+      const clamp = (value: number) => Math.max(-1, Math.min(1, value))
+      const x = clamp((event.clientX - rect.left - rect.width / 2) / 90)
+      const y = clamp((event.clientY - rect.top - rect.height / 2) / 90)
+      element.style.setProperty('--look-x', `${x * 3}px`)
+      element.style.setProperty('--look-y', `${y * 2.4}px`)
+    }
+    const onMove = (event: PointerEvent) => {
+      awake()
+      follow(event)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerdown', awake)
+    window.addEventListener('keydown', awake)
     return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('mousemove', wake)
-      window.removeEventListener('keydown', wake)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerdown', awake)
+      window.removeEventListener('keydown', awake)
+      if (faceTimer.current) window.clearTimeout(faceTimer.current)
     }
   }, [])
 
   const clock = formatClock(now, false, hour24)
 
   if (!expanded) {
+    const faceState: MascotState =
+      mascotState === 'work' || mascotState === 'success' || mascotState === 'error' ? mascotState : face
     return (
       <div className={`bar${minimal ? ' minimal' : ''}`} onClick={onOpen} title="باز کردن Qio">
         <span className="bar-side">
-          {battery != null ? (
-            <BatteryRing battery={battery} charging={charging} mascot={mascot} sleepy={sleepy} />
-          ) : (
-            <span className="mascot-standalone">
-              {mascot ? <Eyes sleepy={sleepy} /> : <span className="status-pin" />}
+          {mascot ? (
+            <span className="mascot-slot" ref={slot}>
+              <Mascot settings={mascotStyle} state={faceState} className="mascot-notch" />
             </span>
+          ) : battery != null ? (
+            <BatteryRing battery={battery} charging={charging} />
+          ) : (
+            <span className="status-pin" />
           )}
         </span>
         <span className="bar-clock">{clock}</span>
@@ -128,9 +182,7 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings }: Props) 
     <header className="page-head">
       <span className="page-title">{title}</span>
       <span className="page-status">
-        {battery != null && (
-          <BatteryRing battery={battery} charging={charging} mascot={false} sleepy={sleepy} small />
-        )}
+        {battery != null && <BatteryRing battery={battery} charging={charging} small />}
         <span className="page-date">{formatJalali(now)}</span>
         <span className="page-clock">{clock}</span>
       </span>

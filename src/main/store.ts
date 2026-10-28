@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type {
   FocusState,
+  MascotSettings,
+  MascotShape,
   Note,
   NoteTint,
   Settings,
@@ -25,11 +27,29 @@ export interface Persisted {
 }
 
 const NOTE_TINTS: NoteTint[] = ['mint', 'sky', 'amber', 'violet']
+const MASCOT_SHAPES: MascotShape[] = ['oval', 'round', 'soft', 'tall']
+
+export const defaultMascot: MascotSettings = {
+  shape: 'oval',
+  color: '#eef3f8',
+  size: 22,
+  gap: 30,
+  blink: 5,
+  glow: true,
+  pupil: false,
+  brows: false,
+  blush: false,
+  hand: true,
+  zzz: true,
+  sleepAfter: 15,
+  reducedMotion: false
+}
 
 export const defaultSettings: Settings = {
   startWithWindows: false,
   minimalNotch: false,
   mascot: true,
+  mascotStyle: defaultMascot,
   lyrics: true,
   notchScale: 1,
   hideFullscreen: true,
@@ -69,6 +89,13 @@ function clampScale(value: unknown, fallback: number): number {
   return Math.round(Math.min(1.5, Math.max(0.85, n)) * 100) / 100
 }
 
+/** Same as clampNumber but keeps half steps, for values like the blink interval. */
+function clampHalf(value: unknown, min: number, max: number, fallback: number): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(n)) return fallback
+  return Math.round(Math.min(max, Math.max(min, n)) * 2) / 2
+}
+
 function cleanNote(raw: unknown): Note | null {
   if (!raw || typeof raw !== 'object') return null
   const note = raw as Partial<Note>
@@ -88,10 +115,28 @@ function mergeSettings(raw: unknown): Settings {
   const input = (raw ?? {}) as Partial<Settings>
   const water = (input.water ?? {}) as Partial<Settings['water']>
   const focus = (input.focus ?? {}) as Partial<Settings['focus']>
+  const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
   return {
     startWithWindows: Boolean(input.startWithWindows ?? defaultSettings.startWithWindows),
     minimalNotch: Boolean(input.minimalNotch ?? defaultSettings.minimalNotch),
     mascot: Boolean(input.mascot ?? defaultSettings.mascot),
+    mascotStyle: {
+      shape: MASCOT_SHAPES.includes(style.shape as MascotShape)
+        ? (style.shape as MascotShape)
+        : defaultMascot.shape,
+      color: /^#[0-9a-f]{6}$/i.test(style.color ?? '') ? (style.color as string).toLowerCase() : defaultMascot.color,
+      size: clampNumber(style.size, 14, 32, defaultMascot.size),
+      gap: clampNumber(style.gap, 16, 46, defaultMascot.gap),
+      blink: clampHalf(style.blink, 2, 9, defaultMascot.blink),
+      glow: Boolean(style.glow ?? defaultMascot.glow),
+      pupil: Boolean(style.pupil ?? defaultMascot.pupil),
+      brows: Boolean(style.brows ?? defaultMascot.brows),
+      blush: Boolean(style.blush ?? defaultMascot.blush),
+      hand: Boolean(style.hand ?? defaultMascot.hand),
+      zzz: Boolean(style.zzz ?? defaultMascot.zzz),
+      sleepAfter: clampNumber(style.sleepAfter, 5, 300, defaultMascot.sleepAfter),
+      reducedMotion: Boolean(style.reducedMotion ?? defaultMascot.reducedMotion)
+    },
     lyrics: Boolean(input.lyrics ?? defaultSettings.lyrics),
     notchScale: clampScale(input.notchScale, defaultSettings.notchScale),
     hideFullscreen: Boolean(input.hideFullscreen ?? defaultSettings.hideFullscreen),

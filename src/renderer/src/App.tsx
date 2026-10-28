@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
-import type { PanelId } from '@shared/types'
+import type { MascotState, PanelId } from '@shared/types'
 import { NotchBar } from './components/NotchBar'
 import { CalendarPanel } from './components/CalendarPanel'
 import { LyricsPanel, MusicPanel } from './components/MusicPanel'
@@ -70,6 +70,33 @@ export default function App() {
   const wheelAt = useRef(0)
 
   useFocusEngine(state)
+
+  /** A short cheer when a focus round ends or the water goal is reached, plus a face while focusing. */
+  const [cheer, setCheer] = useState<MascotState | null>(null)
+  const cheerTimer = useRef<number | null>(null)
+  const seen = useRef<{ rounds: number | null; watered: boolean | null; openTodos: number | null }>({
+    rounds: null,
+    watered: null,
+    openTodos: null
+  })
+
+  useEffect(() => {
+    if (!state) return
+    const previous = seen.current
+    const rounds = state.focus.completedToday
+    const watered = state.water.total >= state.water.goalMl && state.water.goalMl > 0
+    const open = state.todos.filter((todo) => !todo.done).length
+    const gainedRound = previous.rounds != null && rounds > previous.rounds
+    const clearedTodos = previous.openTodos != null && previous.openTodos > 0 && open === 0
+    const reachedWater = previous.watered === false && watered
+    seen.current = { rounds, watered, openTodos: open }
+    if (!gainedRound && !clearedTodos && !reachedWater) return
+    setCheer('success')
+    if (cheerTimer.current) window.clearTimeout(cheerTimer.current)
+    cheerTimer.current = window.setTimeout(() => setCheer(null), 2600)
+  }, [state])
+
+  const mascotState: MascotState | null = state?.focus.running ? 'work' : cheer
 
   const pin = useCallback((ms = 6000) => {
     setPinned(true)
@@ -267,6 +294,7 @@ export default function App() {
               pin()
             }}
             onSettings={() => void window.qio.window.openSettings()}
+            mascotState={mascotState}
           />
 
           {expanded && (

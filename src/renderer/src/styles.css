@@ -327,13 +327,18 @@ select:focus-visible {
   display: none;
 }
 
-.mascot-standalone {
-  width: 22px;
-  height: 22px;
+.mascot-slot {
+  --look-x: 0px;
+  --look-y: 0px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--bg-raised);
+  height: 26px;
+  padding-inline: 2px;
+}
+
+.mascot-slot .ms {
+  height: 26px;
+  width: auto;
 }
 
 .status-pin {
@@ -404,6 +409,310 @@ select:focus-visible {
 
 .eye:nth-child(2) {
   animation-delay: 120ms;
+}
+
+/* ---------------------------------------------------------------- mascot -- */
+
+.ms {
+  --ms-color: #eef3f8;
+  --ms-stroke: 2.8;
+  --ms-blink: 5s;
+  display: block;
+  overflow: visible;
+}
+
+.ms .ms-closed,
+.ms .ms-happy,
+.ms .ms-cross,
+.ms .ms-brow {
+  fill: none;
+  stroke: var(--ms-color);
+  stroke-width: var(--ms-stroke);
+  stroke-linecap: round;
+}
+
+.ms .ms-brow {
+  stroke-width: 2;
+  transition: transform 0.25s var(--ease);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ms .ms-closed,
+.ms .ms-happy,
+.ms .ms-cross,
+.ms .ms-fx {
+  display: none;
+}
+
+.ms-eyes {
+  transform: translate(var(--look-x, 0px), var(--look-y, 0px));
+  transition: transform 0.15s var(--ease);
+}
+
+.ms-eye {
+  animation: ms-blink var(--ms-blink) infinite;
+}
+
+.ms-breathe {
+  transform-origin: 50px 22px;
+  animation: ms-breathe 3.2s infinite ease-in-out;
+}
+
+.ms[data-state='sleep'] .ms-open,
+.ms[data-state='sleep'] .ms-pupil,
+.ms[data-state='sleep'] .ms-glint {
+  display: none;
+}
+
+.ms[data-state='sleep'] .ms-closed,
+.ms[data-state='sleep'] .ms-zzz {
+  display: block;
+}
+
+.ms[data-state='sleep'] .ms-eye {
+  animation: none;
+}
+
+.ms[data-state='sleep'] .ms-breathe {
+  animation: ms-sway 4.5s infinite ease-in-out;
+}
+
+.ms[data-state='sleep'] .ms-zzz {
+  animation: ms-float 2s infinite;
+}
+
+.ms[data-state='wave'] .ms-open,
+.ms[data-state='wave'] .ms-pupil,
+.ms[data-state='wave'] .ms-glint,
+.ms[data-state='success'] .ms-open,
+.ms[data-state='success'] .ms-pupil,
+.ms[data-state='success'] .ms-glint {
+  display: none;
+}
+
+.ms[data-state='wave'] .ms-happy,
+.ms[data-state='success'] .ms-happy {
+  display: block;
+}
+
+.ms[data-state='wave'] .ms-eye,
+.ms[data-state='success'] .ms-eye {
+  animation: none;
+}
+
+.ms[data-state='wave'] .ms-hand {
+  display: block;
+  animation: ms-wave 0.45s infinite alternate ease-in-out;
+}
+
+.ms[data-state='wave'] .ms-breathe {
+  animation: ms-nod 0.6s infinite alternate ease-in-out;
+}
+
+.ms[data-state='success'] .ms-breathe {
+  animation: ms-jump 0.65s infinite;
+}
+
+.ms[data-state='success'] .ms-sparkle {
+  display: block;
+  animation: ms-pulse 0.8s infinite;
+}
+
+.ms[data-state='error'] .ms-open,
+.ms[data-state='error'] .ms-pupil,
+.ms[data-state='error'] .ms-glint {
+  display: none;
+}
+
+.ms[data-state='error'] .ms-cross {
+  display: block;
+  stroke: #ef4444;
+}
+
+.ms[data-state='error'] .ms-eye {
+  animation: none;
+}
+
+.ms[data-state='error'] .ms-breathe {
+  animation: ms-shake 0.35s infinite;
+}
+
+.ms[data-state='think'] .ms-eyes {
+  transform: translate(4px, -4px);
+}
+
+.ms[data-state='think'] .ms-thought {
+  display: block;
+}
+
+.ms[data-state='think'] .ms-thought circle {
+  animation: ms-pulse 1s infinite;
+}
+
+.ms[data-state='think'] .ms-thought circle:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ms[data-state='think'] .ms-thought circle:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.ms[data-state='think'] .ms-brow-start,
+.ms[data-state='perm'] .ms-brow {
+  transform: translateY(-3px);
+}
+
+.ms[data-state='work'] .ms-eyes {
+  animation: ms-scan 1.4s infinite ease-in-out;
+}
+
+.ms[data-state='work'] .ms-code {
+  display: block;
+}
+
+.ms[data-state='work'] .ms-code text {
+  animation: ms-rise 2s infinite;
+}
+
+.ms[data-state='work'] .ms-code text:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+.ms[data-state='perm'] .ms-eye {
+  animation: none;
+}
+
+.ms[data-state='perm'] .ms-open {
+  transform: scale(1.2);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ms[data-state='perm'] .ms-question {
+  display: block;
+  animation: ms-float 1.2s infinite;
+}
+
+.ms-still .ms-breathe,
+.ms-still .ms-eye,
+.ms-still .ms-eyes,
+.ms-still .ms-fx {
+  animation: none !important;
+}
+
+@keyframes ms-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-1.2px) scale(1.02, 0.98);
+  }
+}
+
+@keyframes ms-sway {
+  0%,
+  100% {
+    transform: translateY(0.5px);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes ms-blink {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  92% {
+    transform: scaleY(0.08);
+  }
+  94% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.08);
+  }
+  98% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes ms-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.05, 0.92);
+  }
+  40% {
+    transform: translateY(-5px) scale(0.96, 1.06);
+  }
+}
+
+@keyframes ms-shake {
+  25% {
+    transform: translateX(-1.5px);
+  }
+  75% {
+    transform: translateX(1.5px);
+  }
+}
+
+@keyframes ms-nod {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes ms-wave {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes ms-float {
+  50% {
+    transform: translateY(-3px);
+    opacity: 0.5;
+  }
+}
+
+@keyframes ms-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes ms-scan {
+  0%,
+  100% {
+    transform: translate(-2.5px, 0);
+  }
+  50% {
+    transform: translate(2.5px, 0);
+  }
+}
+
+@keyframes ms-rise {
+  0% {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
 }
 
 @keyframes blink {
@@ -2956,6 +3265,193 @@ body.overlay-body {
   font-size: 9.5px;
   line-height: 1.75;
   color: var(--text-faint);
+}
+
+/* ------------------------------------------------------- mascot settings -- */
+
+.settings-mascot {
+  grid-column: 1 / -1;
+}
+
+.mascot-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 96px;
+  width: min(100%, 320px);
+  margin: 10px auto 0;
+  border-radius: 0 0 30px 30px;
+  background: radial-gradient(circle at 50% 0%, #131a22, #05080b 72%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 0;
+  box-shadow: inset 0 -22px 40px rgba(0, 0, 0, 0.55), 0 12px 30px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.mascot-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(104deg, transparent 34%, rgba(255, 255, 255, 0.06) 50%, transparent 66%);
+  transform: translateX(-130%);
+  animation: bar-sheen 9s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+.mascot-stage-art {
+  height: 54px;
+  width: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.mascot-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin: 9px 0 0;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.mascot-caption strong {
+  font-size: 11.5px;
+  color: var(--text);
+}
+
+.mascot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 0 2px;
+}
+
+.mascot-chip {
+  height: 23px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease), transform 160ms var(--spring);
+}
+
+.mascot-chip:hover {
+  color: var(--text);
+}
+
+.mascot-chip:active {
+  transform: scale(0.94);
+}
+
+.mascot-chip.on {
+  background: var(--accent);
+  border-color: transparent;
+  color: #071016;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(138, 230, 192, 0.28);
+}
+
+.mascot-group {
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px solid var(--border);
+}
+
+.mascot-group-label {
+  display: block;
+  margin-top: 2px;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+
+.mascot-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+  column-gap: 22px;
+}
+
+.mascot-toggles .setting-row {
+  border-top: 0;
+  gap: 8px;
+}
+
+.mascot-toggles .setting-text {
+  flex: 0 1 auto;
+}
+
+.mascot-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 2px;
+}
+
+.mascot-swatch {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--c);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 160ms var(--spring), border-color var(--dur) var(--ease);
+}
+
+.mascot-swatch:hover {
+  transform: scale(1.1);
+}
+
+.mascot-swatch.on {
+  border-color: var(--text);
+}
+
+.mascot-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9.5px;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.mascot-color input {
+  width: 27px;
+  height: 23px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.mascot-dial {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 62px;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 0;
+  font-size: 10px;
+}
+
+.mascot-dial-label {
+  color: var(--text-faint);
+}
+
+.mascot-dial-value {
+  text-align: end;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mascot-dial .settings-rail {
+  width: 100%;
 }
 
 .switch {

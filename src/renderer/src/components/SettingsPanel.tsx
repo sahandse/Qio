@@ -4,6 +4,7 @@ import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { BoltIcon, CloseIcon, LinkIcon, MuteIcon, SunIcon, VolumeIcon } from './Icons'
+import { MascotSettingsCard } from './MascotSettings'
 import { Stepper } from './Stepper'
 
 function Toggle({
@@ -203,7 +204,7 @@ export function SettingsPage() {
             />
             <Toggle
               label="ماسکوت"
-              hint="دو نقطهٔ کوچک که در نوار ساعت چرت می‌زنند"
+              hint="یک جفت چشم کوچک روی نچ که پلک می‌زند، می‌خوابد و سلام می‌کند"
               checked={settings.mascot}
               onChange={(next) => patch({ mascot: next })}
             />
@@ -352,6 +353,11 @@ export function SettingsPage() {
               onChange={(next) => patch({ focus: { ...settings.focus, chime: next } })}
             />
           </section>
+
+          <MascotSettingsCard
+            style={settings.mascotStyle}
+            onPatch={(next) => patch({ mascotStyle: { ...settings.mascotStyle, ...next } })}
+          />
         </div>
 
         <section className="settings-card settings-about">
