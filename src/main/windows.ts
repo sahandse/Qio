@@ -32,13 +32,13 @@ function pipeRendererLogs(window: BrowserWindow): void {
   })
 }
 
-function loadPage(window: BrowserWindow, page: 'index' | 'overlay' | 'settings'): void {
+function loadPage(window: BrowserWindow, page: 'index' | 'overlay' | 'settings', hash?: string): void {
   pipeRendererLogs(window)
   const url = devUrl()
   if (url) {
-    void window.loadURL(`${url}/${page}.html`)
+    void window.loadURL(`${url}/${page}.html${hash ? `#${hash}` : ''}`)
   } else {
-    void window.loadFile(join(__dirname, `../renderer/${page}.html`))
+    void window.loadFile(join(__dirname, `../renderer/${page}.html`), hash ? { hash } : undefined)
   }
 }
 
@@ -46,7 +46,8 @@ export function getNotchWindow(): BrowserWindow | null {
   return notchWindow
 }
 
-export function createNotchWindow(): BrowserWindow {
+/** The presence scheduler decides when the notch shows, so index.ts can opt out of the first paint. */
+export function createNotchWindow(autoShow = true): BrowserWindow {
   const display = screen.getPrimaryDisplay()
   const { bounds } = display
   const width = COLLAPSED_SIZE.width + SHELL_CHROME.x * 2
@@ -84,7 +85,9 @@ export function createNotchWindow(): BrowserWindow {
   window.setAlwaysOnTop(true, 'screen-saver')
   window.setMenuBarVisibility(false)
   loadPage(window, 'index')
-  window.once('ready-to-show', () => window.showInactive())
+  window.once('ready-to-show', () => {
+    if (autoShow) window.showInactive()
+  })
 
   notchWindow = window
   return window
@@ -124,11 +127,12 @@ export function createOverlayWindow(): BrowserWindow {
 }
 
 /** The settings page lives in its own window, like a small companion app. */
-export function openSettingsWindow(): BrowserWindow {
+export function openSettingsWindow(tab?: string): BrowserWindow {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     if (settingsWindow.isMinimized()) settingsWindow.restore()
     settingsWindow.show()
     settingsWindow.focus()
+    if (tab) settingsWindow.webContents.send('settings:tab', tab)
     return settingsWindow
   }
 
@@ -161,7 +165,7 @@ export function openSettingsWindow(): BrowserWindow {
   })
 
   window.setMenuBarVisibility(false)
-  loadPage(window, 'settings')
+  loadPage(window, 'settings', tab)
   window.once('ready-to-show', () => window.show())
   window.on('closed', () => {
     settingsWindow = null

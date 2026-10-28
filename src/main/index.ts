@@ -43,8 +43,8 @@ let lastWaterReminderAt = 0
 let lowBatteryWarned = false
 let lastCharging: boolean | null = null
 let lastHeadphones: boolean | null = null
-let notchVisible = true
 let fullscreen = false
+let manualHidden = false
 const nudges = new Map<string, NodeJS.Timeout>()
 
 function getState(): AppState {
@@ -55,6 +55,7 @@ function getState(): AppState {
     notes: store.notes,
     water: store.waterState(),
     focus: store.focus,
+    ai: { settings: store.aiPublic(), messages: store.aiMessages },
     media,
     system: { ...system, startWithWindows: app.isPackaged && app.getLoginItemSettings().openAtLogin },
     version: app.getVersion()
@@ -80,12 +81,19 @@ function notify(title: string, body: string): void {
 /** A short in-notch alert: Qio taps you on the shoulder without opening a panel. */
 function raiseNudge(kind: Nudge['kind'], title: string, detail?: string): void {
   const nudge: Nudge = { id: randomUUID(), kind, title, detail }
+  revealForAlert()
   sendToNotch('nudge', nudge)
   const timer = setTimeout(() => {
     nudges.delete(nudge.id)
     sendToNotch('nudge:clear', nudge.id)
   }, NUDGE_MS)
   nudges.set(nudge.id, timer)
+}
+
+/** An alert that nobody can see is not an alert, so the notch is brought back for it. */
+function revealForAlert(): void {
+  if (manualHidden || fullscreenHides()) return
+  showNotch()
 }
 
 function applyLoginItem(): void {
@@ -101,28 +109,42 @@ function applyLoginItem(): void {
   }
 }
 
-function setNotchVisible(visible: boolean): void {
-  notchVisible = visible
+function showNotch(): boolean {
   const window = getNotchWindow()
-  if (!window || window.isDestroyed()) return
-  if (visible) {
-    window.showInactive()
-  } else {
-    window.hide()
+  if (!window || window.isDestroyed()) return false
+  window.showInactive()
+  return true
+}
+
+function hideNotch(): void {
+  const window = getNotchWindow()
+  if (window && !window.isDestroyed() && window.isVisible()) window.hide()
+}
+
+function fullscreenHides(): boolean {
+  return fullscreen && store.settings.hideFullscreen
+}
+
+/** The notch stays up while the clock comes and goes, so only these two rules move it. */
+function syncNotch(): void {
+  if (manualHidden || fullscreenHides()) {
+    hideNotch()
+    return
   }
+  showNotch()
+}
+
+function setNotchVisible(visible: boolean): void {
+  manualHidden = !visible
+  syncNotch()
   setTrayNotchVisible(visible)
 }
 
 /** Games and videos get the whole screen; Qio steps aside and comes back afterwards. */
 function applyFullscreen(active: boolean): void {
+  if (active === fullscreen) return
   fullscreen = active
-  const window = getNotchWindow()
-  if (!window || window.isDestroyed()) return
-  if (active && store.settings.hideFullscreen) {
-    if (window.isVisible()) window.hide()
-  } else if (!active && notchVisible && !window.isVisible()) {
-    window.showInactive()
-  }
+  syncNotch()
 }
 
 function routeOverlay(payload: OverlayPayload): void {
@@ -314,7 +336,7 @@ function runSelfCheck(): void {
 function pinsNotch(): void {
   const window = getNotchWindow()
   if (!window || window.isDestroyed()) return
-  if (!window.isVisible()) window.showInactive()
+  if (!window.isVisible() && !showNotch()) return
   sendToNotch('notch:pulse', Date.now())
 }
 
@@ -340,7 +362,10 @@ if (!app.requestSingleInstanceLock()) {
     store = new Store()
     bridge = new WindowsBridge()
 
-    createNotchWindow()
+    const notch = createNotchWindow(false)
+    notch.once('ready-to-show', () => {
+      if (!manualHidden) showNotch()
+    })
     createOverlayWindow()
 
     registerIpc({
@@ -352,6 +377,7 @@ if (!app.requestSingleInstanceLock()) {
       refreshTray,
       applyLoginItem,
       setNotchVisible,
+      syncNotch,
       getLastCover: () => ({ key: lastCoverKey, dataUrl: lastCoverSent })
     })
 

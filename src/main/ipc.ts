@@ -1,9 +1,13 @@
 import { BrowserWindow, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
+import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
-import type { AppState, MediaCommand, Note, Nudge, Settings } from '@shared/types'
+import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, Settings } from '@shared/types'
+import { aiReady } from '@shared/ai'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
+import { AiAbortError, streamCompletion, testCompletion } from './ai'
+import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
 import { hideOverlay, openSettingsWindow, sendToNotch, sizeNotch } from './windows'
 
@@ -16,6 +20,7 @@ export interface IpcContext {
   refreshTray(): void
   applyLoginItem(): void
   setNotchVisible(visible: boolean): void
+  syncNotch(): void
   getLastCover(): { key: string; dataUrl: string }
 }
 
@@ -28,6 +33,7 @@ function isWebUrl(value: string): boolean {
 
 export function registerIpc(ctx: IpcContext): void {
   const { store, bridge } = ctx
+  const streams = new Map<string, AbortController>()
 
   ipcMain.handle('app:state', () => ctx.getState())
   ipcMain.handle('app:meta', () => ({
@@ -46,8 +52,70 @@ export function registerIpc(ctx: IpcContext): void {
     const before = store.settings.startWithWindows
     const settings = store.patchSettings(patch ?? {})
     if (settings.startWithWindows !== before) ctx.applyLoginItem()
+    if (patch && 'hideFullscreen' in patch) ctx.syncNotch()
     ctx.refreshTray()
     return settings
+  })
+
+  ipcMain.handle('ai:patch', (_event, patch: Partial<Omit<AiSettings, 'apiKey'>>) => store.patchAiSettings(patch ?? {}))
+  ipcMain.handle('ai:key', (_event, key: string) => store.setAiKey(key))
+  ipcMain.handle('ai:clear', () => {
+    store.clearAiMessages()
+    return true
+  })
+  ipcMain.handle('ai:test', () => testCompletion(store.aiSettings))
+
+  ipcMain.handle('ai:send', (event, text: string) => {
+    const prompt = typeof text === 'string' ? text.trim().slice(0, 4000) : ''
+    if (!prompt) return { ok: false, error: 'متن پیام خالی است.' }
+    if (!aiReady(store.aiSettings)) return { ok: false, error: 'اول در تنظیمات، سرویس و کلید را کامل کن.' }
+    if (streams.size > 0) return { ok: false, error: 'یک پاسخ در جریان است؛ اول متوقفش کن.' }
+
+    const requestId = randomUUID()
+    const controller = new AbortController()
+    streams.set(requestId, controller)
+    store.addAiMessage('user', prompt)
+
+    const settings = store.aiSettings
+    const history: AiPrompt[] = store.aiMessages
+      .slice(-16)
+      .map((message) => ({ role: message.role, content: message.text }))
+    const messages: AiPrompt[] = settings.systemPrompt
+      ? [{ role: 'system', content: settings.systemPrompt }, ...history]
+      : history
+    const sender = event.sender
+    const send = (payload: AiEvent): void => {
+      if (!sender.isDestroyed()) sender.send('ai:event', payload)
+    }
+
+    setTimeout(() => {
+      void (async () => {
+        let full = ''
+        try {
+          await streamCompletion(settings, messages, controller.signal, (chunk) => {
+            full += chunk
+            send({ type: 'delta', requestId, delta: chunk })
+          })
+          const message = full.trim() ? store.addAiMessage('assistant', full) : null
+          send({ type: 'done', requestId, message: message ?? undefined })
+        } catch (error) {
+          if (error instanceof AiAbortError) {
+            const message = full.trim() ? store.addAiMessage('assistant', full) : null
+            send({ type: 'done', requestId, message: message ?? undefined, stopped: true })
+          } else {
+            send({ type: 'error', requestId, error: error instanceof Error ? error.message : 'خطای ناشناخته' })
+          }
+        } finally {
+          streams.delete(requestId)
+        }
+      })()
+    }, 0)
+
+    return { ok: true, requestId }
+  })
+
+  ipcMain.on('ai:stop', (_event, requestId: string) => {
+    streams.get(requestId)?.abort()
   })
 
   ipcMain.handle('todos:add', (_event, text: string, dueAt: number | null) => store.addTodo(text, dueAt ?? null))
@@ -194,8 +262,8 @@ export function registerIpc(ctx: IpcContext): void {
     return true
   })
   ipcMain.handle('window:visible', (_event, visible: boolean) => ctx.setNotchVisible(Boolean(visible)))
-  ipcMain.handle('window:settings', () => {
-    openSettingsWindow()
+  ipcMain.handle('window:settings', (_event, tab?: string) => {
+    openSettingsWindow(typeof tab === 'string' ? tab : undefined)
     return true
   })
   ipcMain.handle('window:close', (event) => {

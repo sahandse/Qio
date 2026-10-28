@@ -269,3 +269,16 @@ export const TelegramIcon = (props: IconProps) => (
     <path d="M8.1 14.1l10.9-8.4-8.1 10.6" />
   </Icon>
 )
+
+export const SendIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4.6 11.4l14.8-6.1-4.7 14.1-3-5.6z" />
+    <path d="M11.7 13.8l7.7-8.5" />
+  </Icon>
+)
+
+export const StopIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="7" y="7" width="10" height="10" rx="2.2" fill="currentColor" stroke="none" />
+  </Icon>
+)

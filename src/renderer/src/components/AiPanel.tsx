@@ -1,73 +1,179 @@
+import { useEffect, useRef, useState } from 'react'
+import type { AiMessage, AppState } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
-import { LinkIcon } from './Icons'
+import { SendIcon, SettingsIcon, SparklesIcon, StopIcon, TrashIcon } from './Icons'
 
-interface AiService {
-  id: string
-  name: string
-  host: string
-  url: string
-  /** Accent of the tile, as an rgb triplet, so each service keeps its own colour. */
-  accent: string
+interface Props {
+  state: AppState | null
+  busy: boolean
+  /** Text arriving from the provider while an answer streams in. */
+  streaming: string
+  error: string | null
+  onSend: (text: string) => void
+  onStop: () => void
+  onOpenSettings: () => void
 }
 
-const IRANIAN: AiService[] = [
-  { id: 'gapgpt', name: 'گپ‌جی‌پی‌تی', host: 'gapgpt.app', url: 'https://gapgpt.app', accent: '138, 230, 192' },
-  { id: 'houshyar', name: 'همیار ۲۴', host: 'houshyar24.ir', url: 'https://houshyar24.ir', accent: '242, 200, 121' },
-  { id: 'avalai', name: 'اوال‌ای‌آی', host: 'avalai.ir', url: 'https://avalai.ir', accent: '122, 196, 255' },
-  { id: 'ivira', name: 'ویرا', host: 'ivira.ai', url: 'https://ivira.ai', accent: '255, 152, 178' },
-  { id: 'yarabot', name: 'یارابات', host: 'yarabot.ir', url: 'https://yarabot.ir', accent: '181, 156, 255' },
-  { id: 'zigap', name: 'زیگپ', host: 'zigap.ir', url: 'https://zigap.ir', accent: '110, 220, 214' }
-]
+const SUGGESTIONS = ['امروز روی چه چیزی تمرکز کنم؟', 'یک ایدهٔ کوچک برای شروع', 'این مفهوم را ساده توضیح بده']
 
-const FOREIGN: AiService[] = [
-  { id: 'chatgpt', name: 'ChatGPT', host: 'chatgpt.com', url: 'https://chatgpt.com', accent: '126, 232, 168' },
-  { id: 'claude', name: 'Claude', host: 'claude.ai', url: 'https://claude.ai', accent: '240, 160, 120' },
-  { id: 'gemini', name: 'Gemini', host: 'gemini.google.com', url: 'https://gemini.google.com', accent: '140, 170, 255' },
-  { id: 'deepseek', name: 'DeepSeek', host: 'deepseek.com', url: 'https://chat.deepseek.com', accent: '130, 150, 255' },
-  { id: 'grok', name: 'Grok', host: 'grok.com', url: 'https://grok.com', accent: '205, 208, 216' },
-  { id: 'perplexity', name: 'Perplexity', host: 'perplexity.ai', url: 'https://www.perplexity.ai', accent: '108, 205, 214' },
-  { id: 'qwen', name: 'Qwen', host: 'chat.qwen.ai', url: 'https://chat.qwen.ai', accent: '178, 148, 255' },
-  { id: 'copilot', name: 'Copilot', host: 'microsoft.com', url: 'https://copilot.microsoft.com', accent: '120, 198, 255' }
-]
-
-function Group({ label, services, columns }: { label: string; services: AiService[]; columns: 3 | 4 }) {
+function Bubble({ message }: { message: AiMessage }) {
   return (
-    <section className="ai-group">
-      <header className="ai-group-head">
-        <strong>{label}</strong>
-        <span>{toPersianDigits(services.length)} سرویس</span>
-      </header>
-      <div className={`ai-grid cols-${columns}`}>
-        {services.map((service) => (
-          <button
-            key={service.id}
-            type="button"
-            className="ai-tile"
-            style={{ ['--ai' as string]: service.accent }}
-            title={service.url}
-            onClick={() => void window.qio.window.openExternal(service.url)}
-          >
-            <span className="ai-dot" aria-hidden="true" />
-            <span className="ai-text">
-              <span className="ai-name">{service.name}</span>
-              <span className="ai-host" dir="ltr">
-                {service.host}
-              </span>
-            </span>
-            <LinkIcon size={10} className="ai-open" />
-          </button>
-        ))}
-      </div>
-    </section>
+    <div className={`ai-msg ${message.role}`}>
+      <p dir="auto">{message.text}</p>
+    </div>
   )
 }
 
-export function AiPanel() {
+export function AiPanel({ state, busy, streaming, error, onSend, onStop, onOpenSettings }: Props) {
+  const [text, setText] = useState('')
+  const listRef = useRef<HTMLDivElement>(null)
+  const ai = state?.ai
+  const ready = Boolean(ai?.settings.ready)
+  const messages = ai?.messages ?? []
+
+  useEffect(() => {
+    const element = listRef.current
+    if (!element) return
+    element.scrollTop = element.scrollHeight
+  }, [messages.length, streaming, busy])
+
+  const submit = () => {
+    const value = text.trim()
+    if (!value || busy) return
+    setText('')
+    onSend(value)
+  }
+
   return (
-    <div className="ai-page">
-      <Group label="ایرانی" services={IRANIAN} columns={3} />
-      <Group label="خارجی" services={FOREIGN} columns={4} />
-      <p className="ai-hint">در مرورگر پیش‌فرض باز می‌شود — Qio گفت‌وگوها را نمی‌بیند و ذخیره نمی‌کند.</p>
+    <div className="ai-chat">
+      <header className="ai-chat-head">
+        <span className="ai-chat-model">
+          <span className="ai-chat-dot" aria-hidden="true" />
+          <span className="ai-chat-provider">{ai?.settings.providerLabel ?? 'هوش مصنوعی'}</span>
+          <span className="ai-chat-name" dir="ltr">
+            {ai?.settings.effectiveModel ?? ''}
+          </span>
+        </span>
+        <span className="ai-chat-tools">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              className="ai-tool"
+              title="گفت‌وگوی تازه"
+              aria-label="گفت‌وگوی تازه"
+              onClick={() => void window.qio.ai.clear()}
+            >
+              <TrashIcon size={12} />
+            </button>
+          )}
+          <button
+            type="button"
+            className="ai-tool"
+            title="تنظیمات هوش مصنوعی"
+            aria-label="تنظیمات هوش مصنوعی"
+            onClick={onOpenSettings}
+          >
+            <SettingsIcon size={12} />
+          </button>
+        </span>
+      </header>
+
+      {!ready ? (
+        <div className="ai-setup">
+          <span className="ai-setup-mark" aria-hidden="true">
+            <SparklesIcon size={20} />
+          </span>
+          <strong>یک قدم تا گفت‌وگو</strong>
+          <p>
+            در تنظیمات، سرویس دلخواهت را انتخاب کن و کلید API را بگذار؛ کلید فقط روی همین دستگاه
+            می‌ماند و جای دیگری نمی‌رود.
+          </p>
+          <button type="button" className="ai-setup-cta" onClick={onOpenSettings}>
+            باز کردن تنظیمات هوش مصنوعی
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="ai-chat-list" data-scroll ref={listRef}>
+            {messages.length === 0 && !busy && (
+              <div className="ai-chat-empty">
+                <SparklesIcon size={18} />
+                <span>هر چیزی بپرسی، همین‌جا جواب می‌گیرد — گفت‌وگو برای دفعهٔ بعد می‌ماند.</span>
+              </div>
+            )}
+            {messages.map((message) => (
+              <Bubble key={message.id} message={message} />
+            ))}
+            {busy && (
+              <div className="ai-msg assistant streaming">
+                <p dir="auto">
+                  {streaming}
+                  <span className={`ai-caret${streaming ? '' : ' waiting'}`} aria-hidden="true" />
+                </p>
+              </div>
+            )}
+            {messages.length === 0 && !busy && (
+              <div className="ai-suggestions">
+                {SUGGESTIONS.map((suggestion) => (
+                  <button key={suggestion} type="button" className="ai-suggestion" onClick={() => setText(suggestion)}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <p className="ai-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <form
+            className="ai-composer"
+            onSubmit={(event) => {
+              event.preventDefault()
+              submit()
+            }}
+          >
+            <input
+              className="ai-input"
+              value={text}
+              maxLength={4000}
+              placeholder={busy ? 'در حال نوشتن پاسخ…' : 'از هوش مصنوعی بپرس…'}
+              aria-label="پیام به هوش مصنوعی"
+              disabled={busy}
+              onChange={(event) => setText(event.target.value)}
+            />
+            {busy ? (
+              <button
+                type="button"
+                className="ai-send stop"
+                onClick={onStop}
+                title="توقف پاسخ"
+                aria-label="توقف پاسخ"
+              >
+                <StopIcon size={12} />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="ai-send"
+                disabled={!text.trim()}
+                title="ارسال"
+                aria-label="ارسال"
+              >
+                <SendIcon size={13} />
+              </button>
+            )}
+          </form>
+          <span className="ai-foot">
+            {messages.length > 0
+              ? `${toPersianDigits(messages.length)} پیام در این گفت‌وگو`
+              : 'Enter می‌فرستد'}
+          </span>
+        </>
+      )}
     </div>
   )
 }

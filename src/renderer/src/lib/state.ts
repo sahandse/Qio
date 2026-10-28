@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AppState, MediaState, Nudge } from '@shared/types'
+import type { AppState, MediaState, Nudge, PresenceSettings } from '@shared/types'
 
 export function useAppState(): AppState | null {
   const [state, setState] = useState<AppState | null>(null)
@@ -82,4 +82,41 @@ export function useClock(): Date {
     return () => clearInterval(timer)
   }, [])
   return now
+}
+
+/**
+ * The clock visits instead of staying: a short appearance, then it rests out of sight
+ * until its next turn. Hovering the notch or opening a panel keeps it around.
+ */
+export function useClockPresence(presence: PresenceSettings, hold: boolean): boolean {
+  const mode = presence.mode
+  const everyMs = Math.max(1, presence.everyMin) * 60_000
+  const forMs = Math.max(3, presence.forSec) * 1000
+  const [visible, setVisible] = useState(mode === 'always' || hold)
+
+  useEffect(() => {
+    if (mode === 'always' || hold) {
+      setVisible(true)
+      return
+    }
+    let showTimer = 0
+    let hideTimer = 0
+    setVisible(true)
+    const cycle = () => {
+      hideTimer = window.setTimeout(() => {
+        setVisible(false)
+        showTimer = window.setTimeout(() => {
+          setVisible(true)
+          cycle()
+        }, everyMs)
+      }, forMs)
+    }
+    cycle()
+    return () => {
+      window.clearTimeout(showTimer)
+      window.clearTimeout(hideTimer)
+    }
+  }, [mode, everyMs, forMs, hold])
+
+  return visible
 }

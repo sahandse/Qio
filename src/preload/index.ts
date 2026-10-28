@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AppState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, Todo } from '@shared/types'
+import type { AiEvent, AppState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, Todo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -23,6 +23,7 @@ const api: QioApi = {
   onPulse: (callback) => subscribe<number>('notch:pulse', callback),
   onOverlay: (callback) => subscribe<OverlayPayload>('overlay:show', callback),
   onOverlayReset: (callback) => subscribe<unknown>('overlay:reset', () => callback()),
+  onSettingsTab: (callback) => subscribe<string>('settings:tab', callback),
   hideOverlay: () => ipcRenderer.send('overlay:hide'),
 
   patchSettings: (patch: Partial<Settings>) => ipcRenderer.invoke('settings:patch', patch) as Promise<Settings>,
@@ -61,6 +62,16 @@ const api: QioApi = {
     patch: (patch) => ipcRenderer.invoke('focus:patch', patch) as Promise<FocusState>
   },
 
+  ai: {
+    patch: (patch) => ipcRenderer.invoke('ai:patch', patch),
+    setKey: (key) => ipcRenderer.invoke('ai:key', key),
+    clear: () => ipcRenderer.invoke('ai:clear') as Promise<boolean>,
+    test: () => ipcRenderer.invoke('ai:test'),
+    send: (text) => ipcRenderer.invoke('ai:send', text),
+    stop: (requestId) => ipcRenderer.send('ai:stop', requestId),
+    onEvent: (callback) => subscribe<AiEvent>('ai:event', callback)
+  },
+
   media: {
     command: (command: MediaCommand, value?: number) =>
       ipcRenderer.invoke('media:command', command, value) as Promise<boolean>
@@ -77,7 +88,7 @@ const api: QioApi = {
   window: {
     size: (width, height) => ipcRenderer.invoke('window:size', { width, height }) as Promise<boolean>,
     setVisible: (visible) => ipcRenderer.invoke('window:visible', visible) as Promise<boolean>,
-    openSettings: () => ipcRenderer.invoke('window:settings') as Promise<boolean>,
+    openSettings: (tab) => ipcRenderer.invoke('window:settings', tab) as Promise<boolean>,
     close: () => ipcRenderer.invoke('window:close') as Promise<void>,
     quit: () => ipcRenderer.invoke('window:quit') as Promise<void>,
     openExternal: (url) => ipcRenderer.invoke('window:external', url) as Promise<void>

@@ -3,11 +3,15 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type {
+  AiMessage,
+  AiPublicSettings,
+  AiSettings,
   FocusState,
   MascotSettings,
   MascotShape,
   Note,
   NoteTint,
+  PresenceSettings,
   Settings,
   ShelfItem,
   Todo,
@@ -15,6 +19,7 @@ import type {
   WaterEntry,
   WaterState
 } from '@shared/types'
+import { AI_PROVIDERS, DEFAULT_SYSTEM_PROMPT, aiModel, aiReady, providerById } from '@shared/ai'
 
 export interface Persisted {
   version: 1
@@ -24,6 +29,7 @@ export interface Persisted {
   notes: Note[]
   water: { date: string; entries: WaterEntry[]; days: WaterDay[] }
   focus: FocusState
+  ai: { settings: AiSettings; messages: AiMessage[] }
 }
 
 const NOTE_TINTS: NoteTint[] = ['mint', 'sky', 'amber', 'violet']
@@ -45,6 +51,21 @@ export const defaultMascot: MascotSettings = {
   reducedMotion: false
 }
 
+export const defaultPresence: PresenceSettings = {
+  mode: 'peek',
+  everyMin: 10,
+  forSec: 12
+}
+
+export const defaultAiSettings: AiSettings = {
+  provider: 'gapgpt',
+  baseUrl: '',
+  model: '',
+  apiKey: '',
+  temperature: 0.7,
+  systemPrompt: DEFAULT_SYSTEM_PROMPT
+}
+
 export const defaultSettings: Settings = {
   startWithWindows: false,
   minimalNotch: false,
@@ -53,6 +74,7 @@ export const defaultSettings: Settings = {
   lyrics: true,
   notchScale: 1,
   hideFullscreen: true,
+  presence: defaultPresence,
   water: {
     bottleMl: 500,
     goalMl: 2000,
@@ -96,6 +118,44 @@ function clampHalf(value: unknown, min: number, max: number, fallback: number): 
   return Math.round(Math.min(max, Math.max(min, n)) * 2) / 2
 }
 
+function cleanText(value: unknown, max: number): string {
+  return typeof value === 'string' ? value.trim().slice(0, max) : ''
+}
+
+function cleanAiSettings(raw: unknown): AiSettings {
+  const input = (raw ?? {}) as Partial<AiSettings>
+  const provider = AI_PROVIDERS.find((entry) => entry.id === input.provider)?.id ?? defaultAiSettings.provider
+  const typedBase = cleanText(input.baseUrl, 300).replace(/\/+$/, '')
+  const baseUrl = /^https?:\/\//i.test(typedBase) ? typedBase : ''
+  const temperature = clampNumber(Number(input.temperature ?? defaultAiSettings.temperature) * 10, 0, 20, 7) / 10
+  return {
+    provider,
+    baseUrl,
+    model: cleanText(input.model, 80),
+    apiKey: cleanText(input.apiKey, 300),
+    temperature,
+    systemPrompt: cleanText(input.systemPrompt, 600) || DEFAULT_SYSTEM_PROMPT
+  }
+}
+
+function cleanAiMessages(raw: unknown): AiMessage[] {
+  if (!Array.isArray(raw)) return []
+  const messages: AiMessage[] = []
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    const message = item as Partial<AiMessage>
+    const text = typeof message.text === 'string' ? message.text.trim().slice(0, 4000) : ''
+    if (!text || (message.role !== 'user' && message.role !== 'assistant')) continue
+    messages.push({
+      id: typeof message.id === 'string' ? message.id : randomUUID(),
+      role: message.role,
+      text,
+      at: Number.isFinite(message.at) ? (message.at as number) : Date.now()
+    })
+  }
+  return messages.slice(-40)
+}
+
 function cleanNote(raw: unknown): Note | null {
   if (!raw || typeof raw !== 'object') return null
   const note = raw as Partial<Note>
@@ -116,6 +176,7 @@ function mergeSettings(raw: unknown): Settings {
   const water = (input.water ?? {}) as Partial<Settings['water']>
   const focus = (input.focus ?? {}) as Partial<Settings['focus']>
   const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
+  const presence = (input.presence ?? {}) as Partial<PresenceSettings>
   return {
     startWithWindows: Boolean(input.startWithWindows ?? defaultSettings.startWithWindows),
     minimalNotch: Boolean(input.minimalNotch ?? defaultSettings.minimalNotch),
@@ -140,6 +201,12 @@ function mergeSettings(raw: unknown): Settings {
     lyrics: Boolean(input.lyrics ?? defaultSettings.lyrics),
     notchScale: clampScale(input.notchScale, defaultSettings.notchScale),
     hideFullscreen: Boolean(input.hideFullscreen ?? defaultSettings.hideFullscreen),
+    presence: {
+      mode:
+        presence.mode === 'always' || presence.mode === 'peek' ? presence.mode : defaultPresence.mode,
+      everyMin: clampNumber(presence.everyMin, 1, 180, defaultPresence.everyMin),
+      forSec: clampNumber(presence.forSec, 3, 120, defaultPresence.forSec)
+    },
     water: {
       bottleMl: clampNumber(water.bottleMl, 100, 3000, defaultSettings.water.bottleMl),
       goalMl: clampNumber(water.goalMl, 250, 8000, defaultSettings.water.goalMl),
@@ -186,7 +253,8 @@ export class Store {
         round: 0,
         completedToday: 0,
         day: dateKey()
-      }
+      },
+      ai: { settings: cleanAiSettings({}), messages: [] }
     }
   }
 
@@ -217,7 +285,11 @@ export class Store {
         focus:
           parsed.focus && typeof parsed.focus === 'object'
             ? { ...base.focus, ...parsed.focus, day: parsed.focus.day ?? base.focus.day }
-            : base.focus
+            : base.focus,
+        ai: {
+          settings: cleanAiSettings(parsed.ai?.settings),
+          messages: cleanAiMessages(parsed.ai?.messages)
+        }
       }
     } catch {
       return base
@@ -284,6 +356,59 @@ export class Store {
 
   get notes(): Note[] {
     return this.data.notes
+  }
+
+  get aiSettings(): AiSettings {
+    return this.data.ai.settings
+  }
+
+  get aiMessages(): AiMessage[] {
+    return this.data.ai.messages
+  }
+
+  aiPublic(): AiPublicSettings {
+    const ai = this.data.ai.settings
+    return {
+      provider: ai.provider,
+      baseUrl: ai.baseUrl,
+      model: ai.model,
+      temperature: ai.temperature,
+      systemPrompt: ai.systemPrompt,
+      hasKey: Boolean(ai.apiKey),
+      ready: aiReady(ai),
+      providerLabel: providerById(ai.provider).label,
+      effectiveModel: aiModel(ai)
+    }
+  }
+
+  patchAiSettings(patch: Partial<Omit<AiSettings, 'apiKey'>>): AiPublicSettings {
+    this.data.ai.settings = cleanAiSettings({ ...this.data.ai.settings, ...patch })
+    this.touch()
+    return this.aiPublic()
+  }
+
+  setAiKey(key: unknown): AiPublicSettings {
+    this.data.ai.settings = cleanAiSettings({ ...this.data.ai.settings, apiKey: typeof key === 'string' ? key : '' })
+    this.touch()
+    return this.aiPublic()
+  }
+
+  addAiMessage(role: AiMessage['role'], text: string): AiMessage {
+    const message: AiMessage = {
+      id: randomUUID(),
+      role,
+      text: text.trim().slice(0, 4000),
+      at: Date.now()
+    }
+    this.data.ai.messages = [...this.data.ai.messages, message].slice(-40)
+    this.touch()
+    return message
+  }
+
+  clearAiMessages(): void {
+    if (this.data.ai.messages.length === 0) return
+    this.data.ai.messages = []
+    this.touch()
   }
 
   get focus(): FocusState {

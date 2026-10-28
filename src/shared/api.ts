@@ -1,4 +1,9 @@
 import type {
+  AiEvent,
+  AiPublicSettings,
+  AiSendResult,
+  AiSettings,
+  AiTestResult,
   AppState,
   FocusState,
   LyricResult,
@@ -36,6 +41,7 @@ export interface QioApi {
   onPulse(callback: (at: number) => void): Unsubscribe
   onOverlay(callback: (payload: OverlayPayload) => void): Unsubscribe
   onOverlayReset(callback: () => void): Unsubscribe
+  onSettingsTab(callback: (tab: string) => void): Unsubscribe
   hideOverlay(): void
 
   patchSettings(patch: Partial<Settings>): Promise<Settings>
@@ -74,6 +80,16 @@ export interface QioApi {
     patch(patch: Partial<FocusState>): Promise<FocusState>
   }
 
+  ai: {
+    patch(patch: Partial<Omit<AiSettings, 'apiKey'>>): Promise<AiPublicSettings>
+    setKey(key: string): Promise<AiPublicSettings>
+    clear(): Promise<boolean>
+    test(): Promise<AiTestResult>
+    send(text: string): Promise<AiSendResult>
+    stop(requestId: string): void
+    onEvent(callback: (event: AiEvent) => void): Unsubscribe
+  }
+
   media: {
     command(command: MediaCommand, value?: number): Promise<boolean>
   }
@@ -89,7 +105,7 @@ export interface QioApi {
   window: {
     size(width: number, height: number): Promise<boolean>
     setVisible(visible: boolean): Promise<boolean>
-    openSettings(): Promise<boolean>
+    openSettings(tab?: string): Promise<boolean>
     close(): Promise<void>
     quit(): Promise<void>
     openExternal(url: string): Promise<void>

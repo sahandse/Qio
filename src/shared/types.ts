@@ -55,6 +55,17 @@ export interface MascotSettings {
   reducedMotion: boolean
 }
 
+export type PresenceMode = 'always' | 'peek'
+
+/** Whether the clock rests on the notch, or only visits now and then. */
+export interface PresenceSettings {
+  mode: PresenceMode
+  /** Minutes the clock stays away between visits. */
+  everyMin: number
+  /** Seconds a visit lasts. */
+  forSec: number
+}
+
 export interface Settings {
   startWithWindows: boolean
   minimalNotch: boolean
@@ -65,8 +76,84 @@ export interface Settings {
   notchScale: number
   /** Step aside while a game or video is full screen. */
   hideFullscreen: boolean
+  presence: PresenceSettings
   water: WaterSettings
   focus: FocusSettings
+}
+
+export type AiProviderId =
+  | 'openai'
+  | 'deepseek'
+  | 'gemini'
+  | 'qwen'
+  | 'grok'
+  | 'openrouter'
+  | 'gapgpt'
+  | 'avalai'
+  | 'ollama'
+  | 'lmstudio'
+  | 'custom'
+
+/** API access for the in-notch assistant. The key never leaves this machine. */
+export interface AiSettings {
+  provider: AiProviderId
+  /** Empty means the provider preset's own address. */
+  baseUrl: string
+  /** Empty means the provider preset's own model. */
+  model: string
+  apiKey: string
+  temperature: number
+  systemPrompt: string
+}
+
+/** What renderers see: no key, just whether one is stored. */
+export interface AiPublicSettings {
+  provider: AiProviderId
+  baseUrl: string
+  model: string
+  temperature: number
+  systemPrompt: string
+  hasKey: boolean
+  /** True when provider, address, model and (if required) key are all in place. */
+  ready: boolean
+  providerLabel: string
+  effectiveModel: string
+}
+
+export interface AiMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  at: number
+}
+
+export interface AiState {
+  settings: AiPublicSettings
+  messages: AiMessage[]
+}
+
+export type AiEventType = 'delta' | 'done' | 'error'
+
+export interface AiEvent {
+  type: AiEventType
+  requestId: string
+  delta?: string
+  /** The assistant message as stored, sent once on done. */
+  message?: AiMessage
+  error?: string
+  stopped?: boolean
+}
+
+export interface AiSendResult {
+  ok: boolean
+  requestId?: string
+  error?: string
+}
+
+export interface AiTestResult {
+  ok: boolean
+  error?: string
+  ms?: number
 }
 
 export interface Todo {
@@ -174,6 +261,7 @@ export interface AppState {
   notes: Note[]
   water: WaterState
   focus: FocusState
+  ai: AiState
   media: MediaState | null
   system: SystemState
   version: string

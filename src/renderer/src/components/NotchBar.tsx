@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AppState, MascotState, MediaState } from '@shared/types'
+import type { AppState, MascotState } from '@shared/types'
 import { formatClock } from '../lib/format'
 import { formatJalali, toPersianDigits } from '../lib/jalali'
-import { useClock } from '../lib/state'
-import { MuteIcon, SettingsIcon } from './Icons'
+import { useClock, useClockPresence } from '../lib/state'
+import { MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
 import { Mascot } from './Mascot'
 
 interface Props {
@@ -32,9 +32,7 @@ const FALLBACK_STYLE = {
   reducedMotion: false
 }
 
-function isLive(media: MediaState | null): boolean {
-  return Boolean(media && media.title && media.status !== 'stopped' && media.status !== 'unavailable')
-}
+const FALLBACK_PRESENCE = { mode: 'peek' as const, everyMin: 10, forSec: 12 }
 
 function batteryColor(battery: number, charging: boolean): string {
   if (charging) return '#7ee8a8'
@@ -66,23 +64,8 @@ function BatteryRing({
   )
 }
 
-function Equalizer({ playing, muted }: { playing: boolean; muted: boolean }) {
-  if (muted) return <MuteIcon size={15} />
-  return (
-    <span className={`equalizer${playing ? ' playing' : ''}`} aria-hidden="true">
-      <span />
-      <span />
-      <span />
-      <span />
-    </span>
-  )
-}
-
 export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotState }: Props) {
   const now = useClock()
-  const media = state?.media ?? null
-  const live = isLive(media)
-  const playing = live && media?.status === 'playing'
   const battery = state?.system.battery ?? null
   const charging = Boolean(state?.system.charging)
   const muted = Boolean(state?.system.muted)
@@ -153,12 +136,17 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
   }, [])
 
   const clock = formatClock(now, false, hour24)
+  const clockOn = useClockPresence(state?.settings.presence ?? FALLBACK_PRESENCE, expanded)
 
   if (!expanded) {
     const faceState: MascotState =
       mascotState === 'work' || mascotState === 'success' || mascotState === 'error' ? mascotState : face
     return (
-      <div className={`bar${minimal ? ' minimal' : ''}`} onClick={onOpen} title="باز کردن Qio">
+      <div
+        className={`bar${minimal ? ' minimal' : ''}${clockOn ? '' : ' quiet'}`}
+        onClick={onOpen}
+        title="باز کردن Qio"
+      >
         <span className="bar-side">
           {mascot ? (
             <span className="mascot-slot" ref={slot}>
@@ -170,9 +158,8 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
             <span className="status-pin" />
           )}
         </span>
-        <span className="bar-clock">{clock}</span>
-        <span className={`bar-side bar-media${muted ? ' muted' : ''}`}>
-          <Equalizer playing={playing} muted={muted} />
+        <span className={`bar-clock${clockOn ? '' : ' off'}`} aria-hidden={!clockOn}>
+          {clock}
         </span>
       </div>
     )
@@ -194,7 +181,7 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
           aria-label={muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
           onClick={() => void window.qio.system.setMute(!muted)}
         >
-          <Equalizer playing={playing} muted={muted} />
+          {muted ? <MuteIcon size={14} /> : <VolumeIcon size={14} />}
         </button>
         <button type="button" className="tool-button" title="تنظیمات" aria-label="تنظیمات" onClick={onSettings}>
           <SettingsIcon size={13} />

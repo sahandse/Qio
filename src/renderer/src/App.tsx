@@ -49,7 +49,7 @@ const PAGES: PageDef[] = [
   { id: 'shelf', title: 'قفسه', width: 424, height: 188, hue: '181, 156, 255', Icon: ShelfIcon },
   { id: 'todo', title: 'کارها', width: 430, height: 214, hue: '138, 230, 192', Icon: TodoIcon },
   { id: 'notes', title: 'یادداشت', width: 440, height: 258, hue: '255, 170, 200', Icon: NoteIcon },
-  { id: 'ai', title: 'هوش مصنوعی', width: 560, height: 348, hue: '178, 160, 255', Icon: SparklesIcon }
+  { id: 'ai', title: 'هوش مصنوعی', width: 560, height: 404, hue: '178, 160, 255', Icon: SparklesIcon }
 ]
 
 const COLLAPSED = { width: 150, height: 30 }
@@ -66,6 +66,10 @@ export default function App() {
   const [panel, setPanel] = useState<PageId>('music')
   const [dismissed, setDismissed] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiStream, setAiStream] = useState('')
+  const [aiError, setAiError] = useState<string | null>(null)
+  const aiRequest = useRef<string | null>(null)
   const stackRef = useRef<HTMLDivElement>(null)
   const pinTimer = useRef<number | null>(null)
   const leaveTimer = useRef<number | null>(null)
@@ -105,6 +109,40 @@ export default function App() {
     setPinned(true)
     if (pinTimer.current) window.clearTimeout(pinTimer.current)
     pinTimer.current = window.setTimeout(() => setPinned(false), ms)
+  }, [])
+
+  const expanded = hover || pinned
+
+  useEffect(() => {
+    const off = window.qio.ai.onEvent((event) => {
+      if (event.requestId !== aiRequest.current) return
+      if (event.type === 'delta') {
+        if (event.delta) setAiStream((current) => current + event.delta)
+        return
+      }
+      aiRequest.current = null
+      setAiBusy(false)
+      setAiStream('')
+      if (event.type === 'error') setAiError(event.error ?? 'پاسخ نیامد؛ دوباره امتحان کن.')
+    })
+    return off
+  }, [])
+
+  const sendAi = useCallback(async (value: string) => {
+    setAiError(null)
+    setAiStream('')
+    setAiBusy(true)
+    const result = await window.qio.ai.send(value)
+    if (!result.ok) {
+      setAiBusy(false)
+      setAiError(result.error ?? 'ارسال نشد؛ دوباره امتحان کن.')
+      return
+    }
+    aiRequest.current = result.requestId ?? null
+  }, [])
+
+  const stopAi = useCallback(() => {
+    if (aiRequest.current) window.qio.ai.stop(aiRequest.current)
   }, [])
 
   useEffect(() => {
@@ -194,7 +232,6 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  const expanded = hover || pinned
   const page = useMemo(() => PAGES.find((entry) => entry.id === panel) ?? PAGES[1], [panel])
 
   const scale = useMemo(() => {
@@ -311,7 +348,17 @@ export default function App() {
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
                 {panel === 'notes' && <NotesPanel state={state} />}
-                {panel === 'ai' && <AiPanel />}
+                {panel === 'ai' && (
+                  <AiPanel
+                    state={state}
+                    busy={aiBusy}
+                    streaming={aiStream}
+                    error={aiError}
+                    onSend={sendAi}
+                    onStop={stopAi}
+                    onOpenSettings={() => void window.qio.window.openSettings('ai')}
+                  />
+                )}
               </div>
 
               <nav className="tab-rail" aria-label="صفحه‌ها">
