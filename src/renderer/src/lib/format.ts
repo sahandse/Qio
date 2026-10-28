@@ -66,6 +66,19 @@ export function formatDueTime(timestamp: number, now = Date.now()): string {
   return day === 'امروز' ? `امروز · ${time}` : `${day} · ${time}`
 }
 
+/** Short human gap since a timestamp, for note cards. */
+export function relativeTime(timestamp: number, now = Date.now()): string {
+  const minutes = Math.floor(Math.max(0, now - timestamp) / 60_000)
+  if (minutes < 1) return 'همین حالا'
+  if (minutes < 60) return `${toPersianDigits(minutes)} دقیقه پیش`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${toPersianDigits(hours)} ساعت پیش`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'دیروز'
+  if (days < 7) return `${toPersianDigits(days)} روز پیش`
+  return relativeDay(new Date(timestamp))
+}
+
 /** Language tag for a Windows keyboard layout id (low word of the HKL). */
 export function layoutLabel(hkl: string): string {
   const map: Record<string, string> = {

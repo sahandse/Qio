@@ -232,3 +232,18 @@ export const TextCardIcon = (props: IconProps) => (
     <path d="M8 9h8M8 12.5h8M8 16h5" />
   </Icon>
 )
+
+export const NoteIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 5.5h14v9.2L14.7 19H5z" />
+    <path d="M19 14.7h-4.3V19" />
+    <path d="M8.4 9.2h7.2M8.4 12.2h4.6" />
+  </Icon>
+)
+
+export const PinIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9.2 4.4h5.6l-.7 5.2 3 3.2H6.9l3-3.2z" />
+    <path d="M12 12.8V19.5" />
+  </Icon>
+)

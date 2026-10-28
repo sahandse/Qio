@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AppState, FocusState, LyricResult, MediaCommand, Nudge, OverlayPayload, PanelId, Settings, Todo } from '@shared/types'
+import type { AppState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, Todo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -37,6 +37,12 @@ const api: QioApi = {
   water: {
     add: (ml) => ipcRenderer.invoke('water:add', ml) as Promise<void>,
     remove: (id) => ipcRenderer.invoke('water:remove', id) as Promise<void>
+  },
+
+  notes: {
+    add: (text, tint) => ipcRenderer.invoke('notes:add', text, tint) as Promise<Note | null>,
+    update: (id, patch) => ipcRenderer.invoke('notes:update', id, patch) as Promise<void>,
+    remove: (id) => ipcRenderer.invoke('notes:remove', id) as Promise<void>
   },
 
   shelf: {

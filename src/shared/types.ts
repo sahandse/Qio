@@ -1,6 +1,15 @@
 /** Types shared by the main process, the preload bridge and the renderer. */
 
-export type PanelId = 'calendar' | 'music' | 'lyrics' | 'focus' | 'water' | 'shelf' | 'todo' | 'settings'
+export type PanelId =
+  | 'calendar'
+  | 'music'
+  | 'lyrics'
+  | 'focus'
+  | 'water'
+  | 'shelf'
+  | 'todo'
+  | 'notes'
+  | 'settings'
 
 export interface WaterSettings {
   bottleMl: number
@@ -51,6 +60,18 @@ export interface ShelfItem {
   /** Only for text cards: the copied text. */
   text?: string
   addedAt: number
+}
+
+export type NoteTint = 'mint' | 'sky' | 'amber' | 'violet'
+
+/** A short thought the user jotted in the notch. Plain text, pinned to the top when asked. */
+export interface Note {
+  id: string
+  text: string
+  tint: NoteTint
+  pinned: boolean
+  createdAt: number
+  updatedAt: number
 }
 
 export interface WaterEntry {
@@ -122,6 +143,7 @@ export interface AppState {
   settings: Settings
   todos: Todo[]
   shelf: ShelfItem[]
+  notes: Note[]
   water: WaterState
   focus: FocusState
   media: MediaState | null

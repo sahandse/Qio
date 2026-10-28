@@ -3,6 +3,7 @@ import type {
   FocusState,
   LyricResult,
   MediaCommand,
+  Note,
   Nudge,
   OverlayPayload,
   PanelId,
@@ -48,6 +49,12 @@ export interface QioApi {
 
   water: {
     add(ml: number): Promise<void>
+    remove(id: string): Promise<void>
+  }
+
+  notes: {
+    add(text: string, tint?: Note['tint']): Promise<Note | null>
+    update(id: string, patch: Partial<Pick<Note, 'text' | 'pinned' | 'tint'>>): Promise<void>
     remove(id: string): Promise<void>
   }
 

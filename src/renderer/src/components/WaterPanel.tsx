@@ -15,7 +15,9 @@ export function WaterPanel({ state }: { state: AppState | null }) {
 
   const percent = water.goalMl > 0 ? water.total / water.goalMl : 0
   const reached = water.total >= water.goalMl
-  const max = Math.max(water.goalMl, ...water.days.map((day) => day.total), 1)
+  const days = water.days.slice(-7)
+  const max = Math.max(water.goalMl, ...days.map((day) => day.total), 1)
+  const hasHistory = days.some((day) => day.total > 0)
 
   const add = (ml: number) => {
     if (!Number.isFinite(ml) || ml <= 0) return
@@ -63,31 +65,34 @@ export function WaterPanel({ state }: { state: AppState | null }) {
         </div>
       </div>
 
-      <div className="water-chart" role="img" aria-label="مصرف آب در دو هفتهٔ گذشته">
+      <div className="water-chart" role="img" aria-label="مصرف آب در هفت روز گذشته">
+        <span className="chart-title">{hasHistory ? 'هفت روز اخیر' : 'در حال جمع‌آوری'}</span>
         <div className="water-chart-body">
-          <span className="chart-goal" style={{ bottom: `${Math.min(100, (water.goalMl / max) * 100)}%` }} />
-          {water.days.map((day, index) => {
+          {days.map((day, index) => {
             const date = new Date(`${day.date}T12:00:00`)
-            const height = Math.max(3, (day.total / max) * 100)
+            const fill = Math.max(2, (day.total / max) * 100)
+            const goalMark = Math.min(100, (water.goalMl / max) * 100)
+            const today = index === days.length - 1
             return (
               <span
                 key={day.date}
-                className={`chart-col${index === water.days.length - 1 ? ' today' : ''}`}
+                className={`chart-row${today ? ' today' : ''}`}
                 title={`${formatJalali(date, { weekday: false, year: false })}: ${toPersianDigits(day.total)} میلی‌لیتر`}
               >
-                <span className="chart-bar" style={{ height: `${height}%` }} />
+                <span className="chart-day">{WEEKDAYS_NARROW[weekdayIndex(date)]}</span>
+                <span className="chart-track">
+                  <span className="chart-fill" style={{ width: `${fill}%` }} />
+                  {goalMark < 99 && (
+                    <span className="chart-goal" style={{ insetInlineStart: `${goalMark}%` }} />
+                  )}
+                </span>
               </span>
             )
           })}
         </div>
-        <div className="chart-labels" aria-hidden="true">
-          {[0, 4, 8, 13].map((index) => {
-            const day = water.days[index]
-            if (!day) return null
-            const date = new Date(`${day.date}T12:00:00`)
-            return <span key={day.date}>{WEEKDAYS_NARROW[weekdayIndex(date)]}</span>
-          })}
-        </div>
+        <span className="chart-foot">
+          مجموع {litres(days.reduce((sum, day) => sum + day.total, 0))} لیتر
+        </span>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { BrowserWindow, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
 import { existsSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
-import type { AppState, MediaCommand, Nudge, Settings } from '@shared/types'
+import type { AppState, MediaCommand, Note, Nudge, Settings } from '@shared/types'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
 import { fetchLyrics } from './lyrics'
@@ -56,6 +56,12 @@ export function registerIpc(ctx: IpcContext): void {
   )
   ipcMain.handle('todos:remove', (_event, id: string) => store.removeTodo(id))
   ipcMain.handle('todos:clear-done', () => store.clearDoneTodos())
+
+  ipcMain.handle('notes:add', (_event, text: string, tint?: Note['tint']) => store.addNote(text, tint ?? undefined))
+  ipcMain.handle('notes:update', (_event, id: string, patch: Partial<Pick<Note, 'text' | 'pinned' | 'tint'>>) =>
+    store.updateNote(id, patch ?? {})
+  )
+  ipcMain.handle('notes:remove', (_event, id: string) => store.removeNote(id))
 
   ipcMain.handle('water:add', (_event, ml: number) => store.addWater(Number(ml) || 0))
   ipcMain.handle('water:remove', (_event, id: string) => store.removeWaterEntry(id))

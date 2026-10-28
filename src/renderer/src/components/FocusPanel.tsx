@@ -56,26 +56,23 @@ export function FocusPanel({ state }: { state: AppState | null }) {
       </button>
 
       <div className="focus-main">
-        <div className="focus-top">
-          <span className="focus-time">
-            {toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)}
-          </span>
-          <button
-            type="button"
-            className="round round-quiet"
-            onClick={() => void resetSession(mode)}
-            title="از نو"
-            aria-label="از نو"
-          >
-            <ResetIcon size={13} />
-          </button>
-        </div>
+        <span className="focus-time">
+          {toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)}
+        </span>
 
         <span className="focus-sub">
           {MODE_LABEL[mode]} · {toPersianDigits(done)} دوره امروز
         </span>
 
         <div className="focus-modes">
+          <button
+            type="button"
+            className={`focus-chip${mode === 'work' ? ' on' : ''}`}
+            onClick={() => void resetSession('work')}
+            title="تمرکز"
+          >
+            تمرکز
+          </button>
           <button
             type="button"
             className={`focus-chip${mode !== 'work' ? ' on' : ''}`}
@@ -89,11 +86,12 @@ export function FocusPanel({ state }: { state: AppState | null }) {
           </button>
           <button
             type="button"
-            className={`focus-chip${mode === 'work' ? ' on' : ''}`}
-            onClick={() => void resetSession('work')}
-            title="تمرکز"
+            className="round round-quiet"
+            onClick={() => void resetSession(mode)}
+            title="از نو"
+            aria-label="از نو"
           >
-            تمرکز
+            <ResetIcon size={12} />
           </button>
         </div>
       </div>

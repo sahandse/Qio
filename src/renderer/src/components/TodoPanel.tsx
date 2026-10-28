@@ -68,13 +68,24 @@ export function TodoPanel({ state }: { state: AppState | null }) {
   return (
     <div className="todo-page">
       <div className="todo-side">
-        <span className="todo-count">
-          {toPersianDigits(done.length)}
-          <span className="todo-slash">/</span>
-          {toPersianDigits(todos.length)}
+        <span
+          className="todo-ring"
+          style={{ ['--p' as string]: `${todos.length > 0 ? (done.length / todos.length) * 360 : 0}deg` }}
+          aria-hidden="true"
+        >
+          <span className="todo-ring-core">
+            <span className="todo-count">
+              {toPersianDigits(done.length)}
+              <span className="todo-slash">/</span>
+              {toPersianDigits(todos.length)}
+            </span>
+          </span>
         </span>
-        <span className="todo-label">کار انجام‌شده</span>
-        <div className="todo-buttons">
+        <span className="todo-label">انجام‌شده</span>
+      </div>
+
+      <div className="todo-content">
+        <div className="todo-tools">
           <button
             type="button"
             className={`pill primary${adding ? ' on' : ''}`}
@@ -88,19 +99,23 @@ export function TodoPanel({ state }: { state: AppState | null }) {
           </button>
           <button
             type="button"
-            className={`pill${editing ? ' on' : ''}`}
+            className={`pill todo-edit${editing ? ' on' : ''}`}
             onClick={() => {
               setEditing((value) => !value)
               setAdding(false)
             }}
             title="ویرایش فهرست"
+            aria-label="ویرایش فهرست"
           >
             <PencilIcon size={11} />
           </button>
+          <span className="todo-open">
+            {todos.length === done.length && todos.length > 0
+              ? 'همه انجام شد'
+              : `${toPersianDigits(todos.length - done.length)} کار باز`}
+          </span>
         </div>
-      </div>
 
-      <div className="todo-content">
         {adding ? (
           <form
             className="todo-form"

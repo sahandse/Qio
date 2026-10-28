@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ComponentType } from 'react'
 import type { PanelId } from '@shared/types'
 import { NotchBar } from './components/NotchBar'
 import { CalendarPanel } from './components/CalendarPanel'
@@ -7,8 +8,20 @@ import { FocusPanel } from './components/FocusPanel'
 import { WaterPanel } from './components/WaterPanel'
 import { ShelfPanel } from './components/ShelfPanel'
 import { TodoPanel } from './components/TodoPanel'
+import { NotesPanel } from './components/NotesPanel'
 import { NudgePill } from './components/NudgePill'
-import { ChevronLeftIcon, ChevronRightIcon } from './components/Icons'
+import {
+  CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LyricsIcon,
+  MusicIcon,
+  NoteIcon,
+  ShelfIcon,
+  TimerIcon,
+  TodoIcon,
+  WaterIcon
+} from './components/Icons'
 import { useAppState, useNudge } from './lib/state'
 import { useFocusEngine } from './lib/focus'
 import { primeAudio } from './lib/chime'
@@ -20,16 +33,20 @@ interface PageDef {
   title: string
   width: number
   height: number
+  /** Accent of the page as an rgb triplet, so each panel glows in its own colour. */
+  hue: string
+  Icon: ComponentType<{ size?: number }>
 }
 
 const PAGES: PageDef[] = [
-  { id: 'calendar', title: 'تقویم', width: 420, height: 300 },
-  { id: 'music', title: 'آهنگ', width: 420, height: 140 },
-  { id: 'lyrics', title: 'متن آهنگ', width: 520, height: 140 },
-  { id: 'focus', title: 'تمرکز', width: 420, height: 140 },
-  { id: 'water', title: 'آب', width: 420, height: 140 },
-  { id: 'shelf', title: 'قفسه', width: 420, height: 140 },
-  { id: 'todo', title: 'کارها', width: 420, height: 140 }
+  { id: 'calendar', title: 'تقویم', width: 424, height: 348, hue: '138, 230, 192', Icon: CalendarIcon },
+  { id: 'music', title: 'آهنگ', width: 424, height: 198, hue: '122, 196, 255', Icon: MusicIcon },
+  { id: 'lyrics', title: 'متن آهنگ', width: 540, height: 198, hue: '154, 190, 255', Icon: LyricsIcon },
+  { id: 'focus', title: 'تمرکز', width: 424, height: 190, hue: '242, 200, 121', Icon: TimerIcon },
+  { id: 'water', title: 'آب', width: 424, height: 204, hue: '106, 200, 255', Icon: WaterIcon },
+  { id: 'shelf', title: 'قفسه', width: 424, height: 188, hue: '181, 156, 255', Icon: ShelfIcon },
+  { id: 'todo', title: 'کارها', width: 430, height: 214, hue: '138, 230, 192', Icon: TodoIcon },
+  { id: 'notes', title: 'یادداشت', width: 440, height: 258, hue: '255, 170, 200', Icon: NoteIcon }
 ]
 
 const COLLAPSED = { width: 150, height: 30 }
@@ -98,8 +115,8 @@ export default function App() {
       else if (event.key === 'End') next = PAGES.length - 1
       else if (offset) next = (current + offset + PAGES.length) % PAGES.length
       else {
-        const latin = '1234567'.indexOf(event.key)
-        const persian = '۱۲۳۴۵۶۷'.indexOf(event.key)
+        const latin = '12345678'.indexOf(event.key)
+        const persian = '۱۲۳۴۵۶۷۸'.indexOf(event.key)
         const slot = latin >= 0 ? latin : persian
         if (slot >= 0) next = slot
       }
@@ -152,9 +169,19 @@ export default function App() {
 
   const scale = useMemo(() => {
     const base = state?.settings.notchScale ?? 1
-    const wide = typeof window !== 'undefined' && window.screen.width >= 2400 ? 1.12 : 1
-    return Math.round(base * wide * 100) / 100
+    return Math.round(base * 100) / 100
   }, [state?.settings.notchScale])
+
+  /** Panels breathe on wide monitors and tighten up on small laptop screens. */
+  const widthFactor = useMemo(() => {
+    if (typeof window === 'undefined') return 1
+    const available = window.screen.availWidth || window.innerWidth || 1920
+    return Math.min(1.26, Math.max(0.9, Math.round((available / 1920) * 100) / 100))
+  }, [])
+
+  const shellSize = expanded
+    ? { width: Math.round(page.width * widthFactor), height: page.height }
+    : COLLAPSED
 
   const go = useCallback(
     (delta: number) => {
@@ -198,8 +225,12 @@ export default function App() {
       <div className="zoomed" style={{ zoom: scale }}>
         <div className="stack" ref={stackRef}>
         <div
-          className={`shell${expanded ? ' open' : ''}${dropping ? ' is-dropping' : ''}`}
-          style={expanded ? { width: page.width, height: page.height } : { width: COLLAPSED.width, height: COLLAPSED.height }}
+          className={`shell${expanded ? ' open' : ''}${dropping ? ' is-dropping' : ''} page-${page.id}`}
+          style={
+            expanded
+              ? { width: shellSize.width, height: shellSize.height, ['--hue' as string]: page.hue }
+              : { width: shellSize.width, height: shellSize.height }
+          }
           onMouseEnter={() => {
             if (leaveTimer.current) window.clearTimeout(leaveTimer.current)
             setHover(true)
@@ -240,7 +271,7 @@ export default function App() {
 
           {expanded && (
             <>
-              <div className="page-body">
+              <div className="page-body" key={panel}>
                 {panel === 'calendar' && <CalendarPanel />}
                 {panel === 'music' && <MusicPanel state={state} onOpen={() => setPanel('lyrics')} />}
                 {panel === 'lyrics' && <LyricsPanel state={state} />}
@@ -248,18 +279,22 @@ export default function App() {
                 {panel === 'water' && <WaterPanel state={state} />}
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
+                {panel === 'notes' && <NotesPanel state={state} />}
               </div>
 
-              <nav className="dots" aria-label="صفحه‌ها">
+              <nav className="tab-rail" aria-label="صفحه‌ها">
                 {PAGES.map((entry) => (
                   <button
                     key={entry.id}
                     type="button"
-                    className={`dot${entry.id === panel ? ' active' : ''}`}
+                    className={`tab${entry.id === panel ? ' active' : ''}`}
                     aria-label={entry.title}
-                    title={entry.title}
+                    aria-current={entry.id === panel ? 'page' : undefined}
+                    data-label={entry.title}
                     onClick={() => setPanel(entry.id)}
-                  />
+                  >
+                    <entry.Icon size={12} />
+                  </button>
                 ))}
               </nav>
 

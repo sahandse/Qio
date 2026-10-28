@@ -52,6 +52,7 @@ function getState(): AppState {
     settings: store.settings,
     todos: store.todos,
     shelf: store.shelf,
+    notes: store.notes,
     water: store.waterState(),
     focus: store.focus,
     media,

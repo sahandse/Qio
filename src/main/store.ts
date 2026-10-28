@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type {
   FocusState,
+  Note,
+  NoteTint,
   Settings,
   ShelfItem,
   Todo,
@@ -17,9 +19,12 @@ export interface Persisted {
   settings: Settings
   todos: Todo[]
   shelf: ShelfItem[]
+  notes: Note[]
   water: { date: string; entries: WaterEntry[]; days: WaterDay[] }
   focus: FocusState
 }
+
+const NOTE_TINTS: NoteTint[] = ['mint', 'sky', 'amber', 'violet']
 
 export const defaultSettings: Settings = {
   startWithWindows: false,
@@ -62,6 +67,21 @@ function clampScale(value: unknown, fallback: number): number {
   const n = typeof value === 'number' ? value : Number(value)
   if (!Number.isFinite(n)) return fallback
   return Math.round(Math.min(1.5, Math.max(0.85, n)) * 100) / 100
+}
+
+function cleanNote(raw: unknown): Note | null {
+  if (!raw || typeof raw !== 'object') return null
+  const note = raw as Partial<Note>
+  if (typeof note.id !== 'string' || typeof note.text !== 'string' || !note.text.trim()) return null
+  const createdAt = Number.isFinite(note.createdAt) ? (note.createdAt as number) : Date.now()
+  return {
+    id: note.id,
+    text: note.text.slice(0, 4000),
+    tint: NOTE_TINTS.includes(note.tint as NoteTint) ? (note.tint as NoteTint) : 'mint',
+    pinned: Boolean(note.pinned),
+    createdAt,
+    updatedAt: Number.isFinite(note.updatedAt) ? (note.updatedAt as number) : createdAt
+  }
 }
 
 function mergeSettings(raw: unknown): Settings {
@@ -111,6 +131,7 @@ export class Store {
       settings: mergeSettings({}),
       todos: [],
       shelf: [],
+      notes: [],
       water: { date: dateKey(), entries: [], days: [] },
       focus: {
         mode: 'work',
@@ -139,6 +160,9 @@ export class Store {
                 ...item,
                 kind: item.kind === 'text' ? ('text' as const) : ('file' as const)
               }))
+          : [],
+        notes: Array.isArray(parsed.notes)
+          ? parsed.notes.map(cleanNote).filter((note): note is Note => note !== null).slice(0, 300)
           : [],
         water: {
           date: typeof parsed.water?.date === 'string' ? parsed.water.date : base.water.date,
@@ -211,6 +235,10 @@ export class Store {
 
   get shelf(): ShelfItem[] {
     return this.data.shelf
+  }
+
+  get notes(): Note[] {
+    return this.data.notes
   }
 
   get focus(): FocusState {
@@ -299,6 +327,43 @@ export class Store {
 
   clearShelf(): void {
     this.data.shelf = []
+    this.touch()
+  }
+
+  addNote(text: string, tint?: NoteTint): Note | null {
+    const body = text.trim().slice(0, 4000)
+    if (!body) return null
+    const now = Date.now()
+    const note: Note = {
+      id: randomUUID(),
+      text: body,
+      tint: tint && NOTE_TINTS.includes(tint) ? tint : NOTE_TINTS[this.data.notes.length % NOTE_TINTS.length],
+      pinned: false,
+      createdAt: now,
+      updatedAt: now
+    }
+    this.data.notes = [note, ...this.data.notes].slice(0, 300)
+    this.touch()
+    return note
+  }
+
+  updateNote(id: string, patch: Partial<Pick<Note, 'text' | 'pinned' | 'tint'>>): void {
+    let changed = false
+    this.data.notes = this.data.notes.map((note) => {
+      if (note.id !== id) return note
+      const text = typeof patch.text === 'string' ? patch.text.trim().slice(0, 4000) : note.text
+      if (!text) return note
+      const tint = patch.tint && NOTE_TINTS.includes(patch.tint) ? patch.tint : note.tint
+      const pinned = typeof patch.pinned === 'boolean' ? patch.pinned : note.pinned
+      if (text === note.text && tint === note.tint && pinned === note.pinned) return note
+      changed = true
+      return { ...note, text, tint, pinned, updatedAt: Date.now() }
+    })
+    if (changed) this.touch()
+  }
+
+  removeNote(id: string): void {
+    this.data.notes = this.data.notes.filter((note) => note.id !== id)
     this.touch()
   }
 

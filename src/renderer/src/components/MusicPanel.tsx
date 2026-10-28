@@ -169,7 +169,7 @@ export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?:
   }
 
   return (
-    <div className="music-page">
+    <div className="music-page" style={{ ['--cover' as string]: cover ? `url("${cover}")` : 'none' }}>
       <div className="track">
         <Cover cover={cover} size="big" />
         <div className="track-meta">
@@ -206,7 +206,8 @@ export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?:
 
       <div className="transport">
         <button type="button" className="transport-side" onClick={onOpen} title="متن آهنگ" aria-label="متن آهنگ">
-          <LyricsIcon size={14} />
+          <LyricsIcon size={13} />
+          <span className="transport-side-label">متن</span>
         </button>
         <Transport media={live ? media : null} playing={playing} />
         <span className="transport-stats">
@@ -248,7 +249,7 @@ export function LyricsPanel({ state }: { state: AppState | null }) {
   }
 
   return (
-    <div className="lyrics-page">
+    <div className="lyrics-page" style={{ ['--cover' as string]: cover ? `url("${cover}")` : 'none' }}>
       <div className="lyrics-side">
         <div className="track lyrics-track">
           <Cover cover={cover} size="small" />
