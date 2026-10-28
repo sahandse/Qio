@@ -35,7 +35,8 @@ jobs:
           npm run dist 2>&1 | tee dist.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            message=$(tail -n 12 dist.log | tr -d '\r' | tr '\n' ' ' | sed 's/%/%25/g' | cut -c1-900)
+            message=$(tail -n 40 dist.log | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\r' | tr '\n' ' ')
+            message=${message: -3000}
             echo "::error title=Installer build failed::$message"
             exit "$status"
           fi
