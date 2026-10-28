@@ -247,3 +247,25 @@ export const PinIcon = (props: IconProps) => (
     <path d="M12 12.8V19.5" />
   </Icon>
 )
+
+export const SparklesIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M11.4 3.8l1.45 4.05 4.05 1.45-4.05 1.45L11.4 14.8l-1.45-4.05L5.9 9.3l4.05-1.45z" />
+    <path d="M18 14.2l.75 1.95 1.95.75-1.95.75-.75 1.95-.75-1.95-1.95-.75 1.95-.75z" />
+    <path d="M5.4 16.2l.55 1.35 1.35.55-1.35.55-.55 1.35-.55-1.35-1.35-.55 1.35-.55z" />
+  </Icon>
+)
+
+export const InfoIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="8.4" />
+    <path d="M12 11.2v5M12 8.1h.01" />
+  </Icon>
+)
+
+export const TelegramIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M20.8 4.1L3.6 10.7c-.85.32-.83 1.5.04 1.79l4.3 1.44 1.6 4.6c.29.85 1.38 1 1.9.27l2.15-2.85 4.25 3.08c.7.5 1.68.12 1.86-.72l2.06-12.8c.16-1-.9-1.8-1.86-1.4z" />
+    <path d="M8.1 14.1l10.9-8.4-8.1 10.6" />
+  </Icon>
+)

@@ -9,6 +9,7 @@ import { WaterPanel } from './components/WaterPanel'
 import { ShelfPanel } from './components/ShelfPanel'
 import { TodoPanel } from './components/TodoPanel'
 import { NotesPanel } from './components/NotesPanel'
+import { AiPanel } from './components/AiPanel'
 import { NudgePill } from './components/NudgePill'
 import {
   CalendarIcon,
@@ -18,6 +19,7 @@ import {
   MusicIcon,
   NoteIcon,
   ShelfIcon,
+  SparklesIcon,
   TimerIcon,
   TodoIcon,
   WaterIcon
@@ -46,7 +48,8 @@ const PAGES: PageDef[] = [
   { id: 'water', title: 'آب', width: 424, height: 204, hue: '106, 200, 255', Icon: WaterIcon },
   { id: 'shelf', title: 'قفسه', width: 424, height: 188, hue: '181, 156, 255', Icon: ShelfIcon },
   { id: 'todo', title: 'کارها', width: 430, height: 214, hue: '138, 230, 192', Icon: TodoIcon },
-  { id: 'notes', title: 'یادداشت', width: 440, height: 258, hue: '255, 170, 200', Icon: NoteIcon }
+  { id: 'notes', title: 'یادداشت', width: 440, height: 258, hue: '255, 170, 200', Icon: NoteIcon },
+  { id: 'ai', title: 'هوش مصنوعی', width: 560, height: 348, hue: '178, 160, 255', Icon: SparklesIcon }
 ]
 
 const COLLAPSED = { width: 150, height: 30 }
@@ -142,8 +145,8 @@ export default function App() {
       else if (event.key === 'End') next = PAGES.length - 1
       else if (offset) next = (current + offset + PAGES.length) % PAGES.length
       else {
-        const latin = '12345678'.indexOf(event.key)
-        const persian = '۱۲۳۴۵۶۷۸'.indexOf(event.key)
+        const latin = '123456789'.indexOf(event.key)
+        const persian = '۱۲۳۴۵۶۷۸۹'.indexOf(event.key)
         const slot = latin >= 0 ? latin : persian
         if (slot >= 0) next = slot
       }
@@ -308,6 +311,7 @@ export default function App() {
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
                 {panel === 'notes' && <NotesPanel state={state} />}
+                {panel === 'ai' && <AiPanel />}
               </div>
 
               <nav className="tab-rail" aria-label="صفحه‌ها">

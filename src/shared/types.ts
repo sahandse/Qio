@@ -9,6 +9,7 @@ export type PanelId =
   | 'shelf'
   | 'todo'
   | 'notes'
+  | 'ai'
   | 'settings'
 
 export interface WaterSettings {

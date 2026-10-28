@@ -5,7 +5,7 @@ import type { Settings } from '@shared/types'
 export interface TrayHandlers {
   getSettings(): Settings
   patchSettings(patch: Partial<Settings>): void
-  onOpenPanel(panel: 'settings' | 'music' | 'focus'): void
+  onOpenPanel(panel: 'settings' | 'music' | 'focus' | 'ai'): void
   onToggleNotch(visible: boolean): void
   onQuit(): void
 }
@@ -51,6 +51,7 @@ export function refreshTray(): void {
       }
     },
     { label: 'تنظیمات Qio…', click: () => handlers?.onOpenPanel('settings') },
+    { label: 'هوش مصنوعی', click: () => handlers?.onOpenPanel('ai') },
     { type: 'separator' },
     {
       label: 'اجرا هنگام ورود به ویندوز',
