@@ -29,7 +29,24 @@ jobs:
       - run: npm ci
 
       - name: Test
-        run: npm test
+        shell: bash
+        run: |
+          set +e
+          { node -v; npm -v; npm test; } > test.log 2>&1
+          status=$?
+          cat test.log
+          if [ "$status" -ne 0 ]; then
+            {
+              echo '## Test log'
+              echo '```'
+              tail -n 120 test.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            grep -a -E "not ok|✖|ℹ fail" test.log | head -n 4 | tr -d '\r' | sed 's/::/:/g' | while IFS= read -r line; do echo "::error title=Test summary::$line"; done
+            grep -a -E "Error|error:|ERR_|Cannot|throw" test.log | head -n 5 | tr -d '\r' | sed 's/::/:/g' | while IFS= read -r line; do echo "::error title=Test error::$line"; done
+            head -n 1 test.log | tr -d '\r' | sed 's/::/:/g' | while IFS= read -r line; do echo "::error title=Node::$line"; done
+            exit "$status"
+          fi
 
       - name: Build installer
         shell: bash
