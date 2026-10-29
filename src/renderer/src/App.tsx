@@ -24,7 +24,7 @@ import {
   TodoIcon,
   WaterIcon
 } from './components/Icons'
-import { useAppState, useNudge } from './lib/state'
+import { useAppState, useNightTheme, useNudge } from './lib/state'
 import { useFocusEngine } from './lib/focus'
 import { primeAudio } from './lib/chime'
 
@@ -60,6 +60,7 @@ function isPage(id: PanelId): id is PageId {
 
 export default function App() {
   const state = useAppState()
+  useNightTheme(state?.settings.autoNight ?? true)
   const nudge = useNudge()
   const [hover, setHover] = useState(false)
   const [pinned, setPinned] = useState(false)

@@ -79,7 +79,7 @@
   --border-strong: rgba(255, 255, 255, 0.18);
   --text: #eef2f8;
   --text-dim: rgba(238, 242, 248, 0.72);
-  --text-faint: rgba(238, 242, 248, 0.5);
+  --text-faint: rgba(238, 242, 248, 0.58);
   --accent: #8ae6c0;
   --accent-soft: rgba(138, 230, 192, 0.14);
   --warn: #f2c879;
@@ -92,6 +92,18 @@
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
   --spring: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: dark;
+}
+
+/* Night keeps the same layout and simply lowers the lights. */
+:root[data-night='on'] {
+  --accent: #e8cfa6;
+  --blue: #a9c4e8;
+  --text-faint: rgba(238, 232, 220, 0.62);
+}
+
+:root[data-night='on'] .screen,
+:root[data-night='on'] .settings-page {
+  filter: brightness(0.88) sepia(0.14) saturate(0.9);
 }
 
 * {
@@ -264,7 +276,16 @@ select:focus-visible {
   gap: 6px;
   padding: 0 10px;
   cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: center;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 58%);
+}
+
+.bar:focus-visible {
+  outline: none;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1.5px rgba(138, 230, 192, 0.6);
 }
 
 /* A slow highlight that crosses the collapsed notch now and then. */
@@ -301,7 +322,10 @@ select:focus-visible {
   min-width: 22px;
   color: var(--text-dim);
   transform: translateY(-50%);
-  transition: right 0.45s ease, transform 0.45s ease;
+  transition:
+    right 0.5s var(--spring),
+    transform 0.5s var(--spring);
+  transition-delay: 0.12s;
 }
 
 .bar-clock {
@@ -311,13 +335,14 @@ select:focus-visible {
   font-weight: 600;
   letter-spacing: 0.015em;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
   white-space: nowrap;
   background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.74));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   transform: translateX(-13px);
-  transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+  transition: opacity 0.34s ease, transform 0.34s ease, filter 0.34s ease;
 }
 
 .bar-clock.off {
@@ -332,9 +357,39 @@ select:focus-visible {
 .bar.minimal .bar-side {
   right: 50%;
   transform: translate(50%, -50%);
+  transition-delay: 0.18s;
 }
 
 .bar.minimal .bar-clock {
+  display: none;
+}
+
+/* A quiet hairline that carries today's progress without adding a badge. */
+.bar-edge {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bar-edge::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--edge, 0%);
+  border-radius: inherit;
+  background: var(--edge-color, var(--accent));
+  opacity: 0.9;
+  transition: width 0.5s var(--ease);
+}
+
+.bar.minimal .bar-edge {
   display: none;
 }
 
@@ -792,8 +847,19 @@ select:focus-visible {
   white-space: nowrap;
 }
 
+.page-clock-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.1;
+}
+
 .page-date {
+  font-size: 8.5px;
+  letter-spacing: 0.01em;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .page-clock {
@@ -801,6 +867,7 @@ select:focus-visible {
   font-weight: 600;
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 .page-tools {
@@ -870,6 +937,42 @@ select:focus-visible {
   font-size: 11px;
   color: var(--text-faint);
   line-height: 1.7;
+}
+
+/* One resting face for every panel that has nothing to show yet. */
+.panel-empty {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 24px;
+  border-radius: 12px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.panel-empty.dashed {
+  border: 1px dashed var(--border-strong);
+  padding: 6px;
+}
+
+.panel-empty > svg {
+  color: rgba(var(--hue), 0.7);
+}
+
+.panel-empty strong {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.panel-empty span {
+  font-size: 9.5px;
+  line-height: 1.7;
+  max-width: 320px;
 }
 
 /* --------------------------------------------------------------- tab rail -- */
@@ -1994,32 +2097,6 @@ select:focus-visible {
   line-height: 1;
 }
 
-.shelf-empty {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 12px;
-  color: var(--text-faint);
-  text-align: center;
-  padding: 6px;
-}
-
-.shelf-empty strong {
-  font-size: 11.5px;
-  color: var(--text-dim);
-  font-weight: 500;
-}
-
-.shelf-empty span {
-  font-size: 9.5px;
-  max-width: 320px;
-}
-
 .shelf-foot {
   flex: 0 0 auto;
   display: flex;
@@ -2807,24 +2884,6 @@ select:focus-visible {
 .note-edit-actions .mini-button {
   height: 20px;
   font-size: 9.5px;
-}
-
-.notes-empty {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0 24px;
-  text-align: center;
-  font-size: 10px;
-  line-height: 1.7;
-  color: var(--text-faint);
-}
-
-.notes-empty svg {
-  color: rgba(var(--hue), 0.75);
 }
 
 .notes-foot {
@@ -4196,10 +4255,6 @@ body.overlay-body {
 }
 
 @container (max-width: 420px) {
-  .page-date {
-    display: none;
-  }
-
   .transport-stats {
     display: none;
   }
@@ -4210,6 +4265,12 @@ body.overlay-body {
 
   .todo-form-row .mini-select {
     max-width: 108px;
+  }
+}
+
+@container (max-width: 320px) {
+  .page-date {
+    display: none;
   }
 }
 

@@ -10,6 +10,7 @@ import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
 import { hideOverlay, openSettingsWindow, sendToNotch, sizeNotch } from './windows'
+import { pickFocusPatch, pickSettingsPatch, pickTodoPatch } from '@shared/validate'
 
 export interface IpcContext {
   store: Store
@@ -49,10 +50,11 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('cover:last', () => ctx.getLastCover())
 
   ipcMain.handle('settings:patch', (_event, patch: Partial<Settings>) => {
+    const clean = pickSettingsPatch(patch)
     const before = store.settings.startWithWindows
-    const settings = store.patchSettings(patch ?? {})
+    const settings = store.patchSettings(clean)
     if (settings.startWithWindows !== before) ctx.applyLoginItem()
-    if (patch && 'hideFullscreen' in patch) ctx.syncNotch()
+    if ('hideFullscreen' in clean) ctx.syncNotch()
     ctx.refreshTray()
     return settings
   })
@@ -119,9 +121,9 @@ export function registerIpc(ctx: IpcContext): void {
   })
 
   ipcMain.handle('todos:add', (_event, text: string, dueAt: number | null) => store.addTodo(text, dueAt ?? null))
-  ipcMain.handle('todos:update', (_event, id: string, patch: Record<string, unknown>) =>
-    store.updateTodo(id, patch)
-  )
+  ipcMain.handle('todos:update', (_event, id: string, patch: Record<string, unknown>) => {
+    if (typeof id === 'string') store.updateTodo(id, pickTodoPatch(patch))
+  })
   ipcMain.handle('todos:remove', (_event, id: string) => store.removeTodo(id))
   ipcMain.handle('todos:clear-done', () => store.clearDoneTodos())
 
@@ -131,7 +133,10 @@ export function registerIpc(ctx: IpcContext): void {
   )
   ipcMain.handle('notes:remove', (_event, id: string) => store.removeNote(id))
 
-  ipcMain.handle('water:add', (_event, ml: number) => store.addWater(Number(ml) || 0))
+  ipcMain.handle('water:add', (_event, ml: number) => {
+    const amount = Number(ml)
+    if (Number.isFinite(amount) && amount > 0) store.addWater(amount)
+  })
   ipcMain.handle('water:remove', (_event, id: string) => store.removeWaterEntry(id))
 
   ipcMain.handle('shelf:add', (_event, paths: string[]) => {
@@ -239,7 +244,9 @@ export function registerIpc(ctx: IpcContext): void {
     }
   })
 
-  ipcMain.handle('focus:patch', (_event, patch: Record<string, unknown>) => store.patchFocus(patch))
+  ipcMain.handle('focus:patch', (_event, patch: Record<string, unknown>) =>
+    store.patchFocus(pickFocusPatch(patch))
+  )
 
   ipcMain.handle('media:command', (_event, command: MediaCommand, value?: number) => {
     bridge.mediaCommand(command, typeof value === 'number' ? value : undefined)

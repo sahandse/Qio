@@ -3,6 +3,7 @@ import type { AppState, ShelfItem } from '@shared/types'
 import { formatBytes } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
 import { CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
+import { PanelEmpty } from './PanelEmpty'
 
 function useFileIcon(item: ShelfItem): string {
   const [icon, setIcon] = useState('')
@@ -112,11 +113,12 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
   return (
     <div className="shelf-page">
       {items.length === 0 ? (
-        <div className="shelf-empty">
-          <ShelfIcon size={22} />
-          <strong>اینجا رها کن</strong>
-          <span>فایل‌ها کپی نمی‌شوند؛ Qio فقط مسیرشان را به یاد می‌آورد.</span>
-        </div>
+        <PanelEmpty
+          dashed
+          icon={<ShelfIcon size={22} />}
+          title="اینجا رها کن"
+          hint="فایل‌ها کپی نمی‌شوند؛ Qio فقط مسیرشان را به یاد می‌آورد."
+        />
       ) : (
         <div className="shelf-strip" data-scroll>
           {items.map((item) => (

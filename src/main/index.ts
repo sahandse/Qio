@@ -4,8 +4,10 @@ import type { AppState, MediaState, Nudge, OverlayPayload, SystemState } from '@
 import { toPersianDigits } from '@shared/persian'
 import { WindowsBridge } from './bridge'
 import { registerIpc } from './ipc'
-import { Store, dateKey } from './store'
+import { Store } from './store'
+import { dateKey } from './store/defaults'
 import { refreshTray, setTrayNotchVisible, setupTray } from './tray'
+import { startUpdateCheck } from './updater'
 import {
   createNotchWindow,
   createOverlayWindow,
@@ -390,6 +392,7 @@ if (!app.requestSingleInstanceLock()) {
     startSchedulers()
     applyLoginItem()
     bridge.start()
+    startUpdateCheck()
     if (process.env['QIO_SELFCHECK']) runSelfCheck()
 
     app.on('activate', () => {

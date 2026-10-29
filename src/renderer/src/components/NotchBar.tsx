@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppState, MascotState } from '@shared/types'
-import { formatClock } from '../lib/format'
-import { formatJalali, toPersianDigits } from '../lib/jalali'
-import { useClock, useClockPresence } from '../lib/state'
+import { toPersianDigits } from '../lib/jalali'
+import { useClockPresence } from '../lib/state'
+import { ClockDate, ClockText } from './Clock'
 import { MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
 import { Mascot } from './Mascot'
 
@@ -64,8 +64,52 @@ function BatteryRing({
   )
 }
 
+/** A thin progress hairline: focus first, otherwise today's water. */
+function BarEdge({ state }: { state: AppState | null }) {
+  const focus = state?.focus
+  const running = Boolean(focus?.running)
+  const [, tick] = useState(0)
+
+  useEffect(() => {
+    if (!running) return
+    const timer = window.setInterval(() => tick((value) => value + 1), 1_000)
+    return () => window.clearInterval(timer)
+  }, [running])
+
+  if (!state) return null
+
+  if (focus?.running && focus.endsAt) {
+    const minutes =
+      focus.mode === 'work'
+        ? state.settings.focus.workMin
+        : focus.mode === 'short'
+          ? state.settings.focus.shortBreakMin
+          : state.settings.focus.longBreakMin
+    const total = minutes * 60_000
+    const pct = total > 0 ? 1 - Math.max(0, focus.endsAt - Date.now()) / total : 0
+    if (pct > 0.005) return <BarEdgeLine pct={pct} color="var(--warn)" />
+  }
+
+  const water = state.water
+  const pct = water.goalMl > 0 ? water.total / water.goalMl : 0
+  if (pct > 0.005) return <BarEdgeLine pct={pct} color="var(--blue)" />
+  return null
+}
+
+function BarEdgeLine({ pct, color }: { pct: number; color: string }) {
+  return (
+    <span
+      className="bar-edge"
+      aria-hidden="true"
+      style={{
+        ['--edge' as string]: `${Math.min(100, Math.round(pct * 100))}%`,
+        ['--edge-color' as string]: color
+      }}
+    />
+  )
+}
+
 export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotState }: Props) {
-  const now = useClock()
   const battery = state?.system.battery ?? null
   const charging = Boolean(state?.system.charging)
   const muted = Boolean(state?.system.muted)
@@ -135,18 +179,20 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
     }
   }, [])
 
-  const clock = formatClock(now, false, hour24)
   const clockOn = useClockPresence(state?.settings.presence ?? FALLBACK_PRESENCE, expanded)
 
   if (!expanded) {
     const faceState: MascotState =
       mascotState === 'work' || mascotState === 'success' || mascotState === 'error' ? mascotState : face
     return (
-      <div
+      <button
+        type="button"
         className={`bar${minimal ? ' minimal' : ''}${clockOn ? '' : ' quiet'}`}
         onClick={onOpen}
         title="باز کردن Qio"
+        aria-label="باز کردن Qio"
       >
+        <BarEdge state={state} />
         <span className="bar-side">
           {mascot ? (
             <span className="mascot-slot" ref={slot}>
@@ -158,10 +204,8 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
             <span className="status-pin" />
           )}
         </span>
-        <span className={`bar-clock${clockOn ? '' : ' off'}`} aria-hidden={!clockOn}>
-          {clock}
-        </span>
-      </div>
+        <ClockText hour24={hour24} className="bar-clock" off={!clockOn} />
+      </button>
     )
   }
 
@@ -170,8 +214,10 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
       <span className="page-title">{title}</span>
       <span className="page-status">
         {battery != null && <BatteryRing battery={battery} charging={charging} small />}
-        <span className="page-date">{formatJalali(now)}</span>
-        <span className="page-clock">{clock}</span>
+        <span className="page-clock-block">
+          <ClockText hour24={hour24} className="page-clock" />
+          <ClockDate className="page-date" />
+        </span>
       </span>
       <span className="page-tools">
         <button

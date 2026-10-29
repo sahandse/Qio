@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import type { AppState, Todo } from '@shared/types'
 import { formatClock, formatDueTime, relativeDay } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, TrashIcon } from './Icons'
+import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, TodoIcon, TrashIcon } from './Icons'
+import { PanelEmpty } from './PanelEmpty'
 
 type DueKind = 'none' | '30m' | '1h' | '3h' | 'tonight' | 'tomorrow'
 
@@ -153,7 +154,13 @@ export function TodoPanel({ state }: { state: AppState | null }) {
           </form>
         ) : (
           <div className="todo-list" data-scroll>
-            {list.length === 0 && <p className="page-note">فهرست خالی است — یک کار با زمان اضافه کن تا Qio خبرت کند.</p>}
+            {list.length === 0 && (
+              <PanelEmpty
+                icon={<TodoIcon size={17} />}
+                title="فهرست خالی است"
+                hint="یک کار با زمان اضافه کن تا Qio خبرت کند."
+              />
+            )}
             {list.map((todo) => (
               <div key={todo.id} className={`todo-row${todo.done ? ' done' : ''}`}>
                 <button

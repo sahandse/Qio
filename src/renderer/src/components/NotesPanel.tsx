@@ -3,6 +3,7 @@ import type { AppState, Note, NoteTint } from '@shared/types'
 import { relativeTime } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
 import { NoteIcon, PinIcon, PlusIcon, TrashIcon } from './Icons'
+import { PanelEmpty } from './PanelEmpty'
 
 const TINTS: { id: NoteTint; label: string }[] = [
   { id: 'mint', label: 'سبز' },
@@ -91,10 +92,10 @@ export function NotesPanel({ state }: { state: AppState | null }) {
 
       <div className="notes-list" data-scroll>
         {ordered.length === 0 && (
-          <div className="notes-empty">
-            <NoteIcon size={17} />
-            <span>یادداشت‌های کوتاه اینجا می‌مانند — سنجاقشان کن تا بالای فهرست بمانند.</span>
-          </div>
+          <PanelEmpty
+            icon={<NoteIcon size={17} />}
+            hint="یادداشت‌های کوتاه اینجا می‌مانند — سنجاقشان کن تا بالای فهرست بمانند."
+          />
         )}
 
         {ordered.map((note) =>

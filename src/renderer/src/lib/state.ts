@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppState, MediaState, Nudge, PresenceSettings } from '@shared/types'
+import { isNightHour } from './night'
 
 export function useAppState(): AppState | null {
   const [state, setState] = useState<AppState | null>(null)
@@ -82,6 +83,24 @@ export function useClock(): Date {
     return () => clearInterval(timer)
   }, [])
   return now
+}
+
+/** Paints the night palette on the document, switching over on the hour. */
+export function useNightTheme(auto: boolean): void {
+  useEffect(() => {
+    const root = document.documentElement
+    const apply = () => {
+      const on = auto && isNightHour(new Date().getHours())
+      if (on) root.dataset.night = 'on'
+      else root.removeAttribute('data-night')
+    }
+    apply()
+    const timer = window.setInterval(apply, 60_000)
+    return () => {
+      window.clearInterval(timer)
+      root.removeAttribute('data-night')
+    }
+  }, [auto])
 }
 
 /**

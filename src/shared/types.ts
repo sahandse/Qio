@@ -76,6 +76,8 @@ export interface Settings {
   notchScale: number
   /** Step aside while a game or video is full screen. */
   hideFullscreen: boolean
+  /** Warm, dimmed colours between 21:00 and 07:00. */
+  autoNight: boolean
   presence: PresenceSettings
   water: WaterSettings
   focus: FocusSettings

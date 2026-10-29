@@ -29,7 +29,7 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatRemaining(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds <= 0) return toPersianDigits('-0:00')
+  if (!Number.isFinite(seconds) || seconds <= 0) return toPersianDigits('−0:00')
   return `−${formatDuration(seconds)}`
 }
 
