@@ -34,6 +34,7 @@ let system: SystemState = {
   layout: '',
   battery: null,
   charging: null,
+  /** Qio always reads the clock in 24-hour form, whatever Windows is set to. */
   hour24: true,
   fullscreen: false,
   startWithWindows: false
@@ -206,11 +207,6 @@ function wireBridge(): void {
     }
     if (payload.charging || payload.battery > 25) lowBatteryWarned = false
     lastCharging = payload.charging
-  })
-
-  bridge.on('hour24', (value: boolean) => {
-    system = { ...system, hour24: value }
-    pushState()
   })
 
   bridge.on('fullscreen', (value: boolean) => {

@@ -30,10 +30,7 @@ export function MediaSection({ system }: { system: SystemState }) {
           روشنایی روی نمایشگر داخلی لپ‌تاپ کار می‌کند؛ مانیتور خارجی کنترل خودش را دارد.
         </p>
       )}
-      <div className="settings-note">
-        ساعت {system.hour24 ? '۲۴ساعته' : '۱۲ساعته'} از ویندوز پیروی می‌کند. تنظیمش در Settings › Time &amp;
-        language است.
-      </div>
+      <div className="settings-note">ساعت Qio همیشه ۲۴ساعته است؛ به تنظیم ساعت ویندوز کاری ندارد.</div>
     </section>
   )
 }
