@@ -11,7 +11,7 @@
     "build": "electron-vite build",
     "start": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "test": "node --import ./tests/register.mjs --test tests/",
+    "test": "node --import ./tests/register.mjs --test \"tests/**/*.test.ts\"",
     "icons": "node scripts/make-icons.mjs",
     "dist": "electron-vite build && electron-builder --win --config electron-builder.yml"
   },
