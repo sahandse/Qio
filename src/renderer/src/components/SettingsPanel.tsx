@@ -3,8 +3,8 @@ import type { ComponentType } from 'react'
 import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
-import { useNightTheme } from '../lib/state'
-import { CloseIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
+import { useCalm, useNightTheme } from '../lib/state'
+import { ICON, CloseIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
 import { MascotSettingsCard } from './MascotSettings'
 import { AboutSection } from './settings/AboutSection'
 import { AiSection } from './settings/AiSection'
@@ -12,6 +12,7 @@ import { GeneralSection } from './settings/GeneralSection'
 import { HealthSection } from './settings/HealthSection'
 import { MediaSection } from './settings/MediaSection'
 import { Toggle } from './settings/controls'
+import { Skeleton } from './Skeleton'
 
 type SettingsTab = 'general' | 'mascot' | 'ai' | 'media' | 'health' | 'about'
 
@@ -34,6 +35,7 @@ export function SettingsPage() {
   const [tab, setTab] = useState<SettingsTab>(() => tabFrom(window.location.hash.replace('#', '')) ?? 'general')
 
   useNightTheme(state?.settings.autoNight ?? true)
+  useCalm(state?.settings.calm ?? false)
 
   useEffect(() => {
     let alive = true
@@ -58,7 +60,9 @@ export function SettingsPage() {
   if (!state) {
     return (
       <div className="settings-page">
-        <p className="settings-empty">در حال بارگذاری…</p>
+        <div className="settings-loading">
+          <Skeleton lines={7} />
+        </div>
       </div>
     )
   }
@@ -87,7 +91,7 @@ export function SettingsPage() {
           title="بستن"
           aria-label="بستن"
         >
-          <CloseIcon size={14} />
+          <CloseIcon size={ICON.sm} />
         </button>
       </header>
 
@@ -101,7 +105,7 @@ export function SettingsPage() {
               aria-current={tab === entry.id ? 'page' : undefined}
               onClick={() => setTab(entry.id)}
             >
-              <entry.Icon size={13} />
+              <entry.Icon size={ICON.sm} />
               <span>{entry.label}</span>
             </button>
           ))}

@@ -1,5 +1,16 @@
 let context: AudioContext | null = null
 
+/** Every cue the app can make; each one is a pair of soft tones at most. */
+export type Cue = 'start' | 'pause' | 'end' | 'break' | 'error'
+
+const CUES: Record<Cue, { notes: number[]; gap: number; duration: number; gain: number }> = {
+  start: { notes: [523.25, 783.99], gap: 0.22, duration: 0.6, gain: 0.16 },
+  pause: { notes: [523.25], gap: 0, duration: 0.4, gain: 0.1 },
+  end: { notes: [783.99, 523.25], gap: 0.22, duration: 0.7, gain: 0.14 },
+  break: { notes: [659.25, 987.77], gap: 0.2, duration: 0.6, gain: 0.14 },
+  error: { notes: [311.13, 233.08], gap: 0.16, duration: 0.45, gain: 0.12 }
+}
+
 /** Browsers keep audio suspended until the user interacts, so warm it up on the first click. */
 export function primeAudio(): void {
   try {
@@ -23,13 +34,20 @@ function tone(ctx: AudioContext, frequency: number, startAt: number, duration: n
   oscillator.stop(startAt + duration + 0.05)
 }
 
-/** Two soft bells: rising for focus start, falling for a finished session. */
-export function playChime(kind: 'start' | 'end' | 'break' = 'end'): void {
+/** Plays a cue; the caller decides whether the moment calls for it. */
+export function playChime(kind: Cue = 'end'): void {
   primeAudio()
   const ctx = context
   if (!ctx) return
-  const now = ctx.currentTime + 0.02
-  const notes = kind === 'start' ? [523.25, 783.99] : kind === 'break' ? [659.25, 987.77] : [783.99, 523.25]
-  tone(ctx, notes[0], now, 0.55, 0.16)
-  tone(ctx, notes[1], now + 0.22, 0.75, 0.12)
+  const cue = CUES[kind]
+  const start = ctx.currentTime + 0.02
+  cue.notes.forEach((frequency, index) => {
+    tone(ctx, frequency, start + index * cue.gap, cue.duration, cue.gain)
+  })
+}
+
+/** One gate for every cue: honours the system mute and the user's chime preference. */
+export function playCue(kind: Cue, options: { muted?: boolean; enabled?: boolean } = {}): void {
+  if (options.muted || options.enabled === false) return
+  playChime(kind)
 }

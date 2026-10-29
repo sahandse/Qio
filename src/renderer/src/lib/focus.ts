@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { AppState, FocusMode } from '@shared/types'
-import { playChime } from './chime'
+import { playCue } from './chime'
 
 export function modeMinutes(state: AppState | null, mode: FocusMode): number {
   const focus = state?.settings.focus
@@ -21,6 +21,7 @@ export function remainingMs(state: AppState | null): number {
 export function useFocusEngine(state: AppState | null): void {
   const focus = state?.focus
   const settings = state?.settings.focus
+  const muted = Boolean(state?.system.muted)
   const running = Boolean(focus?.running && focus.endsAt)
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function useFocusEngine(state: AppState | null): void {
             : 'short'
           : 'work'
 
-      if (settings?.chime !== false) playChime('end')
+      playCue('end', { muted, enabled: settings?.chime })
       void window.qio.focus.patch({
         mode: nextMode,
         running: false,
@@ -65,6 +66,7 @@ export function useFocusEngine(state: AppState | null): void {
     focus?.mode,
     focus?.round,
     focus?.completedToday,
+    muted,
     settings?.chime,
     settings?.longBreakEvery
   ])

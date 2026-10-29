@@ -1,6 +1,8 @@
 import type { AppState } from '@shared/types'
 import { formatJalali, toPersianDigits, WEEKDAYS_NARROW, weekdayIndex } from '../lib/jalali'
-import { WaterIcon } from './Icons'
+import { ICON, WaterIcon } from './Icons'
+import { Status } from './Status'
+import { Skeleton } from './Skeleton'
 
 function litres(ml: number): string {
   const text = (ml / 1000).toFixed(2).replace(/\.?0+$/, '').replace('.', '٫')
@@ -11,7 +13,7 @@ export function WaterPanel({ state }: { state: AppState | null }) {
   const water = state?.water
   const settings = state?.settings.water
 
-  if (!water || !settings || !state) return <p className="page-note">در حال بارگذاری…</p>
+  if (!water || !settings || !state) return <Skeleton lines={4} />
 
   const percent = water.goalMl > 0 ? water.total / water.goalMl : 0
   const reached = water.total >= water.goalMl
@@ -41,15 +43,15 @@ export function WaterPanel({ state }: { state: AppState | null }) {
             title={settings.reminders ? 'یادآوری روشن است' : 'یادآوری خاموش است'}
             aria-pressed={settings.reminders}
           >
-            <WaterIcon size={11} />
+            <WaterIcon size={ICON.xs} />
           </button>
         </div>
 
-        <span className={`water-status${reached ? ' ok' : ''}`}>
+        <Status tone={reached ? 'ok' : 'info'}>
           {reached
             ? `امروز · ${toPersianDigits(100)}٪ · به هدف رسیدی`
             : `امروز · ${toPersianDigits(Math.round(percent * 100))}٪ از ${litres(water.goalMl)} لیتر`}
-        </span>
+        </Status>
 
         <span className="water-bar" aria-hidden="true">
           <span style={{ width: `${Math.min(100, percent * 100)}%` }} />
@@ -57,7 +59,7 @@ export function WaterPanel({ state }: { state: AppState | null }) {
 
         <div className="water-actions">
           <button type="button" className="pill primary" onClick={() => add(settings.bottleMl)}>
-            <WaterIcon size={12} /> نوشیدن
+            <WaterIcon size={ICON.xs} /> نوشیدن
           </button>
           <button type="button" className="pill" onClick={() => add(250)}>
             +{toPersianDigits(250)}

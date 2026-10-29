@@ -1,5 +1,5 @@
 import type { SystemState } from '@shared/types'
-import { MuteIcon, SunIcon, VolumeIcon } from '../Icons'
+import { ICON, MuteIcon, SunIcon, VolumeIcon } from '../Icons'
 import { SliderRow, Toggle } from './controls'
 
 export function MediaSection({ system }: { system: SystemState }) {
@@ -8,7 +8,7 @@ export function MediaSection({ system }: { system: SystemState }) {
       <h3>صدا و صفحه</h3>
       <SliderRow
         label="صدا"
-        icon={system.muted ? <MuteIcon size={13} /> : <VolumeIcon size={13} />}
+        icon={system.muted ? <MuteIcon size={ICON.sm} /> : <VolumeIcon size={ICON.sm} />}
         value={system.volume ?? 0}
         disabled={system.volume === null}
         onChange={(next) => void window.qio.system.setVolume(next)}
@@ -20,7 +20,7 @@ export function MediaSection({ system }: { system: SystemState }) {
       />
       <SliderRow
         label="روشنایی"
-        icon={<SunIcon size={13} />}
+        icon={<SunIcon size={ICON.sm} />}
         value={system.brightness ?? 0}
         disabled={system.brightness === null}
         onChange={(next) => void window.qio.system.setBrightness(next)}

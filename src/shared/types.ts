@@ -78,6 +78,10 @@ export interface Settings {
   hideFullscreen: boolean
   /** Warm, dimmed colours between 21:00 and 07:00. */
   autoNight: boolean
+  /** Calm mode: no looping motion, no staggered entrances, no rolling digits. */
+  calm: boolean
+  /** Seasonal tint and festival flourishes on the notch. */
+  seasonal: boolean
   presence: PresenceSettings
   water: WaterSettings
   focus: FocusSettings

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { toPersianDigits } from '../../lib/jalali'
 import { Stepper } from '../Stepper'
+import { SettingRow } from './ui'
 
 export function Toggle({
   label,
@@ -14,15 +15,18 @@ export function Toggle({
   onChange: (next: boolean) => void
 }) {
   return (
-    <button type="button" className="setting-row" onClick={() => onChange(!checked)} role="switch" aria-checked={checked}>
-      <span className="setting-text">
-        <strong>{label}</strong>
-        {hint && <small>{hint}</small>}
-      </span>
+    <SettingRow
+      as="button"
+      role="switch"
+      ariaChecked={checked}
+      onClick={() => onChange(!checked)}
+      label={label}
+      hint={hint}
+    >
       <span className={`switch${checked ? ' on' : ''}`}>
         <span className="switch-knob" />
       </span>
-    </button>
+    </SettingRow>
   )
 }
 
@@ -44,15 +48,10 @@ export function NumberRow({
   onChange: (next: number) => void
 }) {
   return (
-    <div className="setting-row">
-      <span className="setting-text">
-        <strong>{label}</strong>
-      </span>
-      <span className="setting-control">
-        <Stepper label={label} value={value} min={min} max={max} step={step} onChange={onChange} />
-        {suffix && <span className="setting-suffix">{suffix}</span>}
-      </span>
-    </div>
+    <SettingRow label={label}>
+      <Stepper label={label} value={value} min={min} max={max} step={step} onChange={onChange} />
+      {suffix && <span className="setting-suffix">{suffix}</span>}
+    </SettingRow>
   )
 }
 
@@ -66,10 +65,7 @@ export function HourRow({
   onChange: (next: number) => void
 }) {
   return (
-    <label className="setting-row">
-      <span className="setting-text">
-        <strong>{label}</strong>
-      </span>
+    <SettingRow as="label" label={label}>
       <select className="setting-select" value={value} onChange={(event) => onChange(Number(event.target.value))}>
         {Array.from({ length: 25 }, (_, hour) => (
           <option key={hour} value={hour}>
@@ -77,7 +73,7 @@ export function HourRow({
           </option>
         ))}
       </select>
-    </label>
+    </SettingRow>
   )
 }
 
@@ -107,27 +103,19 @@ export function SliderRow({
   const range = max - min
   const fill = range > 0 ? ((value - min) / range) * 100 : 0
   return (
-    <label className="setting-row">
-      <span className="setting-text">
-        <strong>
-          {icon} {label}
-        </strong>
-        {hint && <small>{hint}</small>}
-      </span>
-      <span className="setting-control">
-        <input
-          className="rail settings-rail"
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={Math.round(value)}
-          disabled={disabled}
-          style={{ ['--p' as string]: `${fill}%` }}
-          onChange={(event) => onChange(Number(event.target.value))}
-        />
-        <span className="setting-suffix">{suffix ?? `${toPersianDigits(Math.round(value))}٪`}</span>
-      </span>
-    </label>
+    <SettingRow as="label" label={label} hint={hint} icon={icon}>
+      <input
+        className="rail settings-rail"
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={Math.round(value)}
+        disabled={disabled}
+        style={{ ['--p' as string]: `${fill}%` }}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+      <span className="setting-suffix">{suffix ?? `${toPersianDigits(Math.round(value))}٪`}</span>
+    </SettingRow>
   )
 }

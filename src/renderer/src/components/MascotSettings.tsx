@@ -10,6 +10,8 @@ import {
   MASCOT_STATES,
   Mascot
 } from './Mascot'
+import { Toggle } from './settings/controls'
+import { Card, SettingRow } from './settings/ui'
 
 const SLEEP_CHOICES = [8, 15, 30, 60]
 
@@ -25,30 +27,6 @@ function Chip({
   return (
     <button type="button" className={`mascot-chip${active ? ' on' : ''}`} onClick={onClick}>
       {children}
-    </button>
-  )
-}
-
-function Switch({
-  label,
-  hint,
-  checked,
-  onChange
-}: {
-  label: string
-  hint?: string
-  checked: boolean
-  onChange: (next: boolean) => void
-}) {
-  return (
-    <button type="button" className="setting-row" onClick={() => onChange(!checked)} role="switch" aria-checked={checked}>
-      <span className="setting-text">
-        <strong>{label}</strong>
-        {hint && <small>{hint}</small>}
-      </span>
-      <span className={`switch${checked ? ' on' : ''}`}>
-        <span className="switch-knob" />
-      </span>
     </button>
   )
 }
@@ -103,9 +81,7 @@ export function MascotSettingsCard({
     : [...SLEEP_CHOICES, style.sleepAfter].sort((a, b) => a - b)
 
   return (
-    <section className="settings-card settings-mascot">
-      <h3>ماسکوت</h3>
-
+    <Card title="ماسکوت" className="settings-mascot">
       <div className="mascot-stage" onClick={() => setPreview((current) => (current ? null : 'wave'))}>
         <Mascot settings={style} state={shown} className="mascot-stage-art" />
       </div>
@@ -199,40 +175,34 @@ export function MascotSettingsCard({
       </div>
 
       <div className="mascot-group mascot-toggles">
-        <Switch label="درخشش چشم" checked={style.glow} onChange={(glow) => onPatch({ glow })} />
-        <Switch label="مردمک" checked={style.pupil} onChange={(pupil) => onPatch({ pupil })} />
-        <Switch label="ابرو" checked={style.brows} onChange={(brows) => onPatch({ brows })} />
-        <Switch label="گونهٔ گلگون" checked={style.blush} onChange={(blush) => onPatch({ blush })} />
-        <Switch label="دست هنگام سلام" checked={style.hand} onChange={(hand) => onPatch({ hand })} />
-        <Switch label="zzz در خواب" checked={style.zzz} onChange={(zzz) => onPatch({ zzz })} />
+        <Toggle label="درخشش چشم" checked={style.glow} onChange={(glow) => onPatch({ glow })} />
+        <Toggle label="مردمک" checked={style.pupil} onChange={(pupil) => onPatch({ pupil })} />
+        <Toggle label="ابرو" checked={style.brows} onChange={(brows) => onPatch({ brows })} />
+        <Toggle label="گونهٔ گلگون" checked={style.blush} onChange={(blush) => onPatch({ blush })} />
+        <Toggle label="دست هنگام سلام" checked={style.hand} onChange={(hand) => onPatch({ hand })} />
+        <Toggle label="zzz در خواب" checked={style.zzz} onChange={(zzz) => onPatch({ zzz })} />
       </div>
 
-      <div className="setting-row">
-        <span className="setting-text">
-          <strong>خواب بعد از</strong>
-          <small>چند ثانیه بی‌حرکتی، چشم‌ها را می‌بندد</small>
-        </span>
-        <span className="setting-control">
-          <select
-            className="setting-select"
-            value={style.sleepAfter}
-            onChange={(event) => onPatch({ sleepAfter: Number(event.target.value) })}
-          >
-            {sleepChoices.map((seconds) => (
-              <option key={seconds} value={seconds}>
-                {toPersianDigits(seconds)} ثانیه
-              </option>
-            ))}
-          </select>
-        </span>
-      </div>
+      <SettingRow as="label" label="خواب بعد از" hint="چند ثانیه بی‌حرکتی، چشم‌ها را می‌بندد">
+        <select
+          className="setting-select"
+          value={style.sleepAfter}
+          onChange={(event) => onPatch({ sleepAfter: Number(event.target.value) })}
+        >
+          {sleepChoices.map((seconds) => (
+            <option key={seconds} value={seconds}>
+              {toPersianDigits(seconds)} ثانیه
+            </option>
+          ))}
+        </select>
+      </SettingRow>
 
-      <Switch
+      <Toggle
         label="کاهش حرکت"
         hint="انیمیشن چشم‌ها و پلک‌زدن متوقف می‌شود"
         checked={style.reducedMotion}
         onChange={(reducedMotion) => onPatch({ reducedMotion })}
       />
-    </section>
+    </Card>
   )
 }

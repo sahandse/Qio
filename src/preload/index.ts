@@ -82,6 +82,7 @@ const api: QioApi = {
     nudgeVolume: (step) => ipcRenderer.invoke('system:volume-nudge', step) as Promise<void>,
     setMute: (muted) => ipcRenderer.invoke('system:mute', muted) as Promise<void>,
     setBrightness: (level) => ipcRenderer.invoke('system:brightness', level) as Promise<void>,
+    copyText: (text) => ipcRenderer.invoke('system:copy-text', text) as Promise<boolean>,
     loginItem: () => ipcRenderer.invoke('system:login-item') as Promise<boolean>
   },
 

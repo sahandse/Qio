@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { AppState, MascotState } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useClockPresence } from '../lib/state'
-import { ClockDate, ClockText } from './Clock'
-import { MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
+import { ClockDate, ClockText, ClockWeek } from './Clock'
+import { ICON, MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
 import { Mascot } from './Mascot'
 
 interface Props {
@@ -64,8 +64,8 @@ function BatteryRing({
   )
 }
 
-/** A thin progress hairline: focus first, otherwise today's water. */
-function BarEdge({ state }: { state: AppState | null }) {
+/** Focus progress from 0 to 1, ticking once a second while a round runs. */
+function useFocusProgress(state: AppState | null): number {
   const focus = state?.focus
   const running = Boolean(focus?.running)
   const [, tick] = useState(0)
@@ -76,18 +76,25 @@ function BarEdge({ state }: { state: AppState | null }) {
     return () => window.clearInterval(timer)
   }, [running])
 
+  if (!focus?.running || !focus.endsAt || !state) return 0
+  const minutes =
+    focus.mode === 'work'
+      ? state.settings.focus.workMin
+      : focus.mode === 'short'
+        ? state.settings.focus.shortBreakMin
+        : state.settings.focus.longBreakMin
+  const total = minutes * 60_000
+  return total > 0 ? Math.min(1, 1 - Math.max(0, focus.endsAt - Date.now()) / total) : 0
+}
+
+/** A thin progress hairline: focus first, otherwise today's water. */
+function BarEdge({ state, focusPct }: { state: AppState | null; focusPct: number }) {
+  const focus = state?.focus
+
   if (!state) return null
 
-  if (focus?.running && focus.endsAt) {
-    const minutes =
-      focus.mode === 'work'
-        ? state.settings.focus.workMin
-        : focus.mode === 'short'
-          ? state.settings.focus.shortBreakMin
-          : state.settings.focus.longBreakMin
-    const total = minutes * 60_000
-    const pct = total > 0 ? 1 - Math.max(0, focus.endsAt - Date.now()) / total : 0
-    if (pct > 0.005) return <BarEdgeLine pct={pct} color="var(--warn)" />
+  if (focus?.running && focus.endsAt && focusPct > 0.005) {
+    return <BarEdgeLine pct={focusPct} color={focus.mode === 'work' ? 'var(--warn)' : 'var(--accent)'} />
   }
 
   const water = state.water
@@ -180,6 +187,23 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
   }, [])
 
   const clockOn = useClockPresence(state?.settings.presence ?? FALLBACK_PRESENCE, expanded)
+  const focusPct = useFocusProgress(state)
+
+  /** Each return of a resting clock opens like an eyelid instead of just fading in. */
+  const [lidOpening, setLidOpening] = useState(false)
+  const wasClockOn = useRef(clockOn)
+
+  useEffect(() => {
+    const returned = clockOn && !wasClockOn.current
+    wasClockOn.current = clockOn
+    if (!returned) {
+      setLidOpening(false)
+      return
+    }
+    setLidOpening(true)
+    const timer = window.setTimeout(() => setLidOpening(false), 720)
+    return () => window.clearTimeout(timer)
+  }, [clockOn])
 
   if (!expanded) {
     const faceState: MascotState =
@@ -192,11 +216,18 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
         title="باز کردن Qio"
         aria-label="باز کردن Qio"
       >
-        <BarEdge state={state} />
+        <BarEdge state={state} focusPct={focusPct} />
         <span className="bar-side">
           {mascot ? (
             <span className="mascot-slot" ref={slot}>
               <Mascot settings={mascotStyle} state={faceState} className="mascot-notch" />
+              {state?.focus.running && (
+                <span
+                  className={`mascot-ring${state.focus.mode === 'work' ? ' work' : ''}`}
+                  style={{ ['--ring-progress' as string]: `${Math.round(focusPct * 360)}deg` }}
+                  aria-hidden="true"
+                />
+              )}
             </span>
           ) : battery != null ? (
             <BatteryRing battery={battery} charging={charging} />
@@ -204,7 +235,7 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
             <span className="status-pin" />
           )}
         </span>
-        <ClockText hour24={hour24} className="bar-clock" off={!clockOn} />
+        <ClockText hour24={hour24} className={`bar-clock${lidOpening ? ' opening' : ''}`} off={!clockOn} />
       </button>
     )
   }
@@ -215,8 +246,11 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
       <span className="page-status">
         {battery != null && <BatteryRing battery={battery} charging={charging} small />}
         <span className="page-clock-block">
-          <ClockText hour24={hour24} className="page-clock" />
-          <ClockDate className="page-date" />
+          <span className="clock-face">
+            <ClockText hour24={hour24} className="page-clock" />
+            <ClockDate className="page-date" />
+          </span>
+          <ClockWeek />
         </span>
       </span>
       <span className="page-tools">
@@ -227,10 +261,10 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
           aria-label={muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
           onClick={() => void window.qio.system.setMute(!muted)}
         >
-          {muted ? <MuteIcon size={14} /> : <VolumeIcon size={14} />}
+          {muted ? <MuteIcon size={ICON.sm} /> : <VolumeIcon size={ICON.sm} />}
         </button>
         <button type="button" className="tool-button" title="تنظیمات" aria-label="تنظیمات" onClick={onSettings}>
-          <SettingsIcon size={13} />
+          <SettingsIcon size={ICON.sm} />
         </button>
       </span>
     </header>

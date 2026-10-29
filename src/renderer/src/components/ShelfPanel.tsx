@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AppState, ShelfItem } from '@shared/types'
 import { formatBytes } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
+import { ICON, CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
 import { PanelEmpty } from './PanelEmpty'
 
 function useFileIcon(item: ShelfItem): string {
@@ -58,7 +58,7 @@ function Tile({
         ) : icon ? (
           <img src={icon} alt="" />
         ) : (
-          <ShelfIcon size={20} />
+          <ShelfIcon size={ICON.lg} />
         )}
       </span>
       <span className="shelf-tile-name" dir="auto">
@@ -115,7 +115,7 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
       {items.length === 0 ? (
         <PanelEmpty
           dashed
-          icon={<ShelfIcon size={22} />}
+          icon={<ShelfIcon size={ICON.xl} />}
           title="اینجا رها کن"
           hint="فایل‌ها کپی نمی‌شوند؛ Qio فقط مسیرشان را به یاد می‌آورد."
         />
@@ -149,7 +149,7 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
             title="افزودن متن کپی‌شده"
             onClick={() => void window.qio.shelf.addText()}
           >
-            <TextCardIcon size={12} /> متن
+            <TextCardIcon size={ICON.xs} /> متن
           </button>
           {selected.length === 1 && (
             <button
@@ -158,7 +158,7 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
               title="کپی"
               onClick={() => void window.qio.shelf.copy(selected[0])}
             >
-              <CopyIcon size={12} />
+              <CopyIcon size={ICON.xs} />
             </button>
           )}
           {selected.length === 1 && items.find((item) => item.id === selected[0])?.kind === 'file' && (
@@ -168,12 +168,12 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
               title="نمایش در Explorer"
               onClick={() => void window.qio.shelf.reveal(selected[0])}
             >
-              <FolderOpenIcon size={12} />
+              <FolderOpenIcon size={ICON.xs} />
             </button>
           )}
           {selected.length > 0 && (
             <button type="button" className="mini-button danger" title="حذف از قفسه" onClick={removeSelected}>
-              <TrashIcon size={12} />
+              <TrashIcon size={ICON.xs} />
             </button>
           )}
         </div>

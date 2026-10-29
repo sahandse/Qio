@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { AppState, Note, NoteTint } from '@shared/types'
 import { relativeTime } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { NoteIcon, PinIcon, PlusIcon, TrashIcon } from './Icons'
+import { ICON, NoteIcon, PinIcon, PlusIcon, TrashIcon } from './Icons'
 import { PanelEmpty } from './PanelEmpty'
 
 const TINTS: { id: NoteTint; label: string }[] = [
@@ -62,7 +62,7 @@ export function NotesPanel({ state }: { state: AppState | null }) {
         }}
       >
         <span className="note-composer-mark" aria-hidden="true">
-          <NoteIcon size={13} />
+          <NoteIcon size={ICON.sm} />
         </span>
         <input
           className="note-input"
@@ -86,14 +86,14 @@ export function NotesPanel({ state }: { state: AppState | null }) {
           ))}
         </div>
         <button type="submit" className="note-send" disabled={!text.trim()} title="ثبت یادداشت" aria-label="ثبت یادداشت">
-          <PlusIcon size={12} />
+          <PlusIcon size={ICON.xs} />
         </button>
       </form>
 
       <div className="notes-list" data-scroll>
         {ordered.length === 0 && (
           <PanelEmpty
-            icon={<NoteIcon size={17} />}
+            icon={<NoteIcon size={ICON.md} />}
             hint="یادداشت‌های کوتاه اینجا می‌مانند — سنجاقشان کن تا بالای فهرست بمانند."
           />
         )}
@@ -152,7 +152,7 @@ export function NotesPanel({ state }: { state: AppState | null }) {
                   aria-label={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
                   aria-pressed={note.pinned}
                 >
-                  <PinIcon size={11} />
+                  <PinIcon size={ICON.xs} />
                 </button>
                 <button
                   type="button"
@@ -161,7 +161,7 @@ export function NotesPanel({ state }: { state: AppState | null }) {
                   title="حذف"
                   aria-label="حذف"
                 >
-                  <TrashIcon size={11} />
+                  <TrashIcon size={ICON.xs} />
                 </button>
               </div>
             </div>

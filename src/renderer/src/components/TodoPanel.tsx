@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { AppState, Todo } from '@shared/types'
 import { formatClock, formatDueTime, relativeDay } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { CheckIcon, CloseIcon, PencilIcon, PlusIcon, TodoIcon, TrashIcon } from './Icons'
+import { ICON, CheckIcon, CloseIcon, PencilIcon, PlusIcon, TodoIcon, TrashIcon } from './Icons'
 import { PanelEmpty } from './PanelEmpty'
 
 type DueKind = 'none' | '30m' | '1h' | '3h' | 'tonight' | 'tomorrow'
@@ -96,7 +96,7 @@ export function TodoPanel({ state }: { state: AppState | null }) {
             }}
             title="افزودن کار"
           >
-            <PlusIcon size={11} /> افزودن
+            <PlusIcon size={ICON.xs} /> افزودن
           </button>
           <button
             type="button"
@@ -108,7 +108,7 @@ export function TodoPanel({ state }: { state: AppState | null }) {
             title="ویرایش فهرست"
             aria-label="ویرایش فهرست"
           >
-            <PencilIcon size={11} />
+            <PencilIcon size={ICON.xs} />
           </button>
           <span className="todo-open">
             {todos.length === done.length && todos.length > 0
@@ -135,7 +135,7 @@ export function TodoPanel({ state }: { state: AppState | null }) {
                 onChange={(event) => setText(event.target.value)}
               />
               <button type="button" className="round round-quiet" onClick={() => setAdding(false)} title="بستن">
-                <CloseIcon size={11} />
+                <CloseIcon size={ICON.xs} />
               </button>
             </div>
             <div className="todo-form-row">
@@ -156,7 +156,7 @@ export function TodoPanel({ state }: { state: AppState | null }) {
           <div className="todo-list" data-scroll>
             {list.length === 0 && (
               <PanelEmpty
-                icon={<TodoIcon size={17} />}
+                icon={<TodoIcon size={ICON.md} />}
                 title="فهرست خالی است"
                 hint="یک کار با زمان اضافه کن تا Qio خبرت کند."
               />
@@ -184,7 +184,7 @@ export function TodoPanel({ state }: { state: AppState | null }) {
                     title={todo.dueAt ? formatDueTime(todo.dueAt) : 'حذف'}
                     aria-label="حذف"
                   >
-                    <TrashIcon size={11} />
+                    <TrashIcon size={ICON.xs} />
                   </button>
                 )}
               </div>

@@ -1,6 +1,7 @@
 import type { Settings } from '@shared/types'
-import { BoltIcon } from '../Icons'
+import { ICON, BoltIcon } from '../Icons'
 import { NumberRow, SliderRow, Toggle } from './controls'
+import { Card, Chip, SettingRow } from './ui'
 
 export function GeneralSection({
   settings,
@@ -13,8 +14,7 @@ export function GeneralSection({
 }) {
   return (
     <>
-      <section className="settings-card">
-        <h3>Qio</h3>
+      <Card title="Qio">
         <Toggle
           label="اجرا هنگام ورود به ویندوز"
           hint={packaged === false ? 'در نسخهٔ نصب‌شده فعال می‌شود' : 'بعد از هر ورود، Qio منتظرت است'}
@@ -54,38 +54,44 @@ export function GeneralSection({
           checked={settings.autoNight}
           onChange={(next) => onPatch({ autoNight: next })}
         />
-      </section>
+        <Toggle
+          label="حالت آرام"
+          hint="حرکت‌های تزئینی، ورود پله‌ای و غلتیدن اعداد خاموش می‌شود"
+          checked={settings.calm}
+          onChange={(next) => onPatch({ calm: next })}
+        />
+        <Toggle
+          label="رنگ فصل"
+          hint="نچ با ماه جاری هم‌رنگ می‌شود؛ نوروز و یلدا جلوهٔ خودشان را دارند"
+          checked={settings.seasonal}
+          onChange={(next) => onPatch({ seasonal: next })}
+        />
+      </Card>
 
-      <section className="settings-card">
-        <h3>ساعت</h3>
-        <div className="setting-row">
-          <span className="setting-text">
-            <strong>حالت ساعت</strong>
-            <small>
-              {settings.presence.mode === 'always'
-                ? 'ساعت همیشه روی نچ می‌ماند.'
-                : 'ساعت بیشتر وقت‌ها کنار می‌رود و هر چند دقیقه یک‌بار برمی‌گردد.'}
-            </small>
-          </span>
+      <Card title="ساعت">
+        <SettingRow
+          label="حالت ساعت"
+          hint={
+            settings.presence.mode === 'always'
+              ? 'ساعت همیشه روی نچ می‌ماند.'
+              : 'ساعت بیشتر وقت‌ها کنار می‌رود و هر چند دقیقه یک‌بار برمی‌گردد.'
+          }
+        >
           <span className="setting-chips" role="group" aria-label="حالت ساعت">
-            <button
-              type="button"
-              className={`setting-chip${settings.presence.mode === 'always' ? ' on' : ''}`}
-              aria-pressed={settings.presence.mode === 'always'}
+            <Chip
+              active={settings.presence.mode === 'always'}
               onClick={() => onPatch({ presence: { ...settings.presence, mode: 'always' } })}
             >
               همیشه
-            </button>
-            <button
-              type="button"
-              className={`setting-chip${settings.presence.mode === 'peek' ? ' on' : ''}`}
-              aria-pressed={settings.presence.mode === 'peek'}
+            </Chip>
+            <Chip
+              active={settings.presence.mode === 'peek'}
               onClick={() => onPatch({ presence: { ...settings.presence, mode: 'peek' } })}
             >
               دوره‌ای
-            </button>
+            </Chip>
           </span>
-        </div>
+        </SettingRow>
         {settings.presence.mode === 'peek' && (
           <>
             <NumberRow
@@ -111,22 +117,21 @@ export function GeneralSection({
             </p>
           </>
         )}
-      </section>
+      </Card>
 
-      <section className="settings-card">
-        <h3>کنترل</h3>
+      <Card title="کنترل">
         <div className="settings-note">
           کلیدهای ۱ تا ۹ بین صفحه‌ها جابه‌جا می‌شوند، Esc پنل را می‌بندد و چرخ ماوس هم صفحه بعد را می‌آورد.
         </div>
         <div className="settings-actions">
           <button type="button" className="pill" onClick={() => void window.qio.window.setVisible(false)}>
-            <BoltIcon size={12} /> پنهان کردن نچ
+            <BoltIcon size={ICON.xs} /> پنهان کردن نچ
           </button>
           <button type="button" className="pill danger" onClick={() => void window.qio.window.quit()}>
             خروج از Qio
           </button>
         </div>
-      </section>
+      </Card>
     </>
   )
 }

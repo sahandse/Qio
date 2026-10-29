@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { AppState, FocusMode } from '@shared/types'
 import { modeMinutes, pauseSession, remainingMs, resetSession, startSession } from '../lib/focus'
-import { playChime } from '../lib/chime'
+import { playCue } from '../lib/chime'
 import { toPersianDigits } from '../lib/jalali'
-import { PauseIcon, PlayIcon, ResetIcon, TimerIcon } from './Icons'
+import { ICON, PauseIcon, PlayIcon, ResetIcon, TimerIcon } from './Icons'
+import { RollingText } from './Clock'
 
 const MODE_LABEL: Record<FocusMode, string> = { work: 'تمرکز', short: 'استراحت کوتاه', long: 'استراحت بلند' }
 
@@ -28,11 +29,13 @@ export function FocusPanel({ state }: { state: AppState | null }) {
   const done = focus?.completedToday ?? 0
 
   const toggle = async () => {
+    const audio = { muted: Boolean(state?.system.muted), enabled: state?.settings.focus.chime }
     if (running) {
+      playCue('pause', audio)
       await pauseSession(left)
       return
     }
-    playChime('start')
+    playCue('start', audio)
     if (left > 0 && paused) {
       await window.qio.focus.patch({ mode, running: true, endsAt: Date.now() + left, pausedMs: 0 })
       return
@@ -51,13 +54,15 @@ export function FocusPanel({ state }: { state: AppState | null }) {
         aria-label={running ? 'توقف' : 'شروع'}
       >
         <span className="orbit-core">
-          {running ? <PauseIcon size={18} /> : left > 0 && paused ? <PlayIcon size={18} /> : <TimerIcon size={18} />}
+          {running ? <PauseIcon size={ICON.lg} /> : left > 0 && paused ? <PlayIcon size={ICON.lg} /> : <TimerIcon size={ICON.lg} />}
         </span>
       </button>
 
       <div className="focus-main">
         <span className="focus-time">
-          {toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)}
+          <RollingText
+            text={toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)}
+          />
         </span>
 
         <span className="focus-sub">
@@ -91,7 +96,7 @@ export function FocusPanel({ state }: { state: AppState | null }) {
             title="از نو"
             aria-label="از نو"
           >
-            <ResetIcon size={12} />
+            <ResetIcon size={ICON.xs} />
           </button>
         </div>
       </div>

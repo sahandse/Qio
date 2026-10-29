@@ -104,6 +104,19 @@ export function useNightTheme(auto: boolean): void {
 }
 
 /**
+ * Calm mode strips the decorative layer: no aurora drift, no staggered entrances,
+ * no rolling digits. The flag lives on the root so pure CSS can react to it.
+ */
+export function useCalm(on: boolean): void {
+  useEffect(() => {
+    const root = document.documentElement
+    if (on) root.dataset.calm = 'on'
+    else root.removeAttribute('data-calm')
+    return () => root.removeAttribute('data-calm')
+  }, [on])
+}
+
+/**
  * The clock visits instead of staying: a short appearance, then it rests out of sight
  * until its next turn. Hovering the notch or opening a panel keeps it around.
  */

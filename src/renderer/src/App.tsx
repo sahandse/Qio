@@ -11,7 +11,9 @@ import { TodoPanel } from './components/TodoPanel'
 import { NotesPanel } from './components/NotesPanel'
 import { AiPanel } from './components/AiPanel'
 import { NudgePill } from './components/NudgePill'
+import { SeasonFx } from './components/SeasonFx'
 import {
+  ICON,
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -24,9 +26,10 @@ import {
   TodoIcon,
   WaterIcon
 } from './components/Icons'
-import { useAppState, useNightTheme, useNudge } from './lib/state'
+import { useAppState, useCalm, useNightTheme, useNudge } from './lib/state'
+import { useSeasonTheme } from './lib/season'
 import { useFocusEngine } from './lib/focus'
-import { primeAudio } from './lib/chime'
+import { playCue, primeAudio } from './lib/chime'
 
 type PageId = Exclude<PanelId, 'settings'>
 
@@ -61,6 +64,8 @@ function isPage(id: PanelId): id is PageId {
 export default function App() {
   const state = useAppState()
   useNightTheme(state?.settings.autoNight ?? true)
+  useCalm(state?.settings.calm ?? false)
+  useSeasonTheme(state?.settings.seasonal ?? true)
   const nudge = useNudge()
   const [hover, setHover] = useState(false)
   const [pinned, setPinned] = useState(false)
@@ -70,7 +75,11 @@ export default function App() {
   const [aiBusy, setAiBusy] = useState(false)
   const [aiStream, setAiStream] = useState('')
   const [aiError, setAiError] = useState<string | null>(null)
+  const [online, setOnline] = useState(navigator.onLine)
   const aiRequest = useRef<string | null>(null)
+  const lastPrompt = useRef<string | null>(null)
+  /** The mute switch and the chime preference, read from inside long-lived callbacks. */
+  const audio = useRef({ muted: false, enabled: true })
   const stackRef = useRef<HTMLDivElement>(null)
   const pinTimer = useRef<number | null>(null)
   const leaveTimer = useRef<number | null>(null)
@@ -78,6 +87,10 @@ export default function App() {
   const wheelAt = useRef(0)
 
   useFocusEngine(state)
+
+  useEffect(() => {
+    audio.current = { muted: Boolean(state?.system.muted), enabled: state?.settings.focus.chime ?? true }
+  }, [state?.system.muted, state?.settings.focus.chime])
 
   /** A short cheer when a focus round ends or the water goal is reached, plus a face while focusing. */
   const [cheer, setCheer] = useState<MascotState | null>(null)
@@ -124,23 +137,32 @@ export default function App() {
       aiRequest.current = null
       setAiBusy(false)
       setAiStream('')
-      if (event.type === 'error') setAiError(event.error ?? 'پاسخ نیامد؛ دوباره امتحان کن.')
+      if (event.type === 'error') {
+        playCue('error', audio.current)
+        setAiError(event.error ?? 'پاسخ نیامد؛ دوباره امتحان کن.')
+      }
     })
     return off
   }, [])
 
   const sendAi = useCallback(async (value: string) => {
+    lastPrompt.current = value
     setAiError(null)
     setAiStream('')
     setAiBusy(true)
     const result = await window.qio.ai.send(value)
     if (!result.ok) {
+      playCue('error', audio.current)
       setAiBusy(false)
       setAiError(result.error ?? 'ارسال نشد؛ دوباره امتحان کن.')
       return
     }
     aiRequest.current = result.requestId ?? null
   }, [])
+
+  const retryAi = useCallback(() => {
+    if (lastPrompt.current) void sendAi(lastPrompt.current)
+  }, [sendAi])
 
   const stopAi = useCallback(() => {
     if (aiRequest.current) window.qio.ai.stop(aiRequest.current)
@@ -205,9 +227,14 @@ export default function App() {
   }, [panel, pin])
 
   useEffect(() => {
-    const offline = () =>
+    const offline = () => {
+      setOnline(false)
       void window.qio.notify('network', 'اتصال قطع شد', 'اینترنت وصل نیست؛ قفسه و آهنگ‌های محلی کار می‌کنند.')
-    const online = () => void window.qio.notify('network', 'اتصال برگشت', 'دوباره به اینترنت وصل شدی.')
+    }
+    const online = () => {
+      setOnline(true)
+      void window.qio.notify('network', 'اتصال برگشت', 'دوباره به اینترنت وصل شدی.')
+    }
     window.addEventListener('offline', offline)
     window.addEventListener('online', online)
     return () => {
@@ -326,6 +353,7 @@ export default function App() {
           }}
           onDrop={onDrop}
         >
+          <SeasonFx on={state?.settings.seasonal ?? true} />
           <NotchBar
             state={state}
             expanded={expanded}
@@ -355,8 +383,10 @@ export default function App() {
                     busy={aiBusy}
                     streaming={aiStream}
                     error={aiError}
+                    online={online}
                     onSend={sendAi}
                     onStop={stopAi}
+                    onRetry={retryAi}
                     onOpenSettings={() => void window.qio.window.openSettings('ai')}
                   />
                 )}
@@ -373,7 +403,7 @@ export default function App() {
                     data-label={entry.title}
                     onClick={() => setPanel(entry.id)}
                   >
-                    <entry.Icon size={12} />
+                    <entry.Icon size={ICON.xs} />
                   </button>
                 ))}
               </nav>
@@ -385,7 +415,7 @@ export default function App() {
                 aria-label="صفحهٔ قبل"
                 onClick={() => go(-1)}
               >
-                <ChevronRightIcon size={14} />
+                <ChevronRightIcon size={ICON.sm} />
               </button>
               <button
                 type="button"
@@ -394,7 +424,7 @@ export default function App() {
                 aria-label="صفحهٔ بعد"
                 onClick={() => go(1)}
               >
-                <ChevronLeftIcon size={14} />
+                <ChevronLeftIcon size={ICON.sm} />
               </button>
             </>
           )}

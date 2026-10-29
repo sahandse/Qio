@@ -4,6 +4,7 @@ import { formatDuration, formatLitres, formatRemaining, mediaAppName } from '../
 import { toPersianDigits } from '../lib/jalali'
 import { useCover, useMediaClock } from '../lib/state'
 import {
+  ICON,
   LyricsIcon,
   MusicIcon,
   MuteIcon,
@@ -131,7 +132,7 @@ function Volume({ system }: { system: AppState['system'] }) {
         title={system.muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
         aria-label={system.muted ? 'باصدا کردن' : 'بی‌صدا کردن'}
       >
-        {system.muted ? <MuteIcon size={13} /> : <VolumeIcon size={13} />}
+        {system.muted ? <MuteIcon size={ICON.sm} /> : <VolumeIcon size={ICON.sm} />}
       </button>
       <input
         className="rail vol-rail"
@@ -206,7 +207,7 @@ export function MusicPanel({ state, onOpen }: { state: AppState | null; onOpen?:
 
       <div className="transport">
         <button type="button" className="transport-side" onClick={onOpen} title="متن آهنگ" aria-label="متن آهنگ">
-          <LyricsIcon size={13} />
+          <LyricsIcon size={ICON.sm} />
           <span className="transport-side-label">متن</span>
         </button>
         <Transport media={live ? media : null} playing={playing} />

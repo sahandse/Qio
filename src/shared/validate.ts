@@ -55,7 +55,9 @@ const FLAG_KEYS = [
   'mascot',
   'lyrics',
   'hideFullscreen',
-  'autoNight'
+  'autoNight',
+  'calm',
+  'seasonal'
 ] as const
 
 export function pickSettingsPatch(raw: unknown): Partial<Settings> {

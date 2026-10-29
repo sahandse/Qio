@@ -99,6 +99,7 @@ export interface QioApi {
     nudgeVolume(step: number): Promise<void>
     setMute(muted: boolean): Promise<void>
     setBrightness(level: number): Promise<void>
+    copyText(text: string): Promise<boolean>
     loginItem(): Promise<boolean>
   }
 

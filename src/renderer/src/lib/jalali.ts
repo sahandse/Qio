@@ -192,6 +192,26 @@ export function monthGrid(jy: number, jm: number): (number | null)[] {
   return cells
 }
 
+export interface WeekDay {
+  date: Date
+  j: JDate
+  /** 0 is Saturday, 6 is Friday. */
+  weekday: number
+  today: boolean
+  event: string | null
+}
+
+/** The seven days of the week that contains `now`, Saturday first. */
+export function weekAround(now = new Date()): WeekDay[] {
+  const today = weekdayIndex(now)
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - today, 12)
+  return Array.from({ length: 7 }, (_, weekday) => {
+    const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + weekday, 12)
+    const j = toJalali(date)
+    return { date, j, weekday, today: weekday === today, event: eventOn(j.jm, j.jd) }
+  })
+}
+
 export function addMonths(jy: number, jm: number, delta: number): { jy: number; jm: number } {
   const total = jy * 12 + (jm - 1) + delta
   return { jy: Math.floor(total / 12), jm: (total % 12) + 1 }

@@ -1,4 +1,4 @@
-import { TelegramIcon } from '../Icons'
+import { ICON, TelegramIcon } from '../Icons'
 
 export function AboutSection() {
   return (
@@ -11,7 +11,7 @@ export function AboutSection() {
         title="گفت‌وگو در تلگرام"
       >
         <span className="about-telegram-mark" aria-hidden="true">
-          <TelegramIcon size={17} />
+          <TelegramIcon size={ICON.md} />
         </span>
         <span className="about-telegram-id" dir="ltr">
           @sahandse

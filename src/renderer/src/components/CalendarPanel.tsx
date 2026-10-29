@@ -13,7 +13,7 @@ import {
   WEEKDAYS_NARROW,
   weekdayOf
 } from '../lib/jalali'
-import { ChevronLeftIcon, ChevronRightIcon } from './Icons'
+import { ICON, ChevronLeftIcon, ChevronRightIcon } from './Icons'
 
 export function CalendarPanel() {
   const now = new Date()
@@ -40,13 +40,13 @@ export function CalendarPanel() {
     <div className="cal-page">
       <div className="cal-bar">
         <button type="button" className="cal-nav" onClick={() => goTo(-1)} title="ماه قبل" aria-label="ماه قبل">
-          <ChevronRightIcon size={13} />
+          <ChevronRightIcon size={ICON.sm} />
         </button>
         <span className="cal-month">
           {JALALI_MONTHS[view.jm - 1]} {toPersianDigits(view.jy)}
         </span>
         <button type="button" className="cal-nav" onClick={() => goTo(1)} title="ماه بعد" aria-label="ماه بعد">
-          <ChevronLeftIcon size={13} />
+          <ChevronLeftIcon size={ICON.sm} />
         </button>
         <button
           type="button"

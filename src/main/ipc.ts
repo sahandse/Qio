@@ -257,6 +257,12 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('system:volume-nudge', (_event, step: number) => bridge.nudgeVolume(Number(step)))
   ipcMain.handle('system:mute', (_event, muted: boolean) => bridge.setMuted(Boolean(muted)))
   ipcMain.handle('system:brightness', (_event, level: number) => bridge.setBrightness(Number(level)))
+
+  ipcMain.handle('system:copy-text', (_event, text: string) => {
+    if (typeof text !== 'string' || text.length === 0 || text.length > 100_000) return false
+    clipboard.writeText(text)
+    return true
+  })
   ipcMain.handle('system:login-item', () => app.isPackaged && app.getLoginItemSettings().openAtLogin)
 
   ipcMain.handle('window:size', (_event, size: { width: number; height: number }) => {

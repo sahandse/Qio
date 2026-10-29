@@ -71,6 +71,8 @@ export const defaultSettings: Settings = {
   notchScale: 1,
   hideFullscreen: true,
   autoNight: true,
+  calm: false,
+  seasonal: true,
   presence: defaultPresence,
   water: {
     bottleMl: 500,
@@ -211,6 +213,8 @@ export function mergeSettings(raw: unknown): Settings {
     notchScale: clampScale(input.notchScale, defaultSettings.notchScale),
     hideFullscreen: Boolean(input.hideFullscreen ?? defaultSettings.hideFullscreen),
     autoNight: Boolean(input.autoNight ?? defaultSettings.autoNight),
+    calm: Boolean(input.calm ?? defaultSettings.calm),
+    seasonal: Boolean(input.seasonal ?? defaultSettings.seasonal),
     presence: {
       mode:
         presence.mode === 'always' || presence.mode === 'peek' ? presence.mode : defaultPresence.mode,

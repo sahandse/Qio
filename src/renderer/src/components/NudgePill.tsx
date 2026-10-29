@@ -1,5 +1,6 @@
 import type { Nudge } from '@shared/types'
 import {
+  ICON,
   BoltIcon,
   CloseIcon,
   HeadphonesIcon,
@@ -12,14 +13,14 @@ import {
 } from './Icons'
 
 function iconFor(kind: Nudge['kind']) {
-  if (kind === 'water') return <WaterIcon size={13} />
-  if (kind === 'todo') return <TodoIcon size={13} />
-  if (kind === 'power') return <BoltIcon size={13} />
-  if (kind === 'shelf') return <ShelfIcon size={13} />
-  if (kind === 'lyrics') return <LyricsIcon size={13} />
-  if (kind === 'network') return <WifiIcon size={13} />
-  if (kind === 'headphones') return <HeadphonesIcon size={13} />
-  return <TimerIcon size={13} />
+  if (kind === 'water') return <WaterIcon size={ICON.sm} />
+  if (kind === 'todo') return <TodoIcon size={ICON.sm} />
+  if (kind === 'power') return <BoltIcon size={ICON.sm} />
+  if (kind === 'shelf') return <ShelfIcon size={ICON.sm} />
+  if (kind === 'lyrics') return <LyricsIcon size={ICON.sm} />
+  if (kind === 'network') return <WifiIcon size={ICON.sm} />
+  if (kind === 'headphones') return <HeadphonesIcon size={ICON.sm} />
+  return <TimerIcon size={ICON.sm} />
 }
 
 export function NudgePill({ nudge, onDismiss }: { nudge: Nudge; onDismiss: () => void }) {
@@ -31,7 +32,7 @@ export function NudgePill({ nudge, onDismiss }: { nudge: Nudge; onDismiss: () =>
         {nudge.detail && <small>{nudge.detail}</small>}
       </span>
       <button type="button" className="nudge-close" onClick={onDismiss} title="بستن" aria-label="بستن">
-        <CloseIcon size={11} />
+        <CloseIcon size={ICON.xs} />
       </button>
     </div>
   )

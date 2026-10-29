@@ -2,6 +2,9 @@ import type { SVGProps } from 'react'
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
+/** Rendered sizes sit on the 16px grid; strokes are 1.5 at every size. */
+export const ICON = { xs: 12, sm: 14, md: 16, lg: 20, xl: 22 } as const
+
 function Icon({ size = 18, children, ...rest }: IconProps) {
   return (
     <svg
@@ -10,7 +13,7 @@ function Icon({ size = 18, children, ...rest }: IconProps) {
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.7}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
