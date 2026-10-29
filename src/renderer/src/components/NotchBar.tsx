@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppState, MascotState } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useClockPresence } from '../lib/state'
@@ -33,6 +33,9 @@ const FALLBACK_STYLE = {
 }
 
 const FALLBACK_PRESENCE = { mode: 'peek' as const, everyMin: 10, forSec: 12 }
+
+/** How far around the bar the pointer still pulls the gaze, in px. */
+const GAZE_REACH = 260
 
 function batteryColor(battery: number, charging: boolean): string {
   if (charging) return '#7ee8a8'
@@ -124,15 +127,71 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
   const mascot = state?.settings.mascot ?? true
   const mascotStyle = state?.settings.mascotStyle ?? FALLBACK_STYLE
   const minimal = state?.settings.minimalNotch ?? false
+  const calm = state?.settings.calm ?? false
+  const still = calm || mascotStyle.reducedMotion
+  const busy = Boolean(state?.focus.running) || mascotState === 'success' || mascotState === 'error'
 
   const [face, setFace] = useState<MascotState>('idle')
   const faceRef = useRef<MascotState>('idle')
+  const [drowsy, setDrowsy] = useState(false)
+  const [wake, setWake] = useState(false)
+  const drowsyRef = useRef(false)
   const lastMove = useRef(Date.now())
   const slot = useRef<HTMLSpanElement>(null)
   const faceTimer = useRef<number | null>(null)
+  const calmRef = useRef(calm)
+  const stillRef = useRef(still)
+  const busyRef = useRef(busy)
+  const expandedRef = useRef(expanded)
+  const gaze = useRef({
+    x: 0,
+    y: 0,
+    pointerX: 0,
+    pointerY: 0,
+    pointerAt: 0,
+    lastStep: 0,
+    raf: 0,
+    centerTimer: 0,
+    glanceTimer: 0
+  })
+
+  useEffect(() => {
+    calmRef.current = calm
+    stillRef.current = still
+    busyRef.current = busy
+    expandedRef.current = expanded
+  }, [calm, still, busy, expanded])
+
+  useEffect(() => {
+    drowsyRef.current = drowsy
+  }, [drowsy])
+
+  /** Saccades are quick; recentering is slow. Duration rides on the slot. */
+  const writeGaze = useCallback((x: number, y: number, ms = 90) => {
+    const engine = gaze.current
+    engine.x = x
+    engine.y = y
+    const element = slot.current
+    if (!element) return
+    element.style.setProperty('--look-dur', `${ms}ms`)
+    element.style.setProperty('--look-x', `${x.toFixed(2)}px`)
+    element.style.setProperty('--look-y', `${y.toFixed(2)}px`)
+    element.style.setProperty('--lid-open', y < -1 ? '1.05' : '1')
+  }, [])
+
+  /** A blink hides a tiny gaze shift, the way real eyes jump behind closed lids. */
+  const nudgeGaze = useCallback(() => {
+    if (calmRef.current || stillRef.current) return
+    const engine = gaze.current
+    const x = Math.max(-3, Math.min(3, engine.x + (Math.random() * 1.6 - 0.8)))
+    const y = Math.max(-2.4, Math.min(2.4, engine.y + (Math.random() * 1.2 - 0.6)))
+    writeGaze(x, y, 0)
+  }, [writeGaze])
 
   const show = (next: MascotState, hold?: number) => {
     if (faceTimer.current) window.clearTimeout(faceTimer.current)
+    setWake(next === 'wave' && faceRef.current === 'sleep')
+    if (next !== 'idle') setDrowsy(false)
     faceRef.current = next
     setFace(next)
     if (hold) faceTimer.current = window.setTimeout(() => show('idle'), hold)
@@ -140,54 +199,161 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
 
   const sleepAfter = mascotStyle.sleepAfter
 
+  // Idle becomes drowsy at 60% of the sleep timer, then asleep; moving wakes with a wave.
+  // The panel and busy faces pause the count, so the face never dozes off mid-round.
   useEffect(() => {
     const id = window.setInterval(() => {
+      if (expandedRef.current || busyRef.current) {
+        lastMove.current = Date.now()
+        setDrowsy(false)
+        return
+      }
       const current = faceRef.current
       if (current !== 'idle' && current !== 'sleep') return
-      const still = Date.now() - lastMove.current
-      const shouldSleep = still > sleepAfter * 1000
-      if (shouldSleep && current !== 'sleep') show('sleep')
-      if (!shouldSleep && current === 'sleep') show('idle')
+      const stillFor = Date.now() - lastMove.current
+      const limit = sleepAfter * 1000
+      if (stillFor > limit) {
+        if (current !== 'sleep') {
+          setDrowsy(false)
+          show('sleep')
+        }
+        return
+      }
+      if (current === 'sleep') {
+        show('idle')
+        return
+      }
+      setDrowsy(stillFor > limit * 0.6)
     }, 1000)
     return () => window.clearInterval(id)
   }, [sleepAfter])
 
+  // One rAF-throttled pointer listener: wake, falloff-weighted gaze, blink-saccade.
   useEffect(() => {
-    const awake = () => {
-      lastMove.current = Date.now()
-      if (faceRef.current === 'sleep') {
-        show('wave', 2400)
-      } else if (faceRef.current !== 'idle' && faceRef.current !== 'wave') {
-        return
+    const engine = gaze.current
+
+    const step = () => {
+      engine.raf = 0
+      const element = slot.current
+      if (!element || calmRef.current || stillRef.current || document.hidden) return
+      if (faceRef.current === 'sleep') return
+      const now = performance.now()
+      if (now - engine.lastStep < 90) return
+      const rect = element.getBoundingClientRect()
+      const dx = engine.pointerX - (rect.left + rect.width / 2)
+      const dy = engine.pointerY - (rect.top + rect.height / 2)
+      const pull = Math.max(0, Math.min(1, 1 - Math.hypot(dx, dy) / GAZE_REACH))
+      const damp = drowsyRef.current ? 0.6 : 1
+      const x = Math.max(-1, Math.min(1, dx / 90)) * 3 * pull * damp
+      const y = Math.max(-1, Math.min(1, dy / 90)) * 2.4 * pull * damp
+      if (Math.abs(x - engine.x) >= 0.12 || Math.abs(y - engine.y) >= 0.12) {
+        engine.lastStep = now
+        writeGaze(x, y, 90)
       }
     }
-    const follow = (event: PointerEvent) => {
-      const element = slot.current
-      if (!element) return
-      const rect = element.getBoundingClientRect()
-      const clamp = (value: number) => Math.max(-1, Math.min(1, value))
-      const x = clamp((event.clientX - rect.left - rect.width / 2) / 90)
-      const y = clamp((event.clientY - rect.top - rect.height / 2) / 90)
-      element.style.setProperty('--look-x', `${x * 3}px`)
-      element.style.setProperty('--look-y', `${y * 2.4}px`)
+
+    const track = (event: PointerEvent) => {
+      engine.pointerX = event.clientX
+      engine.pointerY = event.clientY
+      engine.pointerAt = performance.now()
+      lastMove.current = Date.now()
+      if (faceRef.current === 'sleep') show('wave', 2400)
+      if (!engine.raf) engine.raf = window.requestAnimationFrame(step)
+      window.clearTimeout(engine.centerTimer)
+      engine.centerTimer = window.setTimeout(() => {
+        if (performance.now() - engine.pointerAt < 1450) return
+        if (calmRef.current || stillRef.current || faceRef.current === 'sleep') return
+        writeGaze(0, 0, 420)
+      }, 1500)
     }
-    const onMove = (event: PointerEvent) => {
-      awake()
-      follow(event)
+
+    const awake = () => {
+      lastMove.current = Date.now()
+      if (faceRef.current === 'sleep') show('wave', 2400)
     }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerdown', awake)
+
+    // A longer absence gets a hello on return.
+    const onVisible = () => {
+      if (document.hidden) return
+      const away = Date.now() - lastMove.current
+      lastMove.current = Date.now()
+      if (faceRef.current === 'sleep' || (away > 120_000 && faceRef.current === 'idle')) {
+        show('wave', 2400)
+      }
+    }
+
+    window.addEventListener('pointermove', track, { passive: true })
+    window.addEventListener('pointerdown', awake, { passive: true })
     window.addEventListener('keydown', awake)
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
-      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointermove', track)
       window.removeEventListener('pointerdown', awake)
       window.removeEventListener('keydown', awake)
-      if (faceTimer.current) window.clearTimeout(faceTimer.current)
+      document.removeEventListener('visibilitychange', onVisible)
+      if (engine.raf) window.cancelAnimationFrame(engine.raf)
+      window.clearTimeout(engine.centerTimer)
+      engine.raf = 0
     }
-  }, [])
+  }, [writeGaze])
+
+  // Micro-saccades and the occasional idle glance, only while the bar shows the face.
+  useEffect(() => {
+    if (still) return
+    const engine = gaze.current
+    let timer = 0
+    const tick = () => {
+      const visible = slot.current && !document.hidden
+      const quiet = performance.now() - engine.pointerAt > 1400
+      if (visible && !calmRef.current && quiet && faceRef.current !== 'sleep') {
+        if (Math.random() < 0.3) {
+          const side = Math.random() < 0.5 ? -1 : 1
+          writeGaze(side * (1.7 + Math.random() * 1.1), (Math.random() - 0.5) * 1.2, 110)
+          window.clearTimeout(engine.glanceTimer)
+          engine.glanceTimer = window.setTimeout(() => {
+            if (performance.now() - engine.pointerAt > 1200) writeGaze(0, 0, 420)
+          }, 400)
+        } else {
+          writeGaze((Math.random() - 0.5) * 1.7, (Math.random() - 0.5) * 1.1, 90)
+        }
+      }
+      timer = window.setTimeout(tick, 2200 + Math.random() * 3000)
+    }
+    timer = window.setTimeout(tick, 2200 + Math.random() * 3000)
+    return () => {
+      window.clearTimeout(timer)
+      window.clearTimeout(engine.glanceTimer)
+    }
+  }, [still, writeGaze])
+
+  // Calm mode parks the gaze at centre and leaves it there.
+  useEffect(() => {
+    if (!calm) return
+    writeGaze(0, 0, 600)
+  }, [calm, writeGaze])
+
+  // A focus round starting earns a glance down at the ring around the face.
+  const wasRunning = useRef(false)
+  useEffect(() => {
+    const running = Boolean(state?.focus.running)
+    const started = running && !wasRunning.current
+    wasRunning.current = running
+    if (!started || calmRef.current || stillRef.current) return
+    writeGaze(0, 2.2, 110)
+    const timer = window.setTimeout(() => {
+      if (performance.now() - gaze.current.pointerAt > 1200) writeGaze(0, 0, 420)
+    }, 420)
+    return () => window.clearTimeout(timer)
+  }, [state?.focus.running, writeGaze])
+
+  // Coming back from the panel refreshes the idle timer so the face is awake.
+  useEffect(() => {
+    if (!expanded) lastMove.current = Date.now()
+  }, [expanded])
 
   const clockOn = useClockPresence(state?.settings.presence ?? FALLBACK_PRESENCE, expanded)
   const focusPct = useFocusProgress(state)
+  const ending = Boolean(state?.focus.running && state.focus.endsAt && state.focus.endsAt - Date.now() <= 10_000)
 
   /** Each return of a resting clock opens like an eyelid instead of just fading in. */
   const [lidOpening, setLidOpening] = useState(false)
@@ -220,13 +386,26 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
         <span className="bar-side">
           {mascot ? (
             <span className="mascot-slot" ref={slot}>
-              <Mascot settings={mascotStyle} state={faceState} className="mascot-notch" />
+              <Mascot
+                settings={mascotStyle}
+                state={faceState}
+                className="mascot-notch"
+                drowsy={faceState === 'idle' && drowsy}
+                wake={wake}
+                calm={calm}
+                focus={Boolean(state?.focus.running)}
+                ending={ending}
+                onBlink={nudgeGaze}
+              />
               {state?.focus.running && (
-                <span
-                  className={`mascot-ring${state.focus.mode === 'work' ? ' work' : ''}`}
-                  style={{ ['--ring-progress' as string]: `${Math.round(focusPct * 360)}deg` }}
-                  aria-hidden="true"
-                />
+                <>
+                  <span className={`mascot-halo${state.focus.mode === 'work' ? ' work' : ''}`} aria-hidden="true" />
+                  <span
+                    className={`mascot-ring${state.focus.mode === 'work' ? ' work' : ''}`}
+                    style={{ ['--ring-progress' as string]: `${Math.round(focusPct * 360)}deg` }}
+                    aria-hidden="true"
+                  />
+                </>
               )}
             </span>
           ) : battery != null ? (
@@ -263,7 +442,13 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
         >
           {muted ? <MuteIcon size={ICON.sm} /> : <VolumeIcon size={ICON.sm} />}
         </button>
-        <button type="button" className="tool-button" title="تنظیمات" aria-label="تنظیمات" onClick={onSettings}>
+        <button
+          type="button"
+          className="tool-button"
+          title="تنظیمات"
+          aria-label="تنظیمات"
+          onClick={onSettings}
+        >
           <SettingsIcon size={ICON.sm} />
         </button>
       </span>

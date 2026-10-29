@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { MascotSettings, MascotShape, MascotState } from '@shared/types'
 
@@ -8,6 +9,13 @@ const SHAPES: Record<MascotShape, { width: number; radius: number; label: string
   soft: { width: 0.92, radius: 0.28, label: 'نرم' },
   tall: { width: 0.52, radius: 0.5, label: 'باریک' }
 }
+
+/** Faces whose eyes are open long enough to blink. */
+const BLINKING_STATES: MascotState[] = ['idle', 'think', 'work', 'perm']
+
+/** The lid seals while the face swaps, so expressions never pop. */
+const LID_CLOSE = 120
+const LID_OPEN = 220
 
 export const MASCOT_SHAPE_LIST = (Object.keys(SHAPES) as MascotShape[]).map((id) => ({ id, ...SHAPES[id] }))
 
@@ -45,12 +53,30 @@ export function Mascot({
   settings,
   state = 'idle',
   className,
-  viewBox = '0 0 100 44'
+  viewBox = '0 0 100 44',
+  drowsy = false,
+  wake = false,
+  calm = false,
+  focus = false,
+  ending = false,
+  onBlink
 }: {
   settings: MascotSettings
   state?: MascotState
   className?: string
   viewBox?: string
+  /** Dozing off: eyelids half shut, slower blink and breath. */
+  drowsy?: boolean
+  /** Woken up from sleep; the wave starts with a little startle. */
+  wake?: boolean
+  /** Calm mode keeps a slow fade between faces and nothing else. */
+  calm?: boolean
+  /** A focus round is running, so the breath slows to 5.5s. */
+  focus?: boolean
+  /** The last ten seconds of a round: narrower lids, quicker blink. */
+  ending?: boolean
+  /** Fired as the lids close, so the gaze can shift behind them. */
+  onBlink?: () => void
 }) {
   const height = settings.size
   const shape = SHAPES[settings.shape]
@@ -67,45 +93,142 @@ export function Mascot({
   const codeY = centerY + 2.4
   const highlight = isPale(settings.color) ? '#94a3b8' : '#ffffff'
 
+  const [shown, setShown] = useState(state)
+  const shownRef = useRef(state)
+  const [lid, setLid] = useState<'idle' | 'closing' | 'opening'>('idle')
+  const lidRef = useRef<'idle' | 'closing' | 'opening'>('idle')
+  const [blink, setBlink] = useState<'none' | 'single' | 'double'>('none')
+  const blinkCallback = useRef(onBlink)
+  const drowsyRef = useRef(drowsy)
+  const endingRef = useRef(ending)
+
+  useEffect(() => {
+    blinkCallback.current = onBlink
+  }, [onBlink])
+
+  useEffect(() => {
+    drowsyRef.current = drowsy
+  }, [drowsy])
+
+  useEffect(() => {
+    endingRef.current = ending
+  }, [ending])
+
+  useEffect(() => {
+    lidRef.current = lid
+  }, [lid])
+
+  // Expressions swap behind a closed lid instead of popping.
+  useEffect(() => {
+    if (state === shownRef.current) {
+      if (lidRef.current !== 'idle') setLid('idle')
+      return
+    }
+    if (calm || settings.reducedMotion) {
+      shownRef.current = state
+      setShown(state)
+      setLid('idle')
+      return
+    }
+    setLid('closing')
+    const swap = window.setTimeout(() => {
+      shownRef.current = state
+      setShown(state)
+      setLid('opening')
+    }, LID_CLOSE)
+    const settle = window.setTimeout(() => setLid('idle'), LID_CLOSE + LID_OPEN)
+    return () => {
+      window.clearTimeout(swap)
+      window.clearTimeout(settle)
+    }
+  }, [state, calm, settings.reducedMotion])
+
+  const canBlink = BLINKING_STATES.includes(shown) && !calm && !settings.reducedMotion
+
+  useEffect(() => {
+    if (!canBlink) {
+      setBlink('none')
+      return
+    }
+    let next = 0
+    let clear = 0
+    let nudge = 0
+    const schedule = () => {
+      const base = Math.max(2.5, settings.blink)
+      const pace = drowsyRef.current ? 1.5 : endingRef.current ? 0.45 : 1
+      const wait = base * pace * (0.75 + Math.random() * 0.7) * 1000
+      next = window.setTimeout(fire, wait)
+    }
+    const fire = () => {
+      if (document.hidden || lidRef.current !== 'idle') {
+        schedule()
+        return
+      }
+      const double = Math.random() < 0.15
+      setBlink(double ? 'double' : 'single')
+      nudge = window.setTimeout(() => blinkCallback.current?.(), 70)
+      clear = window.setTimeout(() => setBlink('none'), double ? 470 : 210)
+      schedule()
+    }
+    schedule()
+    return () => {
+      window.clearTimeout(next)
+      window.clearTimeout(clear)
+      window.clearTimeout(nudge)
+    }
+  }, [canBlink, settings.blink])
+
   const style = {
     ['--ms-color' as string]: settings.color,
-    ['--ms-stroke' as string]: stroke,
-    ['--ms-blink' as string]: `${settings.blink}s`
+    ['--ms-stroke' as string]: stroke
   } as CSSProperties
+
+  const classes = [
+    'ms',
+    settings.reducedMotion ? 'ms-still' : '',
+    calm ? 'ms-calm' : '',
+    lid === 'closing' ? 'lid-closing' : lid === 'opening' ? 'lid-opening' : '',
+    blink === 'single' ? 'blinking-single' : blink === 'double' ? 'blinking-double' : '',
+    className ?? ''
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   const eyes = [left, right].map((cx, index) => {
     const x = cx - width / 2
     const y = centerY - height / 2
     return (
       <g key={index} className="ms-eye" style={{ transformOrigin: `${cx}px ${centerY}px` }}>
-        <rect
-          className="ms-open"
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          rx={radius}
-          fill={settings.color}
-        />
-        {settings.pupil && (
-          <ellipse
-            className="ms-pupil"
-            cx={cx}
-            cy={centerY}
-            rx={width * 0.24}
-            ry={height * 0.24}
-            fill="#0b0e14"
+        <g className="ms-lids">
+          <rect
+            className="ms-open"
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            rx={radius}
+            fill={settings.color}
           />
-        )}
-        {settings.glow && (
-          <circle
-            className="ms-glint"
-            cx={cx + width * 0.2}
-            cy={centerY - height * 0.2}
-            r={height * 0.1}
-            fill={highlight}
-          />
-        )}
+          {settings.pupil && (
+            <ellipse
+              className="ms-pupil"
+              cx={cx}
+              cy={centerY}
+              rx={width * 0.24}
+              ry={height * 0.24}
+              fill="#0b0e14"
+            />
+          )}
+          {settings.glow && (
+            <circle
+              className="ms-glint"
+              cx={cx + width * 0.2}
+              cy={centerY - height * 0.2}
+              r={height * 0.1}
+              fill={highlight}
+            />
+          )}
+        </g>
         <path className="ms-closed" d={`M${x} ${centerY}Q${cx} ${centerY + height * 0.38} ${cx + width / 2} ${centerY}`} />
         <path
           className="ms-happy"
@@ -148,9 +271,13 @@ export function Mascot({
 
   return (
     <svg
-      className={`ms${settings.reducedMotion ? ' ms-still' : ''}${className ? ` ${className}` : ''}`}
+      className={classes}
       viewBox={viewBox}
-      data-state={state}
+      data-state={shown}
+      data-drowsy={drowsy ? 'on' : undefined}
+      data-wake={wake ? 'on' : undefined}
+      data-focus={focus ? 'on' : undefined}
+      data-ending={ending ? 'on' : undefined}
       style={style}
       aria-hidden="true"
     >

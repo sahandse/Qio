@@ -130,6 +130,7 @@ export function SettingsPage() {
                 </section>
                 <MascotSettingsCard
                   style={settings.mascotStyle}
+                  calm={settings.calm}
                   onPatch={(next) => patch({ mascotStyle: { ...settings.mascotStyle, ...next } })}
                 />
               </>

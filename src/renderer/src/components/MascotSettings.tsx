@@ -69,9 +69,11 @@ function Dial({
 
 export function MascotSettingsCard({
   style,
+  calm = false,
   onPatch
 }: {
   style: MascotSettings
+  calm?: boolean
   onPatch: (next: Partial<MascotSettings>) => void
 }) {
   const [preview, setPreview] = useState<MascotState | null>(null)
@@ -83,7 +85,7 @@ export function MascotSettingsCard({
   return (
     <Card title="ماسکوت" className="settings-mascot">
       <div className="mascot-stage" onClick={() => setPreview((current) => (current ? null : 'wave'))}>
-        <Mascot settings={style} state={shown} className="mascot-stage-art" />
+        <Mascot settings={style} state={shown} className="mascot-stage-art" calm={calm} />
       </div>
       <p className="mascot-caption">
         <strong>{MASCOT_STATES[shown].label}</strong>

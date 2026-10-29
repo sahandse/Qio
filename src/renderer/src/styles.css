@@ -114,6 +114,7 @@
   --dur-base: 180ms;
   --dur-slow: 280ms;
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   /* Interaction: presses dip to --press; small glyphs expand their hit area to --tap-min. */
   --press: 0.96;
   --tap-min: 44px;
@@ -569,11 +570,33 @@ select:focus-visible {
 .mascot-slot {
   --look-x: 0px;
   --look-y: 0px;
+  --look-dur: 150ms;
   position: relative;
   display: grid;
   place-items: center;
   height: 26px;
   padding-inline: 2px;
+  animation: mascot-arrive 320ms var(--ease-back) both;
+}
+
+@keyframes mascot-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mascot-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .mascot-slot .ms {
@@ -606,7 +629,43 @@ select:focus-visible {
   --ring-color: var(--warn);
 }
 
-.bar.minimal .mascot-ring {
+/* The hairline's own mask clips any filter glow, so a sibling halo carries the pulse. */
+.mascot-halo {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(138, 230, 192, 0.5);
+  pointer-events: none;
+  animation:
+    halo-in 260ms var(--ease) both,
+    halo-pulse 5.5s 320ms ease-in-out infinite;
+}
+
+.mascot-halo.work {
+  box-shadow: 0 0 6px rgba(242, 200, 121, 0.55);
+}
+
+@keyframes halo-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
+@keyframes halo-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.bar.minimal .mascot-ring,
+.bar.minimal .mascot-halo {
   display: none;
 }
 
@@ -696,7 +755,7 @@ select:focus-visible {
 .ms {
   --ms-color: #eef3f8;
   --ms-stroke: 2.8;
-  --ms-blink: 5s;
+  --lid-rest: 1;
   display: block;
   overflow: visible;
 }
@@ -725,13 +784,49 @@ select:focus-visible {
   display: none;
 }
 
-.ms-eyes {
-  transform: translate(var(--look-x, 0px), var(--look-y, 0px));
-  transition: transform 0.15s var(--ease);
+/* Faces fade in behind the closed lid; calm mode stretches this to a slow crossfade. */
+.ms .ms-closed,
+.ms .ms-happy,
+.ms .ms-cross {
+  animation: ms-face-in 180ms var(--ease) 60ms both;
 }
 
-.ms-eye {
-  animation: ms-blink var(--ms-blink) infinite;
+.ms-eyes {
+  transform-origin: 50px 22px;
+  transform-box: view-box;
+  transform: translate(var(--look-x, 0px), var(--look-y, 0px)) scaleY(var(--lid-open, 1));
+  transition: transform var(--look-dur, 150ms) var(--ease);
+}
+
+.ms-lids {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(var(--lid-rest, 1));
+  transition: transform 700ms var(--ease);
+}
+
+.ms.lid-closing .ms-lids {
+  animation: ms-lid-close 120ms var(--ease-exit) both;
+}
+
+.ms.lid-opening .ms-lids {
+  animation: ms-lid-open 220ms var(--ease-back) both;
+}
+
+.ms.blinking-single .ms-lids {
+  animation: ms-blink-shut 190ms var(--ease) both;
+}
+
+.ms.blinking-double .ms-lids {
+  animation: ms-blink-double 420ms var(--ease) both;
+}
+
+.ms[data-drowsy='on'] {
+  --lid-rest: 0.55;
+}
+
+.ms[data-ending='on'] {
+  --lid-rest: 0.84;
 }
 
 .ms-breathe {
@@ -748,10 +843,6 @@ select:focus-visible {
 .ms[data-state='sleep'] .ms-closed,
 .ms[data-state='sleep'] .ms-zzz {
   display: block;
-}
-
-.ms[data-state='sleep'] .ms-eye {
-  animation: none;
 }
 
 .ms[data-state='sleep'] .ms-breathe {
@@ -776,27 +867,28 @@ select:focus-visible {
   display: block;
 }
 
-.ms[data-state='wave'] .ms-eye,
-.ms[data-state='success'] .ms-eye {
-  animation: none;
-}
-
 .ms[data-state='wave'] .ms-hand {
   display: block;
-  animation: ms-wave 0.45s infinite alternate ease-in-out;
+  animation: ms-wave 0.45s 4 alternate ease-in-out;
 }
 
 .ms[data-state='wave'] .ms-breathe {
-  animation: ms-nod 0.6s infinite alternate ease-in-out;
+  animation: ms-nod 0.6s 3 alternate ease-in-out;
+}
+
+.ms[data-state='wave'][data-wake='on'] .ms-breathe {
+  animation:
+    ms-startle 280ms var(--ease-back) both,
+    ms-nod 0.6s 280ms 3 alternate ease-in-out;
 }
 
 .ms[data-state='success'] .ms-breathe {
-  animation: ms-jump 0.65s infinite;
+  animation: ms-jump 0.65s 2;
 }
 
 .ms[data-state='success'] .ms-sparkle {
   display: block;
-  animation: ms-pulse 0.8s infinite;
+  animation: ms-pulse 0.8s 2;
 }
 
 .ms[data-state='error'] .ms-open,
@@ -810,16 +902,13 @@ select:focus-visible {
   stroke: #ef4444;
 }
 
-.ms[data-state='error'] .ms-eye {
-  animation: none;
-}
-
 .ms[data-state='error'] .ms-breathe {
-  animation: ms-shake 0.35s infinite;
+  animation: ms-shake 0.35s 2;
 }
 
-.ms[data-state='think'] .ms-eyes {
-  transform: translate(4px, -4px);
+.ms[data-state='think'] {
+  --look-x: 4px;
+  --look-y: -4px;
 }
 
 .ms[data-state='think'] .ms-thought {
@@ -859,10 +948,6 @@ select:focus-visible {
   animation-delay: 0.8s;
 }
 
-.ms[data-state='perm'] .ms-eye {
-  animation: none;
-}
-
 .ms[data-state='perm'] .ms-open {
   transform: scale(1.2);
   transform-box: fill-box;
@@ -871,11 +956,40 @@ select:focus-visible {
 
 .ms[data-state='perm'] .ms-question {
   display: block;
-  animation: ms-float 1.2s infinite;
+  animation: ms-float 1.2s 2 ease-in-out;
+}
+
+/* Focus rounds slow the breath to 5.5s; the final ten seconds narrow the lids. */
+.ms[data-focus='on'] .ms-breathe {
+  animation-duration: 5.5s;
+}
+
+.ms[data-drowsy='on'] .ms-breathe {
+  animation-duration: 4.5s;
+}
+
+/* Calm keeps one slow crossfade per face change and nothing else. */
+.ms-calm .ms-breathe,
+.ms-calm .ms-eyes,
+.ms-calm .ms-fx,
+.ms-calm .ms-thought circle,
+.ms-calm .ms-code text,
+.ms-calm .ms-lids {
+  animation: none !important;
+}
+
+.ms-calm .ms-lids {
+  transform: none;
+  transition: none;
+}
+
+.ms-calm .ms-closed,
+.ms-calm .ms-happy,
+.ms-calm .ms-cross {
+  animation: ms-face-in 1200ms var(--ease) both;
 }
 
 .ms-still .ms-breathe,
-.ms-still .ms-eye,
 .ms-still .ms-eyes,
 .ms-still .ms-fx {
   animation: none !important;
@@ -901,23 +1015,71 @@ select:focus-visible {
   }
 }
 
-@keyframes ms-blink {
+@keyframes ms-face-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ms-lid-close {
+  from {
+    transform: scaleY(var(--lid-rest, 1));
+  }
+  to {
+    transform: scaleY(0.06);
+  }
+}
+
+@keyframes ms-lid-open {
+  from {
+    transform: scaleY(0.06);
+  }
+  to {
+    transform: scaleY(var(--lid-rest, 1));
+  }
+}
+
+@keyframes ms-blink-shut {
   0%,
-  90%,
   100% {
-    transform: scaleY(1);
+    transform: scaleY(var(--lid-rest, 1));
   }
-  92% {
-    transform: scaleY(0.08);
+  45% {
+    transform: scaleY(0.06);
   }
-  94% {
-    transform: scaleY(1);
+}
+
+@keyframes ms-blink-double {
+  0%,
+  100% {
+    transform: scaleY(var(--lid-rest, 1));
   }
-  96% {
-    transform: scaleY(0.08);
+  16% {
+    transform: scaleY(0.06);
   }
-  98% {
-    transform: scaleY(1);
+  34% {
+    transform: scaleY(var(--lid-rest, 1));
+  }
+  54% {
+    transform: scaleY(0.06);
+  }
+  72% {
+    transform: scaleY(var(--lid-rest, 1));
+  }
+}
+
+@keyframes ms-startle {
+  0% {
+    transform: scale(0.96) translateY(1px);
+  }
+  60% {
+    transform: scale(1.05) translateY(-1px);
+  }
+  100% {
+    transform: none;
   }
 }
 
@@ -4947,6 +5109,18 @@ body.overlay-body {
 }
 
 :root[data-calm='on'] .season-fx {
+  display: none;
+}
+
+:root[data-calm='on'] .mascot-slot {
+  animation: mascot-fade 400ms var(--ease) both;
+}
+
+:root[data-calm='on'] .mascot-ring {
+  animation: none;
+}
+
+:root[data-calm='on'] .mascot-halo {
   display: none;
 }
 
