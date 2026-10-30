@@ -100,6 +100,45 @@ export function HealthSection({
           onChange={(next) => onPatch({ focus: { ...settings.focus, chime: next } })}
         />
       </section>
+
+      <section className="settings-card">
+        <h3>حرکت</h3>
+        <Toggle
+          label="یادآور بلند شدن"
+          hint="وقتی مدتی پشت میز می‌مانی، نچ بلندت می‌کند"
+          checked={settings.move.enabled}
+          onChange={(next) => onPatch({ move: { ...settings.move, enabled: next } })}
+        />
+        <NumberRow
+          label="هر"
+          value={settings.move.everyMin}
+          min={20}
+          max={180}
+          step={5}
+          suffix="دقیقه"
+          onChange={(next) => onPatch({ move: { ...settings.move, everyMin: next } })}
+        />
+        <HourRow
+          label="از ساعت"
+          value={settings.move.startHour}
+          onChange={(next) => onPatch({ move: { ...settings.move, startHour: next } })}
+        />
+        <HourRow
+          label="تا ساعت"
+          value={settings.move.endHour}
+          onChange={(next) => onPatch({ move: { ...settings.move, endHour: next } })}
+        />
+        <Toggle
+          label="اعلان ویندوز"
+          hint="علاوه بر نچ، یک اعلان هم گوشهٔ صفحه نشان داده شود"
+          checked={settings.move.notify}
+          onChange={(next) => onPatch({ move: { ...settings.move, notify: next } })}
+        />
+        <p className="settings-note">
+          هر پنج دقیقه بدون لمس کیبورد و ماوس استراحت حساب می‌شود و شمارنده از نو شروع می‌شود؛
+          فقط حضور پیوسته پشت میز به یادآور می‌رسد.
+        </p>
+      </section>
     </>
   )
 }

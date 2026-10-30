@@ -285,3 +285,39 @@ export const StopIcon = (props: IconProps) => (
     <rect x="7" y="7" width="10" height="10" rx="2.2" fill="currentColor" stroke="none" />
   </Icon>
 )
+
+export const BallIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="8.4" />
+    <path d="M12 7.3l3.3 2.4-1.3 4h-4l-1.3-4z" />
+    <path d="M12 3.6v3.7M4.4 9.5l3.3 2.3M19.6 9.5l-3.3 2.3M6.9 18.8l3.1-3.1M17.1 18.8l-3.1-3.1" />
+  </Icon>
+)
+
+export const CardIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="8" y="4.6" width="8" height="14.8" rx="1.8" />
+  </Icon>
+)
+
+export const SwapIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M8 5.2v12.4M8 5.2L5.4 7.9M8 5.2l2.6 2.7M16 18.8V6.4M16 18.8l2.6-2.7M16 18.8l-2.6-2.7" />
+  </Icon>
+)
+
+export const VarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3.4" y="5.4" width="17.2" height="13.2" rx="2.2" />
+    <path d="M8.2 9.4h7.6v5.2H8.2z" />
+  </Icon>
+)
+
+export const WalkIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="13" cy="4.6" r="1.8" />
+    <path d="M12.4 7.4l-1.8 4.4 3 2.6" />
+    <path d="M11.6 8.9L8.2 11M14.2 12.6l3.4-.7" />
+    <path d="M10.6 11.8L7.8 15.6l1.2 4M16 14.6l1.3 3.1-2.2 2.4" />
+  </Icon>
+)

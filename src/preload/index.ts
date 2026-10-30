@@ -19,6 +19,7 @@ const api: QioApi = {
   getCover: () => ipcRenderer.invoke('cover:last') as Promise<{ key: string; dataUrl: string }>,
   onNudge: (callback) => subscribe<Nudge>('nudge', callback),
   onNudgeClear: (callback) => subscribe<string>('nudge:clear', callback),
+  nudgeAction: (id, action) => ipcRenderer.send('nudge:action', id, action),
   onOpen: (callback) => subscribe<PanelId>('notch:open', callback),
   onPulse: (callback) => subscribe<number>('notch:pulse', callback),
   onOverlay: (callback) => subscribe<OverlayPayload>('overlay:show', callback),
@@ -60,6 +61,12 @@ const api: QioApi = {
 
   focus: {
     patch: (patch) => ipcRenderer.invoke('focus:patch', patch) as Promise<FocusState>
+  },
+
+  football: {
+    catalog: (force) => ipcRenderer.invoke('football:catalog', force === true),
+    toggleTeam: (id) => ipcRenderer.invoke('football:team', id),
+    refresh: () => ipcRenderer.invoke('football:refresh')
   },
 
   ai: {

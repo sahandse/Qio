@@ -48,6 +48,9 @@ const MASCOT_KEYS = [
 const WATER_KEYS = ['bottleMl', 'goalMl', 'startHour', 'endHour', 'remindEveryMin', 'reminders'] as const
 const FOCUS_SETTING_KEYS = ['workMin', 'shortBreakMin', 'longBreakMin', 'longBreakEvery', 'chime'] as const
 const PRESENCE_KEYS = ['mode', 'everyMin', 'forSec'] as const
+/** Teams are deliberately absent: only the catalog-driven toggle may change the list. */
+const FOOTBALL_KEYS = ['enabled', 'goalAlerts', 'startAlerts', 'redAlerts', 'finalAlerts'] as const
+const MOVE_KEYS = ['enabled', 'everyMin', 'startHour', 'endHour', 'notify'] as const
 
 const FLAG_KEYS = [
   'startWithWindows',
@@ -74,7 +77,9 @@ export function pickSettingsPatch(raw: unknown): Partial<Settings> {
     ['mascotStyle', MASCOT_KEYS],
     ['presence', PRESENCE_KEYS],
     ['water', WATER_KEYS],
-    ['focus', FOCUS_SETTING_KEYS]
+    ['focus', FOCUS_SETTING_KEYS],
+    ['football', FOOTBALL_KEYS],
+    ['move', MOVE_KEYS]
   ] as const) {
     const nested = pickNested(raw, key, keys)
     if (nested) patch[key] = nested

@@ -39,3 +39,26 @@ test('todo patch trims text and validates dueAt', () => {
   assert.deepEqual(pickTodoPatch({ dueAt: null }), { dueAt: null })
   assert.deepEqual(pickTodoPatch({ done: 'yes', notified: 1 }), {})
 })
+
+test('football toggles pass the whitelist but the team list does not', () => {
+  const patch = pickSettingsPatch({
+    football: {
+      enabled: false,
+      goalAlerts: false,
+      startAlerts: true,
+      redAlerts: true,
+      finalAlerts: false,
+      teams: [{ id: '18', name: 'تراکتور', logo: '', league: 'لیگ برتر ایران' }]
+    }
+  })
+  assert.deepEqual(patch, {
+    football: { enabled: false, goalAlerts: false, startAlerts: true, redAlerts: true, finalAlerts: false }
+  })
+})
+
+test('move settings keep only the five known fields', () => {
+  const patch = pickSettingsPatch({
+    move: { enabled: true, everyMin: 45, startHour: 8, endHour: 20, notify: true, extra: 1 }
+  })
+  assert.deepEqual(patch, { move: { enabled: true, everyMin: 45, startHour: 8, endHour: 20, notify: true } })
+})

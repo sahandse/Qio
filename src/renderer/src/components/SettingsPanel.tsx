@@ -4,17 +4,18 @@ import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useCalm, useNightTheme } from '../lib/state'
-import { ICON, CloseIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
+import { ICON, BallIcon, CloseIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
 import { MascotSettingsCard } from './MascotSettings'
 import { AboutSection } from './settings/AboutSection'
 import { AiSection } from './settings/AiSection'
+import { FootballSection } from './settings/FootballSection'
 import { GeneralSection } from './settings/GeneralSection'
 import { HealthSection } from './settings/HealthSection'
 import { MediaSection } from './settings/MediaSection'
 import { Toggle } from './settings/controls'
 import { Skeleton } from './Skeleton'
 
-type SettingsTab = 'general' | 'mascot' | 'ai' | 'media' | 'health' | 'about'
+type SettingsTab = 'general' | 'mascot' | 'ai' | 'media' | 'health' | 'football' | 'about'
 
 const TABS: { id: SettingsTab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
   { id: 'general', label: 'عمومی', Icon: SettingsIcon },
@@ -22,6 +23,7 @@ const TABS: { id: SettingsTab; label: string; Icon: ComponentType<{ size?: numbe
   { id: 'ai', label: 'هوش مصنوعی', Icon: SparklesIcon },
   { id: 'media', label: 'صدا و صفحه', Icon: VolumeIcon },
   { id: 'health', label: 'آب و تمرکز', Icon: WaterIcon },
+  { id: 'football', label: 'فوتبال', Icon: BallIcon },
   { id: 'about', label: 'درباره', Icon: InfoIcon }
 ]
 
@@ -141,6 +143,8 @@ export function SettingsPage() {
             {tab === 'media' && <MediaSection system={system} />}
 
             {tab === 'health' && <HealthSection settings={settings} onPatch={patch} />}
+
+            {tab === 'football' && <FootballSection settings={settings} onPatch={patch} />}
 
             {tab === 'about' && <AboutSection />}
           </div>

@@ -6,6 +6,7 @@ export type PanelId =
   | 'lyrics'
   | 'focus'
   | 'water'
+  | 'football'
   | 'shelf'
   | 'todo'
   | 'notes'
@@ -27,6 +28,35 @@ export interface FocusSettings {
   longBreakMin: number
   longBreakEvery: number
   chime: boolean
+}
+
+/** A team the user follows. The crest is a small data URL so the notch works offline. */
+export interface FootballTeam {
+  id: string
+  name: string
+  logo: string
+  league: string
+}
+
+export interface FootballSettings {
+  enabled: boolean
+  /** At most ten teams are kept. */
+  teams: FootballTeam[]
+  goalAlerts: boolean
+  startAlerts: boolean
+  redAlerts: boolean
+  finalAlerts: boolean
+}
+
+/** Stand-up reminder: fires only while the user is actually sitting at the desk. */
+export interface MoveSettings {
+  enabled: boolean
+  /** Minutes of continuous desk time before the nudge. */
+  everyMin: number
+  startHour: number
+  endHour: number
+  /** Also raise a Windows toast, for when the notch is out of sight. */
+  notify: boolean
 }
 
 export type MascotShape = 'oval' | 'round' | 'soft' | 'tall'
@@ -85,6 +115,8 @@ export interface Settings {
   presence: PresenceSettings
   water: WaterSettings
   focus: FocusSettings
+  football: FootballSettings
+  move: MoveSettings
 }
 
 export type AiProviderId =
@@ -229,6 +261,93 @@ export interface FocusState {
   day: string
 }
 
+export type FootballStatus = 'scheduled' | 'live' | 'finished' | 'postponed' | 'canceled'
+
+export type FootballEventKind = 'goal' | 'penalty' | 'yellow' | 'red' | 'sub' | 'var' | 'other'
+
+/** One team's half of a match, with the score filled in once there is one. */
+export interface FootballSide {
+  id: string
+  name: string
+  /** Data URL; the notch never touches the network itself. */
+  logo: string
+  score: number | null
+}
+
+export interface FootballEvent {
+  id: string
+  kind: FootballEventKind
+  /** The provider's minute as shown, e.g. "45+2" or "67". */
+  minute: string
+  /** Numeric minute for ordering (45+2 sorts as 45). */
+  order: number
+  side: 'host' | 'guest'
+  player: string
+  /** Second player: the assist on a goal, or the one going off on a substitution. */
+  other: string
+  /** The provider's own Persian sentence. */
+  text: string
+}
+
+export interface FootballMatch {
+  id: string
+  status: FootballStatus
+  /** Persian label from the provider ("نیمه دوم", "نتیجه نهایی", ...). */
+  statusLabel: string
+  /** Live minute as shown, or null when the clock is not running. */
+  minute: string | null
+  /** Kickoff in UTC milliseconds, or null when the provider omits it. */
+  kickoffAt: number | null
+  /** The provider's Tehran clock, e.g. "16:45". */
+  clock: string
+  /** The provider's Jalali day, e.g. "8 آبان 1405". */
+  day: string
+  league: string
+  stage: string
+  host: FootballSide
+  guest: FootballSide
+  events: FootballEvent[]
+  /** The provider has an events feed for this match. */
+  hasDetails: boolean
+  /** True once a detail response has filled `events`; empty then means "no events", not "not asked yet". */
+  eventsLoaded: boolean
+}
+
+/** What the notch and settings receive: today's matches for the followed teams. */
+export interface FootballView {
+  enabled: boolean
+  teams: FootballTeam[]
+  /** Today's matches involving a followed team, live first, then by kickoff. */
+  matches: FootballMatch[]
+  /** True when any of those matches is live right now. */
+  live: boolean
+  updatedAt: number | null
+  /** True while the very first fetch is in flight. */
+  loading: boolean
+  /** Provider failure, kept so the panel can say the data is stale. */
+  error: string | null
+}
+
+/** A pickable team, gathered from the matches of the surrounding days. */
+export interface FootballCatalogTeam {
+  id: string
+  name: string
+  /** Remote crest address; used once, when the team is picked, to build a data URL. */
+  logo: string
+  league: string
+  /** Matches in the covered window. */
+  matches: number
+  /** Next kickoff still ahead (or in progress), in UTC milliseconds; 0 when none. */
+  nextAt: number
+}
+
+export interface FootballCatalog {
+  teams: FootballCatalogTeam[]
+  updatedAt: number | null
+  loading: boolean
+  error: string | null
+}
+
 export type PlaybackStatus = 'playing' | 'paused' | 'stopped' | 'unavailable'
 
 export interface MediaState {
@@ -267,6 +386,7 @@ export interface AppState {
   notes: Note[]
   water: WaterState
   focus: FocusState
+  football: FootballView
   ai: AiState
   media: MediaState | null
   system: SystemState
@@ -288,13 +408,31 @@ export interface LyricResult {
   message?: string
 }
 
-export type NudgeKind = 'water' | 'focus' | 'todo' | 'power' | 'lyrics' | 'shelf' | 'network' | 'headphones'
+export type NudgeKind =
+  | 'water'
+  | 'focus'
+  | 'todo'
+  | 'power'
+  | 'lyrics'
+  | 'shelf'
+  | 'network'
+  | 'headphones'
+  | 'move'
+  | 'football'
+
+export interface NudgeAction {
+  id: string
+  label: string
+  /** The filled button; the rest are quiet. */
+  primary?: boolean
+}
 
 export interface Nudge {
   id: string
   kind: NudgeKind
   title: string
   detail?: string
+  actions?: NudgeAction[]
 }
 
 export interface OverlayPayload {

@@ -10,10 +10,12 @@ import { ShelfPanel } from './components/ShelfPanel'
 import { TodoPanel } from './components/TodoPanel'
 import { NotesPanel } from './components/NotesPanel'
 import { AiPanel } from './components/AiPanel'
+import { FootballPanel } from './components/FootballPanel'
 import { NudgePill } from './components/NudgePill'
 import { SeasonFx } from './components/SeasonFx'
 import {
   ICON,
+  BallIcon,
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -55,6 +57,16 @@ const PAGES: PageDef[] = [
   { id: 'ai', title: 'هوش مصنوعی', width: 560, height: 404, hue: '178, 160, 255', Icon: SparklesIcon }
 ]
 
+/** Only added to the rail on a match day, right after the water page. */
+const FOOTBALL_PAGE: PageDef = {
+  id: 'football',
+  title: 'بازی‌ها',
+  width: 580,
+  height: 430,
+  hue: '200, 236, 110',
+  Icon: BallIcon
+}
+
 const COLLAPSED = { width: 150, height: 30 }
 
 function isPage(id: PanelId): id is PageId {
@@ -88,6 +100,14 @@ export default function App() {
 
   useFocusEngine(state)
 
+  /** The football tab only exists while a followed team has a match today. */
+  const footballTab = Boolean(state?.football.enabled && state.football.matches.length > 0)
+  const pages = useMemo(() => {
+    if (!footballTab) return PAGES
+    const at = PAGES.findIndex((entry) => entry.id === 'water') + 1
+    return [...PAGES.slice(0, at), FOOTBALL_PAGE, ...PAGES.slice(at)]
+  }, [footballTab])
+
   useEffect(() => {
     audio.current = { muted: Boolean(state?.system.muted), enabled: state?.settings.focus.chime ?? true }
   }, [state?.system.muted, state?.settings.focus.chime])
@@ -117,7 +137,11 @@ export default function App() {
     cheerTimer.current = window.setTimeout(() => setCheer(null), 2600)
   }, [state])
 
-  const mascotState: MascotState | null = state?.focus.running ? 'work' : cheer
+  const mascotState: MascotState | null = state?.focus.running
+    ? 'work'
+    : nudge?.kind === 'move' && nudge.id !== dismissed
+      ? 'wave'
+      : cheer
 
   const pin = useCallback((ms = 6000) => {
     setPinned(true)
@@ -199,21 +223,22 @@ export default function App() {
       if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
       if (event.ctrlKey || event.altKey || event.metaKey) return
 
-      const current = PAGES.findIndex((page) => page.id === panel)
+      const current = pages.findIndex((page) => page.id === panel)
       const offset = event.key === 'ArrowLeft' ? 1 : event.key === 'ArrowRight' ? -1 : 0
       let next = -1
       if (event.key === 'Home') next = 0
-      else if (event.key === 'End') next = PAGES.length - 1
-      else if (offset) next = (current + offset + PAGES.length) % PAGES.length
+      else if (event.key === 'End') next = pages.length - 1
+      else if (offset) next = (current + offset + pages.length) % pages.length
       else {
         const latin = '123456789'.indexOf(event.key)
         const persian = '۱۲۳۴۵۶۷۸۹'.indexOf(event.key)
         const slot = latin >= 0 ? latin : persian
         if (slot >= 0) next = slot
+        else if (event.key === '0' || event.key === '۰') next = 9
       }
-      if (next < 0 || !PAGES[next]) return
+      if (next < 0 || !pages[next]) return
       event.preventDefault()
-      setPanel(PAGES[next].id)
+      setPanel(pages[next].id)
       setHover(true)
       pin()
     }
@@ -224,7 +249,7 @@ export default function App() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('pointerdown', prime)
     }
-  }, [panel, pin])
+  }, [panel, pin, pages])
 
   useEffect(() => {
     const offline = () => {
@@ -260,7 +285,11 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  const page = useMemo(() => PAGES.find((entry) => entry.id === panel) ?? PAGES[1], [panel])
+  useEffect(() => {
+    if (panel === 'football' && !footballTab) setPanel('music')
+  }, [panel, footballTab])
+
+  const page = useMemo(() => pages.find((entry) => entry.id === panel) ?? pages[1] ?? PAGES[1], [pages, panel])
 
   const scale = useMemo(() => {
     const base = state?.settings.notchScale ?? 1
@@ -281,11 +310,11 @@ export default function App() {
   const go = useCallback(
     (delta: number) => {
       setPanel((current) => {
-        const index = PAGES.findIndex((entry) => entry.id === current)
-        return PAGES[(index + delta + PAGES.length) % PAGES.length].id
+        const index = pages.findIndex((entry) => entry.id === current)
+        return pages[(index + delta + pages.length) % pages.length].id
       })
     },
-    []
+    [pages]
   )
 
   const onWheel = (event: React.WheelEvent) => {
@@ -374,6 +403,7 @@ export default function App() {
                 {panel === 'lyrics' && <LyricsPanel state={state} />}
                 {panel === 'focus' && <FocusPanel state={state} />}
                 {panel === 'water' && <WaterPanel state={state} />}
+                {panel === 'football' && <FootballPanel state={state} />}
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
                 {panel === 'notes' && <NotesPanel state={state} />}
@@ -393,7 +423,7 @@ export default function App() {
               </div>
 
               <nav className="tab-rail" aria-label="صفحه‌ها">
-                {PAGES.map((entry) => (
+                {pages.map((entry) => (
                   <button
                     key={entry.id}
                     type="button"

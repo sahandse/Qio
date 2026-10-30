@@ -6,6 +6,7 @@ import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, Settings
 import { aiReady } from '@shared/ai'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
+import type { FootballService } from './football'
 import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
@@ -15,9 +16,11 @@ import { pickFocusPatch, pickSettingsPatch, pickTodoPatch } from '@shared/valida
 export interface IpcContext {
   store: Store
   bridge: WindowsBridge
+  football: FootballService
   getState(): AppState
   notify(title: string, body: string): void
   raiseNudge(kind: Nudge['kind'], title: string, detail?: string): void
+  onNudgeAction(id: string, action: string): void
   refreshTray(): void
   applyLoginItem(): void
   setNotchVisible(visible: boolean): void
@@ -248,6 +251,10 @@ export function registerIpc(ctx: IpcContext): void {
     store.patchFocus(pickFocusPatch(patch))
   )
 
+  ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
+  ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))
+  ipcMain.handle('football:refresh', () => ctx.football.refresh())
+
   ipcMain.handle('media:command', (_event, command: MediaCommand, value?: number) => {
     bridge.mediaCommand(command, typeof value === 'number' ? value : undefined)
     return true
@@ -299,4 +306,7 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.on('overlay:hide', () => hideOverlay())
   ipcMain.on('notch:pulse', () => sendToNotch('notch:pulse', Date.now()))
+  ipcMain.on('nudge:action', (_event, id: unknown, action: unknown) => {
+    if (typeof id === 'string' && typeof action === 'string') ctx.onNudgeAction(id, action)
+  })
 }

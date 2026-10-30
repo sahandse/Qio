@@ -3,8 +3,11 @@ import type {
   AiMessage,
   AiSettings,
   FocusState,
+  FootballSettings,
+  FootballTeam,
   MascotSettings,
   MascotShape,
+  MoveSettings,
   Note,
   NoteTint,
   PresenceSettings,
@@ -53,6 +56,55 @@ export const defaultPresence: PresenceSettings = {
   forSec: 12
 }
 
+export const defaultFootball: FootballSettings = {
+  enabled: true,
+  teams: [],
+  goalAlerts: true,
+  startAlerts: true,
+  redAlerts: true,
+  finalAlerts: true
+}
+
+export const defaultMove: MoveSettings = {
+  enabled: true,
+  everyMin: 50,
+  startHour: 9,
+  endHour: 21,
+  notify: false
+}
+
+const MAX_TEAMS = 10
+const MAX_CREST_CHARS = 400_000
+
+/** Crests are tiny PNG data URLs; anything else is discarded rather than rendered. */
+function cleanCrest(raw: unknown): string {
+  const value = typeof raw === 'string' ? raw : ''
+  if (value.length > MAX_CREST_CHARS) return ''
+  return /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value) ? value : ''
+}
+
+export function cleanFootballTeams(raw: unknown): FootballTeam[] {
+  if (!Array.isArray(raw)) return []
+  const teams: FootballTeam[] = []
+  const seen = new Set<string>()
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    const team = item as Partial<FootballTeam>
+    const id = typeof team.id === 'string' ? team.id.trim().slice(0, 32) : ''
+    const name = cleanText(team.name, 80)
+    if (!id || !name || seen.has(id)) continue
+    seen.add(id)
+    teams.push({
+      id,
+      name,
+      logo: cleanCrest(team.logo),
+      league: cleanText(team.league, 80)
+    })
+    if (teams.length >= MAX_TEAMS) break
+  }
+  return teams
+}
+
 export const defaultAiSettings: AiSettings = {
   provider: 'gapgpt',
   baseUrl: '',
@@ -88,7 +140,9 @@ export const defaultSettings: Settings = {
     longBreakMin: 15,
     longBreakEvery: 4,
     chime: true
-  }
+  },
+  football: defaultFootball,
+  move: defaultMove
 }
 
 export function dateKey(date = new Date()): string {
@@ -186,8 +240,13 @@ export function mergeSettings(raw: unknown): Settings {
   const input = (raw ?? {}) as Partial<Settings>
   const water = (input.water ?? {}) as Partial<Settings['water']>
   const focus = (input.focus ?? {}) as Partial<Settings['focus']>
+  const football = (input.football ?? {}) as Partial<Settings['football']>
+  const move = (input.move ?? {}) as Partial<Settings['move']>
   const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
   const presence = (input.presence ?? {}) as Partial<PresenceSettings>
+  const moveStart = clampNumber(move.startHour, 5, 23, defaultMove.startHour)
+  const moveEnd = clampNumber(move.endHour, 6, 24, defaultMove.endHour)
+  const moveWindow = moveEnd > moveStart ? { start: moveStart, end: moveEnd } : { start: defaultMove.startHour, end: defaultMove.endHour }
   return {
     startWithWindows: Boolean(input.startWithWindows ?? defaultSettings.startWithWindows),
     minimalNotch: Boolean(input.minimalNotch ?? defaultSettings.minimalNotch),
@@ -235,6 +294,21 @@ export function mergeSettings(raw: unknown): Settings {
       longBreakMin: clampNumber(focus.longBreakMin, 5, 90, defaultSettings.focus.longBreakMin),
       longBreakEvery: clampNumber(focus.longBreakEvery, 2, 12, defaultSettings.focus.longBreakEvery),
       chime: Boolean(focus.chime ?? defaultSettings.focus.chime)
+    },
+    football: {
+      enabled: Boolean(football.enabled ?? defaultFootball.enabled),
+      teams: cleanFootballTeams(football.teams),
+      goalAlerts: Boolean(football.goalAlerts ?? defaultFootball.goalAlerts),
+      startAlerts: Boolean(football.startAlerts ?? defaultFootball.startAlerts),
+      redAlerts: Boolean(football.redAlerts ?? defaultFootball.redAlerts),
+      finalAlerts: Boolean(football.finalAlerts ?? defaultFootball.finalAlerts)
+    },
+    move: {
+      enabled: Boolean(move.enabled ?? defaultMove.enabled),
+      everyMin: clampNumber(move.everyMin, 15, 180, defaultMove.everyMin),
+      startHour: moveWindow.start,
+      endHour: moveWindow.end,
+      notify: Boolean(move.notify ?? defaultMove.notify)
     }
   }
 }

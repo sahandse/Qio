@@ -6,6 +6,9 @@ import type {
   AiTestResult,
   AppState,
   FocusState,
+  FootballCatalog,
+  FootballSettings,
+  FootballView,
   LyricResult,
   MediaCommand,
   Note,
@@ -37,6 +40,7 @@ export interface QioApi {
   getCover(): Promise<{ key: string; dataUrl: string }>
   onNudge(callback: (nudge: Nudge) => void): Unsubscribe
   onNudgeClear(callback: (id: string) => void): Unsubscribe
+  nudgeAction(id: string, action: string): void
   onOpen(callback: (panel: PanelId) => void): Unsubscribe
   onPulse(callback: (at: number) => void): Unsubscribe
   onOverlay(callback: (payload: OverlayPayload) => void): Unsubscribe
@@ -78,6 +82,14 @@ export interface QioApi {
 
   focus: {
     patch(patch: Partial<FocusState>): Promise<FocusState>
+  }
+
+  football: {
+    /** Teams playing in the surrounding days, for the settings picker. */
+    catalog(force?: boolean): Promise<FootballCatalog>
+    toggleTeam(id: string): Promise<FootballSettings>
+    /** Ask for a fresh slate right now (the retry button in the panel). */
+    refresh(): Promise<FootballView>
   }
 
   ai: {

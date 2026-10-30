@@ -1,9 +1,11 @@
 import { BrowserWindow, Notification, app, dialog, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
-import type { AppState, MediaState, Nudge, OverlayPayload, SystemState } from '@shared/types'
+import type { AppState, MediaState, Nudge, NudgeAction, OverlayPayload, SystemState } from '@shared/types'
 import { toPersianDigits } from '@shared/persian'
 import { WindowsBridge } from './bridge'
+import { FootballService } from './football'
 import { registerIpc } from './ipc'
+import { MoveService } from './move'
 import { Store } from './store'
 import { dateKey } from './store/defaults'
 import { refreshTray, setTrayNotchVisible, setupTray } from './tray'
@@ -25,6 +27,8 @@ const NUDGE_MS = 6500
 
 let store: Store
 let bridge: WindowsBridge
+let football: FootballService
+let move: MoveService
 let media: MediaState | null = null
 let system: SystemState = {
   volume: null,
@@ -49,6 +53,7 @@ let lastHeadphones: boolean | null = null
 let fullscreen = false
 let manualHidden = false
 const nudges = new Map<string, NodeJS.Timeout>()
+const nudgeHandlers = new Map<string, (action: string) => void>()
 
 function getState(): AppState {
   return {
@@ -58,6 +63,7 @@ function getState(): AppState {
     notes: store.notes,
     water: store.waterState(),
     focus: store.focus,
+    football: football.current,
     ai: { settings: store.aiPublic(), messages: store.aiMessages },
     media,
     system: { ...system, startWithWindows: app.isPackaged && app.getLoginItemSettings().openAtLogin },
@@ -81,16 +87,45 @@ function notify(title: string, body: string): void {
   }
 }
 
+interface NudgeOptions {
+  actions?: NudgeAction[]
+  onAction?: (action: string) => void
+  /** Long enough for the buttons to be read and clicked. */
+  ms?: number
+}
+
 /** A short in-notch alert: Qio taps you on the shoulder without opening a panel. */
-function raiseNudge(kind: Nudge['kind'], title: string, detail?: string): void {
-  const nudge: Nudge = { id: randomUUID(), kind, title, detail }
+function raiseNudge(
+  kind: Nudge['kind'],
+  title: string,
+  detail?: string,
+  options: NudgeOptions = {}
+): string {
+  const nudge: Nudge = { id: randomUUID(), kind, title, detail, actions: options.actions }
+  if (options.onAction) nudgeHandlers.set(nudge.id, options.onAction)
   revealForAlert()
   sendToNotch('nudge', nudge)
   const timer = setTimeout(() => {
-    nudges.delete(nudge.id)
-    sendToNotch('nudge:clear', nudge.id)
-  }, NUDGE_MS)
+    dropNudge(nudge.id)
+  }, options.ms ?? NUDGE_MS)
   nudges.set(nudge.id, timer)
+  return nudge.id
+}
+
+function dropNudge(id: string): void {
+  const timer = nudges.get(id)
+  if (timer) clearTimeout(timer)
+  nudges.delete(id)
+  nudgeHandlers.delete(id)
+  sendToNotch('nudge:clear', id)
+}
+
+/** A button inside the nudge: run its handler, then take the pill away. */
+function handleNudgeAction(id: string, action: string): void {
+  const handler = nudgeHandlers.get(id)
+  if (!handler) return
+  handler(action)
+  dropNudge(id)
 }
 
 /** An alert that nobody can see is not an alert, so the notch is brought back for it. */
@@ -262,6 +297,8 @@ function startSchedulers(): void {
   store.onChange(() => {
     pushState()
     applyFullscreen(fullscreen)
+    football.handleSettingsChange()
+    move.handleSettingsChange()
   })
   let lastDay = dateKey()
 
@@ -359,6 +396,35 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     store = new Store()
     bridge = new WindowsBridge()
+    football = new FootballService({
+      settings: () => store.settings,
+      patchFootball: (patch) => {
+        store.patchSettings({ football: { ...store.settings.football, ...patch } })
+      },
+      onChange: () => pushState(),
+      alert: (title, detail) => raiseNudge('football', title, detail)
+    })
+
+    move = new MoveService({
+      settings: () => store.settings.move,
+      remind: (minutes) => {
+        raiseNudge(
+          'move',
+          'بلند شو، کمی حرکت کن',
+          `${toPersianDigits(minutes)} دقیقه پشت میزی — چند قدم بزن و برگرد.`,
+          {
+            actions: [
+              { id: 'moved', label: 'بلند شدم', primary: true },
+              { id: 'snooze', label: '۱۰ دقیقه دیگر' }
+            ],
+            onAction: (action) => move.handleAction(action),
+            ms: 20_000
+          }
+        )
+      },
+      toast: (minutes) =>
+        notify('وقت حرکت', `${toPersianDigits(minutes)} دقیقه پشت میز نشسته‌ای؛ چند قدم راه برو.`)
+    })
 
     const notch = createNotchWindow(false)
     notch.once('ready-to-show', () => {
@@ -369,9 +435,11 @@ if (!app.requestSingleInstanceLock()) {
     registerIpc({
       store,
       bridge,
+      football,
       getState,
       notify,
       raiseNudge,
+      onNudgeAction: handleNudgeAction,
       refreshTray,
       applyLoginItem,
       setNotchVisible,
@@ -386,6 +454,8 @@ if (!app.requestSingleInstanceLock()) {
     setupTrayAndWindow()
     wireBridge()
     startSchedulers()
+    football.start()
+    move.start()
     applyLoginItem()
     bridge.start()
     startUpdateCheck()
@@ -403,6 +473,8 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', () => {
     hideOverlay()
+    football?.stop()
+    move?.stop()
     bridge?.stop()
     store?.flush()
   })
