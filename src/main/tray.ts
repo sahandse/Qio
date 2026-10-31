@@ -7,6 +7,9 @@ export interface TrayHandlers {
   patchSettings(patch: Partial<Settings>): void
   onOpenPanel(panel: 'settings' | 'music' | 'focus' | 'ai'): void
   onToggleNotch(visible: boolean): void
+  /** True while the keep-awake cup is holding the display on. */
+  coffeeActive(): boolean
+  onOpenCoffee(): void
   onQuit(): void
 }
 
@@ -53,6 +56,12 @@ export function refreshTray(): void {
     { label: 'تنظیمات Qio…', click: () => handlers?.onOpenPanel('settings') },
     { label: 'هوش مصنوعی', click: () => handlers?.onOpenPanel('ai') },
     { type: 'separator' },
+    {
+      label: 'صفحه روشن بماند',
+      type: 'checkbox',
+      checked: handlers?.coffeeActive() ?? false,
+      click: () => handlers?.onOpenCoffee()
+    },
     {
       label: 'اجرا هنگام ورود به ویندوز',
       type: 'checkbox',

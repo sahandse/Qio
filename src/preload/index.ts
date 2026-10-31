@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AiEvent, AppState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, Todo } from '@shared/types'
+import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, SystemSample, Todo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -63,6 +63,24 @@ const api: QioApi = {
     patch: (patch) => ipcRenderer.invoke('focus:patch', patch) as Promise<FocusState>
   },
 
+  coffee: {
+    brew: (minutes) => ipcRenderer.invoke('coffee:brew', minutes) as Promise<CoffeeState>,
+    release: () => ipcRenderer.invoke('coffee:release') as Promise<CoffeeState>
+  },
+
+  clip: {
+    view: () => ipcRenderer.invoke('clip:view') as Promise<ClipView>,
+    use: (id) => ipcRenderer.invoke('clip:use', id) as Promise<boolean>,
+    remove: (id) => ipcRenderer.invoke('clip:remove', id) as Promise<ClipView>,
+    clear: () => ipcRenderer.invoke('clip:clear') as Promise<ClipView>,
+    setPaused: (paused) => ipcRenderer.invoke('clip:pause', Boolean(paused)) as Promise<ClipView>,
+    onChanged: (callback) => subscribe<ClipView>('clip:changed', callback)
+  },
+
+  sys: {
+    sample: () => ipcRenderer.invoke('sys:sample') as Promise<SystemSample>
+  },
+
   football: {
     catalog: (force) => ipcRenderer.invoke('football:catalog', force === true),
     toggleTeam: (id) => ipcRenderer.invoke('football:team', id),
@@ -90,6 +108,8 @@ const api: QioApi = {
     setMute: (muted) => ipcRenderer.invoke('system:mute', muted) as Promise<void>,
     setBrightness: (level) => ipcRenderer.invoke('system:brightness', level) as Promise<void>,
     copyText: (text) => ipcRenderer.invoke('system:copy-text', text) as Promise<boolean>,
+    copyPng: (png) => ipcRenderer.invoke('system:copy-image', png) as Promise<boolean>,
+    save: (input) => ipcRenderer.invoke('file:save', input) as Promise<string | null>,
     loginItem: () => ipcRenderer.invoke('system:login-item') as Promise<boolean>
   },
 

@@ -119,6 +119,31 @@ export function GeneralSection({
         )}
       </Card>
 
+      <Card title="خاطرهٔ کلیپ‌بورد">
+        <Toggle
+          label="چیزهایی که کپی می‌کنی را به یاد آور"
+          hint="فقط در حافظهٔ همین نشست؛ روی دیسک نوشته نمی‌شود و با بستن Qio فراموش می‌شود"
+          checked={settings.clipboard.enabled}
+          onChange={(next) => onPatch({ clipboard: { ...settings.clipboard, enabled: next } })}
+        />
+        {settings.clipboard.enabled && (
+          <NumberRow
+            label="حداکثر"
+            value={settings.clipboard.limit}
+            min={5}
+            max={100}
+            step={5}
+            suffix="مورد"
+            onChange={(next) => onPatch({ clipboard: { ...settings.clipboard, limit: next } })}
+          />
+        )}
+        <p className="settings-note">
+          تا این کلید خاموش است، Qio اصلاً کلیپ‌بورد را نمی‌خواند. روشن که کردی، متن و تصویر
+          نگه داشته می‌شود؛ فایل‌هایی که از Explorer کپی می‌کنی نه — همان‌ها را قفسه دارد.
+          تاریخچه در همان پنجرهٔ قفسه، تب «کلیپ‌بورد» است.
+        </p>
+      </Card>
+
       <Card title="کنترل">
         <div className="settings-note">
           کلیدهای ۱ تا ۹ بین صفحه‌ها جابه‌جا می‌شوند، Esc پنل را می‌بندد و چرخ ماوس هم صفحه بعد را می‌آورد.

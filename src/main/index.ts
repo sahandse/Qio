@@ -2,10 +2,14 @@ import { BrowserWindow, Notification, app, dialog, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
 import type { AppState, MediaState, Nudge, NudgeAction, OverlayPayload, SystemState } from '@shared/types'
 import { toPersianDigits } from '@shared/persian'
+import { pickCoffeePatch } from '@shared/validate'
 import { WindowsBridge } from './bridge'
+import { ClipService } from './clip'
+import { CoffeeService } from './coffee'
 import { FootballService } from './football'
 import { registerIpc } from './ipc'
 import { MoveService } from './move'
+import { MonitorService } from './monitor'
 import { Store } from './store'
 import { dateKey } from './store/defaults'
 import { refreshTray, setTrayNotchVisible, setupTray } from './tray'
@@ -29,6 +33,8 @@ let store: Store
 let bridge: WindowsBridge
 let football: FootballService
 let move: MoveService
+let coffee: CoffeeService
+let clip: ClipService
 let media: MediaState | null = null
 let system: SystemState = {
   volume: null,
@@ -63,6 +69,7 @@ function getState(): AppState {
     notes: store.notes,
     water: store.waterState(),
     focus: store.focus,
+    coffee: store.coffee,
     football: football.current,
     ai: { settings: store.aiPublic(), messages: store.aiMessages },
     media,
@@ -335,6 +342,13 @@ function setupTrayAndWindow(): void {
       sendToNotch('notch:open', panel)
     },
     onToggleNotch: (visible) => setNotchVisible(visible),
+    coffeeActive: () => store.coffee.active,
+    onOpenCoffee: () => {
+      const minutes = store.settings.coffee.minutes
+      if (store.coffee.active) coffee.release()
+      else coffee.brew(minutes)
+      pushState()
+    },
     onQuit: () => app.quit()
   })
 }
@@ -426,6 +440,33 @@ if (!app.requestSingleInstanceLock()) {
         notify('وقت حرکت', `${toPersianDigits(minutes)} دقیقه پشت میز نشسته‌ای؛ چند قدم راه برو.`)
     })
 
+    coffee = new CoffeeService({
+      state: () => store.coffee,
+      patch: (patch) => {
+        store.patchCoffee(pickCoffeePatch(patch))
+        refreshTray()
+      },
+      finished: (minutes) => {
+        const detail = `${toPersianDigits(minutes)} دقیقه گذشت و صفحه دوباره می‌تواند بخوابد.`
+        if (store.settings.coffee.alert) notify('قهوه تمام شد', detail)
+        raiseNudge('coffee', 'صفحه را روشن نگه داشتم', detail, {
+          actions: [
+            { id: 'again', label: `${toPersianDigits(minutes)} دقیقهٔ دیگر`, primary: true },
+            { id: 'always', label: 'تا اطلاع بعدی' }
+          ],
+          onAction: (action) => coffee.handleAction(action, minutes),
+          ms: 14_000
+        })
+      }
+    })
+
+    clip = new ClipService({
+      settings: () => store.settings.clipboard,
+      changed: (view) => sendToNotch('clip:changed', view)
+    })
+
+    const monitor = new MonitorService()
+
     const notch = createNotchWindow(false)
     notch.once('ready-to-show', () => {
       if (!manualHidden) showNotch()
@@ -436,6 +477,9 @@ if (!app.requestSingleInstanceLock()) {
       store,
       bridge,
       football,
+      coffee,
+      clip,
+      monitor,
       getState,
       notify,
       raiseNudge,
@@ -456,6 +500,8 @@ if (!app.requestSingleInstanceLock()) {
     startSchedulers()
     football.start()
     move.start()
+    coffee.start()
+    clip.start()
     applyLoginItem()
     bridge.start()
     startUpdateCheck()
@@ -475,6 +521,8 @@ if (!app.requestSingleInstanceLock()) {
     hideOverlay()
     football?.stop()
     move?.stop()
+    coffee?.stop()
+    clip?.stop()
     bridge?.stop()
     store?.flush()
   })

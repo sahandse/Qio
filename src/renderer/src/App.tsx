@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ComponentType } from 'react'
-import type { MascotState, PanelId } from '@shared/types'
+import type { MascotState, PageId, PageSize, PanelId } from '@shared/types'
 import { NotchBar } from './components/NotchBar'
 import { CalendarPanel } from './components/CalendarPanel'
 import { LyricsPanel, MusicPanel } from './components/MusicPanel'
@@ -9,62 +8,56 @@ import { WaterPanel } from './components/WaterPanel'
 import { ShelfPanel } from './components/ShelfPanel'
 import { TodoPanel } from './components/TodoPanel'
 import { NotesPanel } from './components/NotesPanel'
+import { ToolsPanel } from './components/ToolsPanel'
 import { AiPanel } from './components/AiPanel'
 import { FootballPanel } from './components/FootballPanel'
 import { NudgePill } from './components/NudgePill'
 import { SeasonFx } from './components/SeasonFx'
 import {
   ICON,
-  BallIcon,
-  CalendarIcon,
   ChevronLeftIcon,
-  ChevronRightIcon,
-  LyricsIcon,
-  MusicIcon,
-  NoteIcon,
-  ShelfIcon,
-  SparklesIcon,
-  TimerIcon,
-  TodoIcon,
-  WaterIcon
+  ChevronRightIcon
 } from './components/Icons'
+import { PAGE_META } from './lib/pages'
 import { useAppState, useCalm, useNightTheme, useNudge } from './lib/state'
 import { useSeasonTheme } from './lib/season'
 import { useFocusEngine } from './lib/focus'
 import { playCue, primeAudio } from './lib/chime'
 
-type PageId = Exclude<PanelId, 'settings'>
-
 interface PageDef {
   id: PageId
-  title: string
   width: number
   height: number
   /** Accent of the page as an rgb triplet, so each panel glows in its own colour. */
   hue: string
-  Icon: ComponentType<{ size?: number }>
 }
 
 const PAGES: PageDef[] = [
-  { id: 'calendar', title: 'تقویم', width: 424, height: 348, hue: '138, 230, 192', Icon: CalendarIcon },
-  { id: 'music', title: 'آهنگ', width: 424, height: 198, hue: '122, 196, 255', Icon: MusicIcon },
-  { id: 'lyrics', title: 'متن آهنگ', width: 540, height: 198, hue: '154, 190, 255', Icon: LyricsIcon },
-  { id: 'focus', title: 'تمرکز', width: 424, height: 190, hue: '242, 200, 121', Icon: TimerIcon },
-  { id: 'water', title: 'آب', width: 424, height: 204, hue: '106, 200, 255', Icon: WaterIcon },
-  { id: 'shelf', title: 'قفسه', width: 424, height: 188, hue: '181, 156, 255', Icon: ShelfIcon },
-  { id: 'todo', title: 'کارها', width: 430, height: 214, hue: '138, 230, 192', Icon: TodoIcon },
-  { id: 'notes', title: 'یادداشت', width: 440, height: 258, hue: '255, 170, 200', Icon: NoteIcon },
-  { id: 'ai', title: 'هوش مصنوعی', width: 560, height: 404, hue: '178, 160, 255', Icon: SparklesIcon }
+  { id: 'calendar', width: 424, height: 348, hue: '138, 230, 192' },
+  { id: 'music', width: 424, height: 198, hue: '122, 196, 255' },
+  { id: 'lyrics', width: 540, height: 198, hue: '154, 190, 255' },
+  { id: 'focus', width: 424, height: 190, hue: '242, 200, 121' },
+  { id: 'water', width: 424, height: 204, hue: '106, 200, 255' },
+  { id: 'shelf', width: 424, height: 206, hue: '181, 156, 255' },
+  { id: 'todo', width: 430, height: 214, hue: '138, 230, 192' },
+  { id: 'notes', width: 440, height: 258, hue: '255, 170, 200' },
+  { id: 'tools', width: 456, height: 214, hue: '214, 198, 140' },
+  { id: 'ai', width: 560, height: 404, hue: '178, 160, 255' }
 ]
 
 /** Only added to the rail on a match day, right after the water page. */
 const FOOTBALL_PAGE: PageDef = {
   id: 'football',
-  title: 'بازی‌ها',
   width: 580,
   height: 430,
-  hue: '200, 236, 110',
-  Icon: BallIcon
+  hue: '200, 236, 110'
+}
+
+/** ۱×۱ keeps the page as drawn; ۲×۱ and ۲×۲ give it a wider — and then taller — bento cell. */
+const BENTO: Record<PageSize, { width: number; height: number }> = {
+  '1x1': { width: 1, height: 1 },
+  '2x1': { width: 1.42, height: 1 },
+  '2x2': { width: 1.42, height: 1.36 }
 }
 
 const COLLAPSED = { width: 150, height: 30 }
@@ -102,11 +95,22 @@ export default function App() {
 
   /** The football tab only exists while a followed team has a match today. */
   const footballTab = Boolean(state?.football.enabled && state.football.matches.length > 0)
+  const layout = state?.settings.layout
   const pages = useMemo(() => {
-    if (!footballTab) return PAGES
-    const at = PAGES.findIndex((entry) => entry.id === 'water') + 1
-    return [...PAGES.slice(0, at), FOOTBALL_PAGE, ...PAGES.slice(at)]
-  }, [footballTab])
+    const all = footballTab
+      ? (() => {
+          const at = PAGES.findIndex((entry) => entry.id === 'water') + 1
+          return [...PAGES.slice(0, at), FOOTBALL_PAGE, ...PAGES.slice(at)]
+        })()
+      : PAGES
+    if (!layout) return all
+    const rank = new Map(layout.order.map((id, index) => [id, index]))
+    const shown = all
+      .filter((entry) => !layout.hidden.includes(entry.id))
+      .sort((a, b) => (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER))
+    // Hiding is clamped in main, but a page still has to be reachable if that ever slips.
+    return shown.length > 0 ? shown : all
+  }, [footballTab, layout])
 
   useEffect(() => {
     audio.current = { muted: Boolean(state?.system.muted), enabled: state?.settings.focus.chime ?? true }
@@ -286,8 +290,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (panel === 'football' && !footballTab) setPanel('music')
-  }, [panel, footballTab])
+    if (!pages.some((entry) => entry.id === panel)) setPanel(pages[0]?.id ?? 'music')
+  }, [panel, pages])
 
   const page = useMemo(() => pages.find((entry) => entry.id === panel) ?? pages[1] ?? PAGES[1], [pages, panel])
 
@@ -303,8 +307,12 @@ export default function App() {
     return Math.min(1.26, Math.max(0.9, Math.round((available / 1920) * 100) / 100))
   }, [])
 
+  const bento = BENTO[layout?.size[page.id] ?? '1x1']
   const shellSize = expanded
-    ? { width: Math.round(page.width * widthFactor), height: page.height }
+    ? {
+        width: Math.round(page.width * widthFactor * bento.width),
+        height: Math.round(page.height * bento.height)
+      }
     : COLLAPSED
 
   const go = useCallback(
@@ -386,7 +394,7 @@ export default function App() {
           <NotchBar
             state={state}
             expanded={expanded}
-            title={page.title}
+            title={PAGE_META[page.id].title}
             onOpen={() => {
               setHover(true)
               pin()
@@ -407,6 +415,7 @@ export default function App() {
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
                 {panel === 'notes' && <NotesPanel state={state} />}
+                {panel === 'tools' && <ToolsPanel state={state} />}
                 {panel === 'ai' && (
                   <AiPanel
                     state={state}
@@ -423,19 +432,22 @@ export default function App() {
               </div>
 
               <nav className="tab-rail" aria-label="صفحه‌ها">
-                {pages.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    className={`tab${entry.id === panel ? ' active' : ''}`}
-                    aria-label={entry.title}
-                    aria-current={entry.id === panel ? 'page' : undefined}
-                    data-label={entry.title}
-                    onClick={() => setPanel(entry.id)}
-                  >
-                    <entry.Icon size={ICON.xs} />
-                  </button>
-                ))}
+                {pages.map((entry) => {
+                  const meta = PAGE_META[entry.id]
+                  return (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      className={`tab${entry.id === panel ? ' active' : ''}`}
+                      aria-label={meta.title}
+                      aria-current={entry.id === panel ? 'page' : undefined}
+                      data-label={meta.title}
+                      onClick={() => setPanel(entry.id)}
+                    >
+                      <meta.Icon size={ICON.xs} />
+                    </button>
+                  )
+                })}
               </nav>
 
               <button

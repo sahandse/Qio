@@ -6,6 +6,7 @@ import type {
   AiMessage,
   AiPublicSettings,
   AiSettings,
+  CoffeeState,
   FocusState,
   Note,
   NoteTint,
@@ -21,8 +22,10 @@ import {
   NOTE_TINTS,
   cleanAiMessages,
   cleanAiSettings,
+  cleanCoffeeState,
   cleanNote,
   dateKey,
+  defaultCoffeeState,
   defaultFocusState,
   mergeSettings
 } from './store/defaults'
@@ -49,6 +52,7 @@ export class Store {
       notes: [],
       water: { date: dateKey(), entries: [], days: [] },
       focus: defaultFocusState(),
+      coffee: defaultCoffeeState(),
       ai: { settings: cleanAiSettings({}), messages: [] }
     }
   }
@@ -81,6 +85,7 @@ export class Store {
           parsed.focus && typeof parsed.focus === 'object'
             ? { ...base.focus, ...parsed.focus, day: parsed.focus.day ?? base.focus.day }
             : base.focus,
+        coffee: cleanCoffeeState(parsed.coffee),
         ai: {
           settings: cleanAiSettings(parsed.ai?.settings),
           messages: cleanAiMessages(parsed.ai?.messages)
@@ -208,6 +213,16 @@ export class Store {
 
   get focus(): FocusState {
     return this.data.focus
+  }
+
+  get coffee(): CoffeeState {
+    return this.data.coffee
+  }
+
+  patchCoffee(patch: Partial<CoffeeState>): CoffeeState {
+    this.data.coffee = { ...this.data.coffee, ...patch }
+    this.touch()
+    return this.data.coffee
   }
 
   waterState(now = new Date()): WaterState {

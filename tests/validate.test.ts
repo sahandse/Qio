@@ -62,3 +62,18 @@ test('move settings keep only the five known fields', () => {
   })
   assert.deepEqual(patch, { move: { enabled: true, everyMin: 45, startHour: 8, endHour: 20, notify: true } })
 })
+
+test('layout passes its three known keys and nothing else', () => {
+  const patch = pickSettingsPatch({
+    layout: {
+      order: ['todo', 'calendar'],
+      hidden: ['music'],
+      size: { todo: '2x1' },
+      evil: true
+    }
+  })
+  assert.deepEqual(patch, {
+    layout: { order: ['todo', 'calendar'], hidden: ['music'], size: { todo: '2x1' } }
+  })
+  assert.deepEqual(pickSettingsPatch({ layout: 'bento' }), {})
+})

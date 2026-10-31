@@ -5,6 +5,8 @@ import type {
   AiSettings,
   AiTestResult,
   AppState,
+  ClipView,
+  CoffeeState,
   FocusState,
   FootballCatalog,
   FootballSettings,
@@ -16,6 +18,7 @@ import type {
   OverlayPayload,
   PanelId,
   Settings,
+  SystemSample,
   Todo
 } from './types'
 
@@ -84,6 +87,28 @@ export interface QioApi {
     patch(patch: Partial<FocusState>): Promise<FocusState>
   }
 
+  coffee: {
+    /** null holds the screen awake until the cup is put down by hand. */
+    brew(minutes: number | null): Promise<CoffeeState>
+    release(): Promise<CoffeeState>
+  }
+
+  /** Clipboard history: RAM only, off until enabled, and never written to disk. */
+  clip: {
+    view(): Promise<ClipView>
+    /** Put an old copy back on the clipboard. */
+    use(id: string): Promise<boolean>
+    remove(id: string): Promise<ClipView>
+    clear(): Promise<ClipView>
+    setPaused(paused: boolean): Promise<ClipView>
+    onChanged(callback: (view: ClipView) => void): Unsubscribe
+  }
+
+  /** One reading of the machine. Only the monitor tab calls this, only while it is open. */
+  sys: {
+    sample(): Promise<SystemSample>
+  }
+
   football: {
     /** Teams playing in the surrounding days, for the settings picker. */
     catalog(force?: boolean): Promise<FootballCatalog>
@@ -112,6 +137,10 @@ export interface QioApi {
     setMute(muted: boolean): Promise<void>
     setBrightness(level: number): Promise<void>
     copyText(text: string): Promise<boolean>
+    /** A PNG without its data: prefix, put straight onto the clipboard. */
+    copyPng(png: string): Promise<boolean>
+    /** Ask the user where a generated picture belongs; the file name comes back. */
+    save(input: { kind: 'png' | 'svg'; body: string; name: string }): Promise<string | null>
     loginItem(): Promise<boolean>
   }
 

@@ -139,6 +139,29 @@ export function HealthSection({
           فقط حضور پیوسته پشت میز به یادآور می‌رسد.
         </p>
       </section>
+
+      <section className="settings-card">
+        <h3>قهوه</h3>
+        <NumberRow
+          label="مدت پیش‌فرض"
+          value={settings.coffee.minutes}
+          min={5}
+          max={240}
+          step={5}
+          suffix="دقیقه"
+          onChange={(next) => onPatch({ coffee: { ...settings.coffee, minutes: next } })}
+        />
+        <Toggle
+          label="پایان را بگو"
+          hint="وقتی فنجان تمام شد، یک یادآوری آرام می‌آید تا بدانی صفحه دوباره می‌تواند بخوابد"
+          checked={settings.coffee.alert}
+          onChange={(next) => onPatch({ coffee: { ...settings.coffee, alert: next } })}
+        />
+        <p className="settings-note">
+          «روشن نگه داشتن صفحه» فقط مانع خواب نمایشگر و اسکرین‌سیور می‌شود. قفل ویندوز،
+          رمز صفحه و تنظیمات انرژی دست‌نخورده می‌مانند و هیچ داده‌ای به بیرون فرستاده نمی‌شود.
+        </p>
+      </section>
     </>
   )
 }

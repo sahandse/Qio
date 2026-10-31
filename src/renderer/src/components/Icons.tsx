@@ -321,3 +321,89 @@ export const WalkIcon = (props: IconProps) => (
     <path d="M10.6 11.8L7.8 15.6l1.2 4M16 14.6l1.3 3.1-2.2 2.4" />
   </Icon>
 )
+
+export const CoffeeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4.6 9.6h11.2v4.6a4.4 4.4 0 0 1-4.4 4.4H9a4.4 4.4 0 0 1-4.4-4.4z" />
+    <path d="M15.8 10.8h1.6a2.6 2.6 0 0 1 0 5.2h-1.6" />
+    <path d="M8.4 6.6c-.9-.9.7-1.6-.2-2.9M12.2 6.6c-.9-.9.7-1.6-.2-2.9" />
+    <path d="M3.4 21h13.6" />
+  </Icon>
+)
+
+export const CalcIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="5" y="3.4" width="14" height="17.2" rx="2.4" />
+    <path d="M8.2 7.6h7.6" />
+    <path d="M9 12.2h.01M12 12.2h.01M15 12.2h.01M9 15.8h.01M12 15.8h.01M15 15.8h.01" strokeWidth={2.6} />
+  </Icon>
+)
+
+export const QrIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3.6" y="3.6" width="7" height="7" rx="1.6" />
+    <rect x="13.4" y="3.6" width="7" height="7" rx="1.6" />
+    <rect x="3.6" y="13.4" width="7" height="7" rx="1.6" />
+    <path d="M13.4 13.4h2.6v2.6h-2.6zM18 18h2.4v2.4H18z" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const GaugeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 17.6a8.6 8.6 0 1 1 16 0" />
+    <path d="M12 17.2l3.4-4.4" />
+    <circle cx="12" cy="17.8" r="1.3" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const ClipboardIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="5.4" y="4.6" width="13.2" height="15.4" rx="2.2" />
+    <path d="M9.2 4.6V3.7a1.5 1.5 0 0 1 1.5-1.5h2.6a1.5 1.5 0 0 1 1.5 1.5v.9" />
+    <path d="M9 11h6M9 14.6h3.8" />
+  </Icon>
+)
+
+export const PipetteIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14.2 3.6l6.2 6.2-2.4 2.4-1-1-6.4 6.4-3.8.9.9-3.8 6.4-6.4-1-1z" />
+    <path d="M6.4 17.5L3.8 20.1" />
+  </Icon>
+)
+
+export const DrawIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M13.8 4.6l5.6 5.6-8.2 8.2-3.6.9.9-3.6z" />
+    <path d="M3.6 20.4c.6-2.6 1.8-4.2 3.6-5" />
+  </Icon>
+)
+
+export const CpuIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="7" y="7" width="10" height="10" rx="2" />
+    <path d="M10 3.4v3.6M14 3.4v3.6M10 17v3.6M14 17v3.6M3.4 10H7M3.4 14H7M17 10h3.6M17 14h3.6" />
+  </Icon>
+)
+
+export const DownloadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 4v9.6M7.6 10L12 14.4 16.4 10" />
+    <path d="M4.8 19.6h14.4" />
+  </Icon>
+)
+
+export const ToolsIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M19.6 5.8l-2.2 2.2-2.3-.6-.6-2.3 2.2-2.2a5.4 5.4 0 0 0-7.2 6.9l-5.9 5.9a2.05 2.05 0 0 0 2.9 2.9l5.9-5.9a5.4 5.4 0 0 0 6.9-7.2z" />
+  </Icon>
+)
+
+export const GridIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3.6" y="3.6" width="7.4" height="7.4" rx="1.8" />
+    <rect x="13" y="3.6" width="7.4" height="7.4" rx="1.8" />
+    <rect x="3.6" y="13" width="7.4" height="7.4" rx="1.8" />
+    <rect x="13" y="13" width="7.4" height="7.4" rx="1.8" />
+  </Icon>
+)
+

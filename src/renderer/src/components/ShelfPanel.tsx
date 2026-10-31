@@ -3,6 +3,7 @@ import type { AppState, ShelfItem } from '@shared/types'
 import { formatBytes } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
 import { ICON, CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
+import { ClipSection } from './ClipSection'
 import { PanelEmpty } from './PanelEmpty'
 
 function useFileIcon(item: ShelfItem): string {
@@ -69,8 +70,7 @@ function Tile({
   )
 }
 
-export function ShelfPanel({ state }: { state: AppState | null }) {
-  const items = state?.shelf ?? []
+function FilesSection({ items }: { items: ShelfItem[] }) {
   const [selected, setSelected] = useState<string[]>([])
   const anchor = useRef<string | null>(null)
 
@@ -111,7 +111,7 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
   }
 
   return (
-    <div className="shelf-page">
+    <div className="shelf-body">
       {items.length === 0 ? (
         <PanelEmpty
           dashed
@@ -178,6 +178,47 @@ export function ShelfPanel({ state }: { state: AppState | null }) {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+/** The shelf keeps two memories: dropped files, and — only if asked — what passed the clipboard. */
+export function ShelfPanel({ state }: { state: AppState | null }) {
+  const [mode, setMode] = useState<'files' | 'clip'>('files')
+
+  return (
+    <div className="shelf-page">
+      <div className="seg" role="tablist" aria-label="قفسه">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'files'}
+          className={`seg-item${mode === 'files' ? ' on' : ''}`}
+          onClick={() => setMode('files')}
+        >
+          فایل‌ها
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'clip'}
+          className={`seg-item${mode === 'clip' ? ' on' : ''}`}
+          onClick={() => setMode('clip')}
+        >
+          کلیپ‌بورد
+          {state?.settings.clipboard.enabled && <span className="seg-dot" title="خاطره روشن است" />}
+        </button>
+      </div>
+
+      {mode === 'clip' ? (
+        state ? (
+          <ClipSection settings={state.settings} />
+        ) : (
+          <div className="clip-page" />
+        )
+      ) : (
+        <FilesSection items={state?.shelf ?? []} />
+      )}
     </div>
   )
 }

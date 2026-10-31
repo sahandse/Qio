@@ -4,6 +4,7 @@ import {
   BallIcon,
   BoltIcon,
   CloseIcon,
+  CoffeeIcon,
   HeadphonesIcon,
   LyricsIcon,
   ShelfIcon,
@@ -24,6 +25,7 @@ function iconFor(kind: Nudge['kind']) {
   if (kind === 'headphones') return <HeadphonesIcon size={ICON.sm} />
   if (kind === 'football') return <BallIcon size={ICON.sm} />
   if (kind === 'move') return <WalkIcon size={ICON.sm} />
+  if (kind === 'coffee') return <CoffeeIcon size={ICON.sm} />
   return <TimerIcon size={ICON.sm} />
 }
 

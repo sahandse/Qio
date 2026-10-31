@@ -10,8 +10,41 @@ export type PanelId =
   | 'shelf'
   | 'todo'
   | 'notes'
+  | 'tools'
   | 'ai'
   | 'settings'
+
+/** Every rail page, in the order a fresh install shows them. */
+export const PAGE_IDS = [
+  'calendar',
+  'music',
+  'lyrics',
+  'focus',
+  'water',
+  'football',
+  'shelf',
+  'todo',
+  'notes',
+  'tools',
+  'ai'
+] as const
+
+export type PageId = (typeof PAGE_IDS)[number]
+
+/** The ۱×۱ / ۲×۱ / ۲×۲ presets: the page keeps its height, or also gets more room. */
+export type PageSize = '1x1' | '2x1' | '2x2'
+
+export const PAGE_SIZES: readonly PageSize[] = ['1x1', '2x1', '2x2']
+
+/** Which pages the rail shows, in what order, and how large each one grows. */
+export interface LayoutSettings {
+  order: PageId[]
+  hidden: PageId[]
+  size: Record<PageId, PageSize>
+}
+
+/** One of the four pages inside the tools tab. */
+export type ToolId = 'coffee' | 'calc' | 'qr' | 'system'
 
 export interface WaterSettings {
   bottleMl: number
@@ -57,6 +90,29 @@ export interface MoveSettings {
   endHour: number
   /** Also raise a Windows toast, for when the notch is out of sight. */
   notify: boolean
+}
+
+/** Keep-awake preference: the length the cup button reaches for by default. */
+export interface CoffeeSettings {
+  minutes: number
+  /** Tell the user when the screen is allowed to sleep again. */
+  alert: boolean
+}
+
+/** Clipboard history lives in RAM only: turning it off, or quitting, forgets everything. */
+export interface ClipSettings {
+  /** Off by default — Qio never reads the clipboard until it is asked to. */
+  enabled: boolean
+  /** How many things to remember. */
+  limit: number
+}
+
+/** Live keep-awake state; survives a restart so a meeting does not end with a crash. */
+export interface CoffeeState {
+  active: boolean
+  startedAt: number | null
+  /** null means "until released by hand". */
+  endsAt: number | null
 }
 
 export type MascotShape = 'oval' | 'round' | 'soft' | 'tall'
@@ -117,6 +173,9 @@ export interface Settings {
   focus: FocusSettings
   football: FootballSettings
   move: MoveSettings
+  coffee: CoffeeSettings
+  clipboard: ClipSettings
+  layout: LayoutSettings
 }
 
 export type AiProviderId =
@@ -215,8 +274,54 @@ export interface ShelfItem {
   addedAt: number
 }
 
-export type NoteTint = 'mint' | 'sky' | 'amber' | 'violet'
+/** One thing Qio saw pass through the clipboard. The full body stays in main RAM. */
+export interface ClipEntry {
+  id: string
+  kind: 'text' | 'image'
+  /** First characters of the body, enough to recognise it on a tile. */
+  preview: string
+  /** Small data URL for images; empty for text. */
+  thumb: string
+  /** Characters for text, pixels for images. */
+  amount: number
+  width: number
+  height: number
+  at: number
+  /** How many times this exact content was copied or brought back. */
+  hits: number
+}
 
+/** What the shelf page draws: the history plus how the recorder is behaving. */
+export interface ClipView {
+  enabled: boolean
+  /** Paused: the clipboard is being watched, but nothing new is remembered. */
+  paused: boolean
+  limit: number
+  /** Bytes held in RAM right now, so the panel can be honest about its cost. */
+  bytes: number
+  entries: ClipEntry[]
+}
+
+export interface SystemDisk {
+  /** The drive letter, `C:`. */
+  name: string
+  used: number
+  total: number
+}
+
+/** One reading of the machine, taken only when the monitor tab asks for it. */
+export interface SystemSample {
+  cpu: { usage: number; cores: number; model: string }
+  mem: { used: number; total: number }
+  disks: SystemDisk[]
+  /** Bytes per second; null on the first sample or when Windows will not say. */
+  net: { rx: number; tx: number } | null
+  /** Qio's own footprint, so the panel can be honest about itself. */
+  app: { cpu: number; memory: number }
+  at: number
+}
+
+export type NoteTint = 'mint' | 'sky' | 'amber' | 'violet'
 /** A short thought the user jotted in the notch. Plain text, pinned to the top when asked. */
 export interface Note {
   id: string
@@ -386,6 +491,7 @@ export interface AppState {
   notes: Note[]
   water: WaterState
   focus: FocusState
+  coffee: CoffeeState
   football: FootballView
   ai: AiState
   media: MediaState | null
@@ -419,6 +525,7 @@ export type NudgeKind =
   | 'headphones'
   | 'move'
   | 'football'
+  | 'coffee'
 
 export interface NudgeAction {
   id: string

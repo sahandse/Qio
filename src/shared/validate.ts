@@ -1,5 +1,5 @@
 /** Whitelists for renderer→main payloads: unknown keys never reach the stored state. */
-import type { FocusState, Settings, Todo } from './types'
+import type { CoffeeState, FocusState, Settings, Todo } from './types'
 
 type Json = Record<string, unknown>
 
@@ -51,6 +51,10 @@ const PRESENCE_KEYS = ['mode', 'everyMin', 'forSec'] as const
 /** Teams are deliberately absent: only the catalog-driven toggle may change the list. */
 const FOOTBALL_KEYS = ['enabled', 'goalAlerts', 'startAlerts', 'redAlerts', 'finalAlerts'] as const
 const MOVE_KEYS = ['enabled', 'everyMin', 'startHour', 'endHour', 'notify'] as const
+const COFFEE_KEYS = ['minutes', 'alert'] as const
+const CLIP_KEYS = ['enabled', 'limit'] as const
+/** Page ids and sizes inside these are checked again by cleanLayout in main. */
+const LAYOUT_KEYS = ['order', 'hidden', 'size'] as const
 
 const FLAG_KEYS = [
   'startWithWindows',
@@ -79,7 +83,10 @@ export function pickSettingsPatch(raw: unknown): Partial<Settings> {
     ['water', WATER_KEYS],
     ['focus', FOCUS_SETTING_KEYS],
     ['football', FOOTBALL_KEYS],
-    ['move', MOVE_KEYS]
+    ['move', MOVE_KEYS],
+    ['coffee', COFFEE_KEYS],
+    ['clipboard', CLIP_KEYS],
+    ['layout', LAYOUT_KEYS]
   ] as const) {
     const nested = pickNested(raw, key, keys)
     if (nested) patch[key] = nested
@@ -134,4 +141,36 @@ export function pickTodoPatch(raw: unknown): Partial<Todo> {
   }
   if (has(raw, 'notified') && typeof raw.notified === 'boolean') patch.notified = raw.notified
   return patch
+}
+
+/** The keep-awake switch: a stamp is either a real wall-clock moment or nothing. */
+export function pickCoffeePatch(raw: unknown): Partial<CoffeeState> {
+  if (!isObject(raw)) return {}
+  const patch: Partial<CoffeeState> = {}
+  if (has(raw, 'active') && typeof raw.active === 'boolean') patch.active = raw.active
+  for (const key of ['startedAt', 'endsAt'] as const) {
+    if (!has(raw, key)) continue
+    const value = raw[key]
+    if (value === null) patch[key] = null
+    else if (typeof value === 'number' && Number.isFinite(value)) patch[key] = value
+  }
+  return patch
+}
+
+/**
+ * An exported picture: the kind decides how the body is decoded, so a renderer can
+ * never ask the main process to write an arbitrary buffer to an arbitrary path.
+ */
+export function pickSavePayload(raw: unknown): { kind: 'png' | 'svg'; body: string; name: string } | null {
+  if (!isObject(raw)) return null
+  const kind = raw.kind === 'png' || raw.kind === 'svg' ? raw.kind : null
+  if (!kind) return null
+  const body = text(raw.body, 4_000_000)
+  if (!body) return null
+  const stem = (text(raw.name, 80) ?? 'qio')
+    .split(/[/\\]/)
+    .pop()
+    ?.replace(/[^\p{L}\p{N} ._-]/gu, '')
+    .trim()
+  return { kind, body, name: `${stem || 'qio'}.${kind}` }
 }

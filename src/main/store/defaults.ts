@@ -1,21 +1,29 @@
 import { randomUUID } from 'node:crypto'
-import type {
-  AiMessage,
-  AiSettings,
-  FocusState,
-  FootballSettings,
-  FootballTeam,
-  MascotSettings,
-  MascotShape,
-  MoveSettings,
-  Note,
-  NoteTint,
-  PresenceSettings,
-  Settings,
-  ShelfItem,
-  Todo,
-  WaterDay,
-  WaterEntry
+import {
+  PAGE_IDS,
+  PAGE_SIZES,
+  type AiMessage,
+  type AiSettings,
+  type ClipSettings,
+  type CoffeeSettings,
+  type CoffeeState,
+  type FocusState,
+  type FootballSettings,
+  type FootballTeam,
+  type LayoutSettings,
+  type MascotSettings,
+  type MascotShape,
+  type MoveSettings,
+  type Note,
+  type NoteTint,
+  type PageId,
+  type PageSize,
+  type PresenceSettings,
+  type Settings,
+  type ShelfItem,
+  type Todo,
+  type WaterDay,
+  type WaterEntry
 } from '@shared/types'
 import { AI_PROVIDERS, DEFAULT_SYSTEM_PROMPT } from '@shared/ai'
 
@@ -28,6 +36,7 @@ export interface Persisted {
   notes: Note[]
   water: { date: string; entries: WaterEntry[]; days: WaterDay[] }
   focus: FocusState
+  coffee: CoffeeState
   ai: { settings: AiSettings; messages: AiMessage[] }
 }
 
@@ -71,6 +80,73 @@ export const defaultMove: MoveSettings = {
   startHour: 9,
   endHour: 21,
   notify: false
+}
+
+export const defaultCoffee: CoffeeSettings = {
+  minutes: 30,
+  alert: true
+}
+
+/** History is opt-in: Qio does not read the clipboard until the user opens the door. */
+export const defaultClip: ClipSettings = {
+  enabled: false,
+  limit: 25
+}
+
+/** Every page on the rail, in the shipped order, all one cell large. */
+export const defaultLayout: LayoutSettings = {
+  order: [...PAGE_IDS],
+  hidden: [],
+  size: Object.fromEntries(PAGE_IDS.map((id) => [id, '1x1'])) as Record<PageId, PageSize>
+}
+
+const PAGE_IDS_SET = new Set<string>(PAGE_IDS)
+const PAGE_SIZES_SET = new Set<string>(PAGE_SIZES)
+
+function pageList(raw: unknown): PageId[] {
+  if (!Array.isArray(raw)) return []
+  const list: PageId[] = []
+  for (const entry of raw) {
+    if (typeof entry !== 'string' || !PAGE_IDS_SET.has(entry) || list.includes(entry as PageId)) continue
+    list.push(entry as PageId)
+    if (list.length >= PAGE_IDS.length) break
+  }
+  return list
+}
+
+/** Unknown pages and sizes fall back; new pages land at the end instead of vanishing. */
+export function cleanLayout(raw: unknown): LayoutSettings {
+  const input = (raw ?? {}) as Partial<LayoutSettings>
+  const order = pageList(input.order)
+  for (const id of PAGE_IDS) if (!order.includes(id)) order.push(id)
+  const hidden = pageList(input.hidden)
+  // The rail always keeps one page; when everything is hidden, the first in order comes back.
+  if (order.every((id) => hidden.includes(id))) {
+    hidden.splice(0, hidden.length, ...order.filter((id) => id !== order[0]))
+  }
+  const sizes = (input.size ?? {}) as Record<string, unknown>
+  const size = {} as Record<PageId, PageSize>
+  for (const id of PAGE_IDS) {
+    const value = sizes[id]
+    size[id] = typeof value === 'string' && PAGE_SIZES_SET.has(value) ? (value as PageSize) : '1x1'
+  }
+  return { order, hidden, size }
+}
+
+/** The cup is a switch, not a stopwatch: nothing is kept when Qio was not holding the screen. */
+export function defaultCoffeeState(): CoffeeState {
+  return { active: false, startedAt: null, endsAt: null }
+}
+
+/** A keep-awake only survives a restart while it still has time left on it. */
+export function cleanCoffeeState(raw: unknown): CoffeeState {
+  const input = (raw ?? {}) as Partial<CoffeeState>
+  if (!input.active) return defaultCoffeeState()
+  const endsAt = typeof input.endsAt === 'number' && Number.isFinite(input.endsAt) ? input.endsAt : null
+  if (endsAt !== null && endsAt <= Date.now()) return defaultCoffeeState()
+  const time = (value: unknown): number | null =>
+    typeof value === 'number' && Number.isFinite(value) ? value : null
+  return { active: true, startedAt: time(input.startedAt), endsAt }
 }
 
 const MAX_TEAMS = 10
@@ -142,7 +218,10 @@ export const defaultSettings: Settings = {
     chime: true
   },
   football: defaultFootball,
-  move: defaultMove
+  move: defaultMove,
+  coffee: defaultCoffee,
+  clipboard: defaultClip,
+  layout: defaultLayout
 }
 
 export function dateKey(date = new Date()): string {
@@ -242,6 +321,8 @@ export function mergeSettings(raw: unknown): Settings {
   const focus = (input.focus ?? {}) as Partial<Settings['focus']>
   const football = (input.football ?? {}) as Partial<Settings['football']>
   const move = (input.move ?? {}) as Partial<Settings['move']>
+  const coffee = (input.coffee ?? {}) as Partial<CoffeeSettings>
+  const clipboard = (input.clipboard ?? {}) as Partial<ClipSettings>
   const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
   const presence = (input.presence ?? {}) as Partial<PresenceSettings>
   const moveStart = clampNumber(move.startHour, 5, 23, defaultMove.startHour)
@@ -309,6 +390,15 @@ export function mergeSettings(raw: unknown): Settings {
       startHour: moveWindow.start,
       endHour: moveWindow.end,
       notify: Boolean(move.notify ?? defaultMove.notify)
-    }
+    },
+    coffee: {
+      minutes: clampNumber(coffee.minutes, 5, 240, defaultCoffee.minutes),
+      alert: Boolean(coffee.alert ?? defaultCoffee.alert)
+    },
+    clipboard: {
+      enabled: Boolean(clipboard.enabled ?? defaultClip.enabled),
+      limit: clampNumber(clipboard.limit, 5, 100, defaultClip.limit)
+    },
+    layout: cleanLayout(input.layout)
   }
 }

@@ -1,22 +1,29 @@
-import { BrowserWindow, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
+import { BrowserWindow, ClipboardItem, app, clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, Settings } from '@shared/types'
 import { aiReady } from '@shared/ai'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
+import type { CoffeeService } from './coffee'
+import type { ClipService } from './clip'
+import type { MonitorService } from './monitor'
 import type { FootballService } from './football'
 import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
 import { hideOverlay, openSettingsWindow, sendToNotch, sizeNotch } from './windows'
-import { pickFocusPatch, pickSettingsPatch, pickTodoPatch } from '@shared/validate'
+import { pickFocusPatch, pickSavePayload, pickSettingsPatch, pickTodoPatch } from '@shared/validate'
 
 export interface IpcContext {
   store: Store
   bridge: WindowsBridge
   football: FootballService
+  coffee: CoffeeService
+  clip: ClipService
+  monitor: MonitorService
   getState(): AppState
   notify(title: string, body: string): void
   raiseNudge(kind: Nudge['kind'], title: string, detail?: string): void
@@ -58,6 +65,7 @@ export function registerIpc(ctx: IpcContext): void {
     const settings = store.patchSettings(clean)
     if (settings.startWithWindows !== before) ctx.applyLoginItem()
     if ('hideFullscreen' in clean) ctx.syncNotch()
+    if ('clipboard' in clean) ctx.clip.sync()
     ctx.refreshTray()
     return settings
   })
@@ -251,6 +259,28 @@ export function registerIpc(ctx: IpcContext): void {
     store.patchFocus(pickFocusPatch(patch))
   )
 
+  // A cup is either timed or open-ended; anything else on the wire is ignored.
+  ipcMain.handle('coffee:brew', (_event, minutes: unknown) => {
+    if (minutes === null) return ctx.coffee.brew(null)
+    if (typeof minutes === 'number' && Number.isFinite(minutes)) return ctx.coffee.brew(minutes)
+    return store.coffee
+  })
+  ipcMain.handle('coffee:release', () => ctx.coffee.release())
+
+  // History lives in RAM; the renderer only ever receives the summaries it can draw.
+  ipcMain.handle('clip:view', () => ctx.clip.view)
+  ipcMain.handle('clip:use', (_event, id: unknown) =>
+    typeof id === 'string' ? ctx.clip.use(id) : false
+  )
+  ipcMain.handle('clip:remove', (_event, id: unknown) =>
+    typeof id === 'string' ? ctx.clip.remove(id) : ctx.clip.view
+  )
+  ipcMain.handle('clip:clear', () => ctx.clip.clear())
+  ipcMain.handle('clip:pause', (_event, paused: unknown) => ctx.clip.setPaused(paused === true))
+
+  // Read on demand: the monitor tab polls this, and nothing samples in the background.
+  ipcMain.handle('sys:sample', () => ctx.monitor.sample())
+
   ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
   ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))
   ipcMain.handle('football:refresh', () => ctx.football.refresh())
@@ -271,6 +301,43 @@ export function registerIpc(ctx: IpcContext): void {
     return true
   })
   ipcMain.handle('system:login-item', () => app.isPackaged && app.getLoginItemSettings().openAtLogin)
+
+  // A picture the renderer drew, handed to the OS clipboard by the only process allowed to.
+  ipcMain.handle('system:copy-image', async (_event, png: unknown) => {
+    if (typeof png !== 'string' || png.length === 0 || png.length > 4_000_000) return false
+    const bytes = Buffer.from(png, 'base64')
+    if (bytes.length === 0) return false
+    await clipboard.write([new ClipboardItem({ 'image/png': new Blob([new Uint8Array(bytes)], { type: 'image/png' }) })])
+    return true
+  })
+
+  /** Save dialog, then a single file. The renderer never names a path. */
+  ipcMain.handle('file:save', async (_event, raw: unknown) => {
+    const payload = pickSavePayload(raw)
+    if (!payload) return null
+    const parent = BrowserWindow.fromWebContents(_event.sender) ?? null
+    const options = {
+      defaultPath: join(app.getPath('downloads'), payload.name),
+      filters: [
+        payload.kind === 'png'
+          ? { name: 'PNG', extensions: ['png'] }
+          : { name: 'SVG', extensions: ['svg'] }
+      ]
+    }
+    const { canceled, filePath } = parent
+      ? await dialog.showSaveDialog(parent, options)
+      : await dialog.showSaveDialog(options)
+    if (canceled || !filePath) return null
+    try {
+      const body =
+        payload.kind === 'png' ? Buffer.from(payload.body, 'base64') : Buffer.from(payload.body, 'utf8')
+      await writeFile(filePath, body)
+      return basename(filePath)
+    } catch (error) {
+      ctx.raiseNudge('shelf', 'ذخیره نشد', error instanceof Error ? error.message : undefined)
+      return null
+    }
+  })
 
   ipcMain.handle('window:size', (_event, size: { width: number; height: number }) => {
     if (!size || !Number.isFinite(size.width) || !Number.isFinite(size.height)) return false

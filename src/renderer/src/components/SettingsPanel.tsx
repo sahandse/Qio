@@ -4,21 +4,23 @@ import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useCalm, useNightTheme } from '../lib/state'
-import { ICON, BallIcon, CloseIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
+import { ICON, BallIcon, CloseIcon, GridIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
 import { MascotSettingsCard } from './MascotSettings'
 import { AboutSection } from './settings/AboutSection'
 import { AiSection } from './settings/AiSection'
 import { FootballSection } from './settings/FootballSection'
 import { GeneralSection } from './settings/GeneralSection'
 import { HealthSection } from './settings/HealthSection'
+import { LayoutSection } from './settings/LayoutSection'
 import { MediaSection } from './settings/MediaSection'
 import { Toggle } from './settings/controls'
 import { Skeleton } from './Skeleton'
 
-type SettingsTab = 'general' | 'mascot' | 'ai' | 'media' | 'health' | 'football' | 'about'
+type SettingsTab = 'general' | 'layout' | 'mascot' | 'ai' | 'media' | 'health' | 'football' | 'about'
 
 const TABS: { id: SettingsTab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
   { id: 'general', label: 'عمومی', Icon: SettingsIcon },
+  { id: 'layout', label: 'چیدمان', Icon: GridIcon },
   { id: 'mascot', label: 'ماسکوت', Icon: SparklesIcon },
   { id: 'ai', label: 'هوش مصنوعی', Icon: SparklesIcon },
   { id: 'media', label: 'صدا و صفحه', Icon: VolumeIcon },
@@ -117,6 +119,13 @@ export function SettingsPage() {
           <div className="settings-grid">
             {tab === 'general' && (
               <GeneralSection settings={settings} packaged={meta?.packaged} onPatch={patch} />
+            )}
+
+            {tab === 'layout' && (
+              <LayoutSection
+                layout={settings.layout}
+                onPatch={(next) => patch({ layout: { ...settings.layout, ...next } })}
+              />
             )}
 
             {tab === 'mascot' && (
