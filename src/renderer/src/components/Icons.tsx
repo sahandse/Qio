@@ -339,15 +339,6 @@ export const CalcIcon = (props: IconProps) => (
   </Icon>
 )
 
-export const QrIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <rect x="3.6" y="3.6" width="7" height="7" rx="1.6" />
-    <rect x="13.4" y="3.6" width="7" height="7" rx="1.6" />
-    <rect x="3.6" y="13.4" width="7" height="7" rx="1.6" />
-    <path d="M13.4 13.4h2.6v2.6h-2.6zM18 18h2.4v2.4H18z" fill="currentColor" stroke="none" />
-  </Icon>
-)
-
 export const GaugeIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M4 17.6a8.6 8.6 0 1 1 16 0" />

@@ -44,7 +44,7 @@ export interface LayoutSettings {
 }
 
 /** One of the five pages inside the tools tab. */
-export type ToolId = 'coffee' | 'calc' | 'qr' | 'system' | 'screen'
+export type ToolId = 'coffee' | 'calc' | 'system' | 'screen'
 
 /** A colour lifted from the screen; kept in memory for the session only. */
 export interface PickedColor {
