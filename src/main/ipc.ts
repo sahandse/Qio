@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
-import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, Settings } from '@shared/types'
+import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, PickedColor, Settings } from '@shared/types'
 import { aiReady } from '@shared/ai'
 import type { Store } from './store'
 import type { WindowsBridge } from './bridge'
@@ -14,7 +14,17 @@ import type { FootballService } from './football'
 import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
-import { hideOverlay, openSettingsWindow, repositionWindows, sendToNotch, setNotchPosition, sizeNotch } from './windows'
+import { dismissPicker, openEyedropper, pickerFrame, showPicker } from './screen'
+import {
+  closeDrawWindow,
+  hideOverlay,
+  openDrawWindow,
+  openSettingsWindow,
+  repositionWindows,
+  sendToNotch,
+  setNotchPosition,
+  sizeNotch
+} from './windows'
 import { pickFocusPatch, pickSavePayload, pickSettingsPatch, pickTodoPatch } from '@shared/validate'
 
 export interface IpcContext {
@@ -33,6 +43,7 @@ export interface IpcContext {
   setNotchVisible(visible: boolean): void
   syncNotch(): void
   getLastCover(): { key: string; dataUrl: string }
+  recordPick(color: PickedColor): void
 }
 
 const iconCache = new Map<string, string>()
@@ -284,6 +295,44 @@ export function registerIpc(ctx: IpcContext): void {
 
   // Read on demand: the monitor tab polls this, and nothing samples in the background.
   ipcMain.handle('sys:sample', () => ctx.monitor.sample())
+
+  ipcMain.handle('screen:picker-open', () => openEyedropper())
+  ipcMain.handle('screen:picker-frame', () => pickerFrame())
+  ipcMain.handle('screen:picker-ready', () => {
+    showPicker()
+    return true
+  })
+  ipcMain.handle('screen:picker-cancel', () => {
+    // Close on the next tick so the renderer still gets its reply.
+    setImmediate(dismissPicker)
+    return true
+  })
+  ipcMain.handle('screen:pick', (_event, hex: unknown, x: unknown, y: unknown) => {
+    if (typeof hex !== 'string' || !/^#[0-9a-f]{6}$/i.test(hex)) return false
+    const color = hex.toLowerCase()
+    clipboard.writeText(color)
+    ctx.recordPick({
+      hex: color,
+      x: Math.max(0, Math.round(Number(x) || 0)),
+      y: Math.max(0, Math.round(Number(y) || 0)),
+      at: Date.now()
+    })
+    setImmediate(dismissPicker)
+    return true
+  })
+  ipcMain.handle('screen:draw-open', () => {
+    openDrawWindow()
+    return true
+  })
+  ipcMain.handle('screen:draw-close', () => {
+    closeDrawWindow()
+    return true
+  })
+  ipcMain.handle('screen:copy', (_event, text: unknown) => {
+    if (typeof text !== 'string' || text.length === 0 || text.length > 64) return false
+    clipboard.writeText(text)
+    return true
+  })
 
   ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
   ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))

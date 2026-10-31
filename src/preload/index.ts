@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, Settings, SystemSample, Todo } from '@shared/types'
+import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, PickerFrame, Settings, SystemSample, Todo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -100,6 +100,17 @@ const api: QioApi = {
   media: {
     command: (command: MediaCommand, value?: number) =>
       ipcRenderer.invoke('media:command', command, value) as Promise<boolean>
+  },
+
+  screen: {
+    openPicker: () => ipcRenderer.invoke('screen:picker-open') as Promise<boolean>,
+    frame: () => ipcRenderer.invoke('screen:picker-frame') as Promise<PickerFrame | null>,
+    ready: () => ipcRenderer.invoke('screen:picker-ready') as Promise<boolean>,
+    pick: (hex, x, y) => ipcRenderer.invoke('screen:pick', hex, x, y) as Promise<boolean>,
+    cancelPicker: () => ipcRenderer.invoke('screen:picker-cancel') as Promise<boolean>,
+    openDraw: () => ipcRenderer.invoke('screen:draw-open') as Promise<boolean>,
+    closeDraw: () => ipcRenderer.invoke('screen:draw-close') as Promise<boolean>,
+    copy: (text) => ipcRenderer.invoke('screen:copy', text) as Promise<boolean>
   },
 
   system: {

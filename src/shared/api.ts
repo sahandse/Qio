@@ -17,6 +17,7 @@ import type {
   Nudge,
   OverlayPayload,
   PanelId,
+  PickerFrame,
   Settings,
   SystemSample,
   Todo
@@ -129,6 +130,20 @@ export interface QioApi {
 
   media: {
     command(command: MediaCommand, value?: number): Promise<boolean>
+  }
+
+  /** The eyedropper and the on-screen pen live in their own full-screen windows. */
+  screen: {
+    openPicker(): Promise<boolean>
+    /** The frozen frame the picker window paints; null when the capture failed. */
+    frame(): Promise<PickerFrame | null>
+    /** Tells main the frame is painted, so the window can become visible. */
+    ready(): Promise<boolean>
+    pick(hex: string, x: number, y: number): Promise<boolean>
+    cancelPicker(): Promise<boolean>
+    openDraw(): Promise<boolean>
+    closeDraw(): Promise<boolean>
+    copy(text: string): Promise<boolean>
   }
 
   system: {

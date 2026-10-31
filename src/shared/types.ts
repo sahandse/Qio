@@ -43,8 +43,24 @@ export interface LayoutSettings {
   size: Record<PageId, PageSize>
 }
 
-/** One of the four pages inside the tools tab. */
-export type ToolId = 'coffee' | 'calc' | 'qr' | 'system'
+/** One of the five pages inside the tools tab. */
+export type ToolId = 'coffee' | 'calc' | 'qr' | 'system' | 'screen'
+
+/** A colour lifted from the screen; kept in memory for the session only. */
+export interface PickedColor {
+  hex: string
+  x: number
+  y: number
+  at: number
+}
+
+/** The frozen screen the eyedropper paints, plus the pixel scale it was captured at. */
+export interface PickerFrame {
+  dataUrl: string
+  width: number
+  height: number
+  scale: number
+}
 
 export interface WaterSettings {
   bottleMl: number
@@ -501,6 +517,8 @@ export interface AppState {
   ai: AiState
   media: MediaState | null
   system: SystemState
+  /** Eyedropper history for this session, newest first. */
+  picked: PickedColor[]
   version: string
 }
 

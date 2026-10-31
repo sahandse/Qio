@@ -14,6 +14,8 @@ const SETTINGS_SIZE = { width: 720, height: 640 }
 let notchWindow: BrowserWindow | null = null
 let overlayWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
+let pickerWindow: BrowserWindow | null = null
+let drawWindow: BrowserWindow | null = null
 let overlayTimer: NodeJS.Timeout | null = null
 let notchPosition: NotchPosition = 'center'
 
@@ -47,7 +49,11 @@ function pipeRendererLogs(window: BrowserWindow): void {
   })
 }
 
-function loadPage(window: BrowserWindow, page: 'index' | 'overlay' | 'settings', hash?: string): void {
+function loadPage(
+  window: BrowserWindow,
+  page: 'index' | 'overlay' | 'settings' | 'picker' | 'draw',
+  hash?: string
+): void {
   pipeRendererLogs(window)
   const url = devUrl()
   if (url) {
@@ -189,8 +195,114 @@ export function openSettingsWindow(tab?: string): BrowserWindow {
   return window
 }
 
-/** Resizes the notch to its rendered content, anchoring it where the settings say. */
-export function sizeNotch(contentWidth: number, contentHeight: number): void {
+/** A frozen copy of the screen lives in this full-bleed window until the colour is picked. */
+export function openPickerWindow(): void {
+  if (pickerWindow && !pickerWindow.isDestroyed()) {
+    pickerWindow.focus()
+    return
+  }
+  closeDrawWindow()
+  const { bounds } = screen.getPrimaryDisplay()
+  const window = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    frame: false,
+    backgroundColor: '#05060a',
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    alwaysOnTop: true,
+    show: false,
+    title: 'Qio picker',
+    webPreferences: {
+      preload: preloadPath(),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+  window.setAlwaysOnTop(true, 'screen-saver')
+  window.setMenuBarVisibility(false)
+  loadPage(window, 'picker')
+  window.on('closed', () => {
+    pickerWindow = null
+  })
+  pickerWindow = window
+}
+
+/** The picker stays hidden until its frozen frame has been painted, so no black flash. */
+export function showPickerWindow(): void {
+  if (!pickerWindow || pickerWindow.isDestroyed()) return
+  pickerWindow.show()
+  pickerWindow.focus()
+}
+
+export function closePickerWindow(): void {
+  if (pickerWindow && !pickerWindow.isDestroyed()) pickerWindow.close()
+  pickerWindow = null
+}
+
+/** A transparent sheet for marking up the screen; it closes as soon as focus leaves. */
+export function openDrawWindow(): void {
+  if (drawWindow && !drawWindow.isDestroyed()) {
+    drawWindow.focus()
+    return
+  }
+  closePickerWindow()
+  const { bounds } = screen.getPrimaryDisplay()
+  const window = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    alwaysOnTop: true,
+    show: false,
+    title: 'Qio draw',
+    webPreferences: {
+      preload: preloadPath(),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+  window.setAlwaysOnTop(true, 'screen-saver')
+  window.setMenuBarVisibility(false)
+  loadPage(window, 'draw')
+  window.once('ready-to-show', () => {
+    window.show()
+    window.focus()
+  })
+  window.on('blur', () => {
+    if (!window.isDestroyed()) window.close()
+  })
+  window.on('closed', () => {
+    drawWindow = null
+  })
+  drawWindow = window
+}
+
+export function closeDrawWindow(): void {
+  if (drawWindow && !drawWindow.isDestroyed()) drawWindow.close()
+  drawWindow = null
+}
+
+/** Resizes the notch to its rendered content, anchoring it where the settings say. */export function sizeNotch(contentWidth: number, contentHeight: number): void {
   if (!notchWindow || notchWindow.isDestroyed()) return
   const display = screen.getPrimaryDisplay()
   const { bounds } = display

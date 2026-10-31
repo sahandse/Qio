@@ -356,6 +356,20 @@ export const GaugeIcon = (props: IconProps) => (
   </Icon>
 )
 
+export const DropperIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14.6 4.4l1.4-1.4a2.3 2.3 0 0 1 3.2 0l1.8 1.8a2.3 2.3 0 0 1 0 3.2l-1.4 1.4" />
+    <path d="M15.2 6.2l2.6 2.6-8 8L6 19.2l-1.6.4.4-1.6 2.4-3.8z" />
+  </Icon>
+)
+
+export const PenIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4.5 19.5l1-4.2L15.9 4.9a2.2 2.2 0 0 1 3.2 0l.9.9a2.2 2.2 0 0 1 0 3.2L9.6 19.4l-4.1.9z" />
+    <path d="M14.2 6.6l3.2 3.2" />
+  </Icon>
+)
+
 export const ClipboardIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="5.4" y="4.6" width="13.2" height="15.4" rx="2.2" />

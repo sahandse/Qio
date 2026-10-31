@@ -29,7 +29,9 @@ export default defineConfig({
         input: {
           index: resolve('src/renderer/index.html'),
           overlay: resolve('src/renderer/overlay.html'),
-          settings: resolve('src/renderer/settings.html')
+          settings: resolve('src/renderer/settings.html'),
+          picker: resolve('src/renderer/picker.html'),
+          draw: resolve('src/renderer/draw.html')
         }
       }
     }

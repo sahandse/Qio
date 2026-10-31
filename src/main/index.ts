@@ -1,6 +1,6 @@
-import { BrowserWindow, Notification, app, dialog, screen } from 'electron'
+import { BrowserWindow, Notification, app, dialog, globalShortcut, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
-import type { AppState, MediaState, Nudge, NudgeAction, OverlayPayload, SystemState } from '@shared/types'
+import type { AppState, MediaState, Nudge, NudgeAction, OverlayPayload, PickedColor, SystemState } from '@shared/types'
 import { toPersianDigits } from '@shared/persian'
 import { pickCoffeePatch } from '@shared/validate'
 import { WindowsBridge } from './bridge'
@@ -10,6 +10,7 @@ import { FootballService } from './football'
 import { registerIpc } from './ipc'
 import { MoveService } from './move'
 import { MonitorService } from './monitor'
+import { openEyedropper } from './screen'
 import { Store } from './store'
 import { dateKey } from './store/defaults'
 import { refreshTray, setTrayNotchVisible, setupTray } from './tray'
@@ -19,6 +20,7 @@ import {
   createOverlayWindow,
   getNotchWindow,
   hideOverlay,
+  openDrawWindow,
   openSettingsWindow,
   repositionWindows,
   sendToNotch,
@@ -52,6 +54,9 @@ let system: SystemState = {
 }
 let lastCoverKey = ''
 let lastCoverSent = ''
+/** Eyedropper results for this session, newest first; never written to disk. */
+const pickedColors: PickedColor[] = []
+const PICKED_LIMIT = 8
 let overlayArmed = false
 let lastWaterReminderAt = 0
 let lowBatteryWarned = false
@@ -75,8 +80,18 @@ function getState(): AppState {
     ai: { settings: store.aiPublic(), messages: store.aiMessages },
     media,
     system: { ...system, startWithWindows: app.isPackaged && app.getLoginItemSettings().openAtLogin },
+    picked: pickedColors,
     version: app.getVersion()
   }
+}
+
+/** A picked colour goes to the clipboard in ipc.ts; this keeps the session swatch row. */
+function recordPick(color: PickedColor): void {
+  const existing = pickedColors.findIndex((entry) => entry.hex === color.hex)
+  if (existing >= 0) pickedColors.splice(existing, 1)
+  pickedColors.unshift(color)
+  if (pickedColors.length > PICKED_LIMIT) pickedColors.length = PICKED_LIMIT
+  pushState()
 }
 
 function pushState(): void {
@@ -475,6 +490,10 @@ if (!app.requestSingleInstanceLock()) {
     })
     createOverlayWindow()
 
+    // The eyedropper and the pen need to be one keystroke away, even with the notch hidden.
+    globalShortcut.register('CommandOrControl+Alt+C', () => void openEyedropper())
+    globalShortcut.register('CommandOrControl+Alt+D', () => openDrawWindow())
+
     registerIpc({
       store,
       bridge,
@@ -490,7 +509,8 @@ if (!app.requestSingleInstanceLock()) {
       applyLoginItem,
       setNotchVisible,
       syncNotch,
-      getLastCover: () => ({ key: lastCoverKey, dataUrl: lastCoverSent })
+      getLastCover: () => ({ key: lastCoverKey, dataUrl: lastCoverSent }),
+      recordPick
     })
 
     screen.on('display-metrics-changed', () => repositionWindows())
@@ -521,6 +541,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', () => {
     hideOverlay()
+    globalShortcut.unregisterAll()
     football?.stop()
     move?.stop()
     coffee?.stop()
