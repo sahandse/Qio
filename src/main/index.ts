@@ -22,6 +22,7 @@ import {
   openSettingsWindow,
   repositionWindows,
   sendToNotch,
+  setNotchPosition,
   sizeNotch,
   showOverlay
 } from './windows'
@@ -409,6 +410,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     store = new Store()
+    setNotchPosition(store.settings.notchPosition)
     bridge = new WindowsBridge()
     football = new FootballService({
       settings: () => store.settings,

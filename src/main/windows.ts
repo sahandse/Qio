@@ -1,6 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
-import type { OverlayPayload } from '@shared/types'
+import type { NotchPosition, OverlayPayload } from '@shared/types'
 
 export const COLLAPSED_SIZE = { width: 150, height: 30 }
 const OVERLAY_SIZE = { width: 310, height: 60 }
@@ -15,6 +15,21 @@ let notchWindow: BrowserWindow | null = null
 let overlayWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
 let overlayTimer: NodeJS.Timeout | null = null
+let notchPosition: NotchPosition = 'center'
+
+/** Air between the screen edge and the drawn card when the notch hugs a corner. */
+const EDGE_GAP = 8
+
+/** Left-aligned, centred, or right-aligned against the primary display. */
+export function setNotchPosition(next: NotchPosition): void {
+  notchPosition = next
+}
+
+function anchorX(bounds: Electron.Rectangle, width: number): number {
+  if (notchPosition === 'left') return bounds.x + EDGE_GAP
+  if (notchPosition === 'right') return bounds.x + bounds.width - width - EDGE_GAP
+  return Math.round(bounds.x + (bounds.width - width) / 2)
+}
 
 const preloadPath = (): string => join(__dirname, '../preload/index.js')
 const devUrl = (): string | undefined => process.env['ELECTRON_RENDERER_URL']
@@ -56,7 +71,7 @@ export function createNotchWindow(autoShow = true): BrowserWindow {
   const window = new BrowserWindow({
     width,
     height,
-    x: Math.round(bounds.x + (bounds.width - width) / 2),
+    x: anchorX(bounds, width),
     y: bounds.y,
     frame: false,
     transparent: true,
@@ -98,7 +113,7 @@ export function createOverlayWindow(): BrowserWindow {
   const { bounds } = display
   const window = new BrowserWindow({
     ...OVERLAY_WINDOW,
-    x: Math.round(bounds.x + (bounds.width - OVERLAY_WINDOW.width) / 2),
+    x: anchorX(bounds, OVERLAY_WINDOW.width),
     y: bounds.y + OVERLAY_TOP,
     frame: false,
     transparent: true,
@@ -174,7 +189,7 @@ export function openSettingsWindow(tab?: string): BrowserWindow {
   return window
 }
 
-/** Resizes the notch to its rendered content, keeping it centred on the top screen edge. */
+/** Resizes the notch to its rendered content, anchoring it where the settings say. */
 export function sizeNotch(contentWidth: number, contentHeight: number): void {
   if (!notchWindow || notchWindow.isDestroyed()) return
   const display = screen.getPrimaryDisplay()
@@ -188,7 +203,7 @@ export function sizeNotch(contentWidth: number, contentHeight: number): void {
     Math.min(Math.round(contentHeight) + SHELL_CHROME.bottom, Math.round(bounds.height - 40))
   )
   notchWindow.setBounds({
-    x: Math.round(bounds.x + (bounds.width - width) / 2),
+    x: anchorX(bounds, width),
     y: bounds.y,
     width,
     height
@@ -201,7 +216,7 @@ export function repositionWindows(): void {
   if (notchWindow && !notchWindow.isDestroyed()) {
     const [width] = notchWindow.getSize()
     notchWindow.setBounds({
-      x: Math.round(bounds.x + (bounds.width - width) / 2),
+      x: anchorX(bounds, width),
       y: bounds.y,
       width,
       height: notchWindow.getSize()[1]
@@ -209,7 +224,7 @@ export function repositionWindows(): void {
   }
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.setBounds({
-      x: Math.round(bounds.x + (bounds.width - OVERLAY_WINDOW.width) / 2),
+      x: anchorX(bounds, OVERLAY_WINDOW.width),
       y: bounds.y + OVERLAY_TOP,
       ...OVERLAY_WINDOW
     })

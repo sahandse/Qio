@@ -77,6 +77,10 @@ export function pickSettingsPatch(raw: unknown): Partial<Settings> {
     const scale = number(raw.notchScale, 0.85, 1.5)
     if (scale !== undefined) patch.notchScale = scale
   }
+  if (has(raw, 'notchPosition')) {
+    const position = raw.notchPosition
+    if (position === 'left' || position === 'center' || position === 'right') patch.notchPosition = position
+  }
   for (const [key, keys] of [
     ['mascotStyle', MASCOT_KEYS],
     ['presence', PRESENCE_KEYS],

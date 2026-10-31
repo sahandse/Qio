@@ -14,7 +14,7 @@ import type { FootballService } from './football'
 import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
-import { hideOverlay, openSettingsWindow, sendToNotch, sizeNotch } from './windows'
+import { hideOverlay, openSettingsWindow, repositionWindows, sendToNotch, setNotchPosition, sizeNotch } from './windows'
 import { pickFocusPatch, pickSavePayload, pickSettingsPatch, pickTodoPatch } from '@shared/validate'
 
 export interface IpcContext {
@@ -66,6 +66,10 @@ export function registerIpc(ctx: IpcContext): void {
     if (settings.startWithWindows !== before) ctx.applyLoginItem()
     if ('hideFullscreen' in clean) ctx.syncNotch()
     if ('clipboard' in clean) ctx.clip.sync()
+    if ('notchPosition' in clean) {
+      setNotchPosition(settings.notchPosition)
+      repositionWindows()
+    }
     ctx.refreshTray()
     return settings
   })

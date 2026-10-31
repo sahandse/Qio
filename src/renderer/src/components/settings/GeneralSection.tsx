@@ -119,6 +119,35 @@ export function GeneralSection({
         )}
       </Card>
 
+      <Card title="جای نچ">
+        <SettingRow
+          label="به کدام لبه بچسبد"
+          hint={
+            settings.notchPosition === 'center'
+              ? 'وسطِ لبهٔ بالا؛ همان جای همیشگی.'
+              : settings.notchPosition === 'left'
+                ? 'گوشهٔ چپ لبهٔ بالا؛ کنار منوی استارت.'
+                : 'گوشهٔ راست لبهٔ بالا؛ کنار ساعت ویندوز.'
+          }
+        >
+          <span className="setting-chips" role="group" aria-label="جای نچ">
+            <Chip active={settings.notchPosition === 'right'} onClick={() => onPatch({ notchPosition: 'right' })}>
+              راست
+            </Chip>
+            <Chip active={settings.notchPosition === 'center'} onClick={() => onPatch({ notchPosition: 'center' })}>
+              وسط
+            </Chip>
+            <Chip active={settings.notchPosition === 'left'} onClick={() => onPatch({ notchPosition: 'left' })}>
+              چپ
+            </Chip>
+          </span>
+        </SettingRow>
+        <p className="settings-note">
+          جابه‌جایی بی‌درنگ روی نمایشگر اصلی اعمال می‌شود؛ نچ مهمان‌نوازِ لبه‌هاست و هشت پیکسل
+          هوا برای سایه‌اش نگه می‌دارد. اگر نمایشگر دومی وصل یا قطع شود، همان‌جا می‌ماند.
+        </p>
+      </Card>
+
       <Card title="خاطرهٔ کلیپ‌بورد">
         <Toggle
           label="چیزهایی که کپی می‌کنی را به یاد آور"

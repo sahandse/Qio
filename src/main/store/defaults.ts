@@ -16,6 +16,7 @@ import {
   type MoveSettings,
   type Note,
   type NoteTint,
+  type NotchPosition,
   type PageId,
   type PageSize,
   type PresenceSettings,
@@ -197,6 +198,7 @@ export const defaultSettings: Settings = {
   mascotStyle: defaultMascot,
   lyrics: true,
   notchScale: 1,
+  notchPosition: 'center',
   hideFullscreen: true,
   autoNight: true,
   calm: false,
@@ -351,6 +353,9 @@ export function mergeSettings(raw: unknown): Settings {
     },
     lyrics: Boolean(input.lyrics ?? defaultSettings.lyrics),
     notchScale: clampScale(input.notchScale, defaultSettings.notchScale),
+    notchPosition: (input.notchPosition === 'left' || input.notchPosition === 'right'
+      ? input.notchPosition
+      : 'center') satisfies NotchPosition,
     hideFullscreen: Boolean(input.hideFullscreen ?? defaultSettings.hideFullscreen),
     autoNight: Boolean(input.autoNight ?? defaultSettings.autoNight),
     calm: Boolean(input.calm ?? defaultSettings.calm),

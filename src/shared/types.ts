@@ -143,6 +143,9 @@ export interface MascotSettings {
 
 export type PresenceMode = 'always' | 'peek'
 
+/** Where the notch hugs the top edge of the screen. */
+export type NotchPosition = 'left' | 'center' | 'right'
+
 /** Whether the clock rests on the notch, or only visits now and then. */
 export interface PresenceSettings {
   mode: PresenceMode
@@ -160,6 +163,8 @@ export interface Settings {
   lyrics: boolean
   /** Scale of the notch, 1 = 420x140 pages. Larger by default on wide displays. */
   notchScale: number
+  /** The corner the notch lives in: centred, or hugging an edge. */
+  notchPosition: NotchPosition
   /** Step aside while a game or video is full screen. */
   hideFullscreen: boolean
   /** Warm, dimmed colours between 21:00 and 07:00. */

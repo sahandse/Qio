@@ -34,3 +34,12 @@ test('a missing layout falls back to the shipped order and 1x1 sizes', async () 
   assert.deepEqual(settings.layout.hidden, [])
   assert.ok(PAGE_IDS.every((id) => settings.layout.size[id] === '1x1'))
 })
+
+test('the notch corner keeps only left, centre and right', async () => {
+  const { mergeSettings } = await import('../src/main/store/defaults.ts')
+  assert.equal(mergeSettings({}).notchPosition, 'center')
+  assert.equal(mergeSettings({ notchPosition: 'left' }).notchPosition, 'left')
+  assert.equal(mergeSettings({ notchPosition: 'right' }).notchPosition, 'right')
+  assert.equal(mergeSettings({ notchPosition: 'top' }).notchPosition, 'center')
+  assert.equal(mergeSettings({ notchPosition: 3 }).notchPosition, 'center')
+})
