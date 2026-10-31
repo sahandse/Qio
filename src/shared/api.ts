@@ -112,6 +112,14 @@ export interface QioApi {
     sample(): Promise<SystemSample>
   }
 
+  /** The session's notification list; nothing here survives a restart. */
+  alerts: {
+    act(id: string, action: string): Promise<boolean>
+    read(id: string): Promise<boolean>
+    readAll(): Promise<boolean>
+    clear(): Promise<boolean>
+  }
+
   football: {
     /** Teams playing in the surrounding days, for the settings picker. */
     catalog(force?: boolean): Promise<FootballCatalog>

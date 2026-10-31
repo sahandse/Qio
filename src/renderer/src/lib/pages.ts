@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import type { PageId } from '@shared/types'
 import {
   BallIcon,
+  BellIcon,
   CalendarIcon,
   LyricsIcon,
   MusicIcon,
@@ -29,6 +30,7 @@ export const PAGE_META: Record<PageId, PageMeta> = {
   football: { title: 'بازی‌ها', Icon: BallIcon },
   shelf: { title: 'قفسه', Icon: ShelfIcon },
   todo: { title: 'کارها', Icon: TodoIcon },
+  alerts: { title: 'اعلان‌ها', Icon: BellIcon },
   notes: { title: 'یادداشت', Icon: NoteIcon },
   tools: { title: 'ابزارها', Icon: ToolsIcon },
   ai: { title: 'هوش مصنوعی', Icon: SparklesIcon }

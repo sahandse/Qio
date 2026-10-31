@@ -251,6 +251,13 @@ export const PinIcon = (props: IconProps) => (
   </Icon>
 )
 
+export const BellIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6.1 10.3a5.9 5.9 0 0 1 11.8 0c0 3.5 1 5.1 1.8 6.1.3.4 0 1-.5 1H4.8c-.5 0-.8-.6-.5-1 .8-1 1.8-2.6 1.8-6.1z" />
+    <path d="M10 20a2.2 2.2 0 0 0 4 0" />
+  </Icon>
+)
+
 export const SparklesIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M11.4 3.8l1.45 4.05 4.05 1.45-4.05 1.45L11.4 14.8l-1.45-4.05L5.9 9.3l4.05-1.45z" />

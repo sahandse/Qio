@@ -7,6 +7,7 @@ import { FocusPanel } from './components/FocusPanel'
 import { WaterPanel } from './components/WaterPanel'
 import { ShelfPanel } from './components/ShelfPanel'
 import { TodoPanel } from './components/TodoPanel'
+import { NotificationsPanel } from './components/NotificationsPanel'
 import { NotesPanel } from './components/NotesPanel'
 import { ToolsPanel } from './components/ToolsPanel'
 import { AiPanel } from './components/AiPanel'
@@ -19,6 +20,7 @@ import {
   ChevronRightIcon
 } from './components/Icons'
 import { PAGE_META } from './lib/pages'
+import { toPersianDigits } from './lib/jalali'
 import { useAppState, useCalm, useNightTheme, useNudge } from './lib/state'
 import { useSeasonTheme } from './lib/season'
 import { useFocusEngine } from './lib/focus'
@@ -40,6 +42,7 @@ const PAGES: PageDef[] = [
   { id: 'water', width: 424, height: 204, hue: '106, 200, 255' },
   { id: 'shelf', width: 424, height: 206, hue: '181, 156, 255' },
   { id: 'todo', width: 430, height: 214, hue: '138, 230, 192' },
+  { id: 'alerts', width: 452, height: 300, hue: '255, 208, 130' },
   { id: 'notes', width: 440, height: 258, hue: '255, 170, 200' },
   { id: 'tools', width: 456, height: 214, hue: '214, 198, 140' },
   { id: 'ai', width: 560, height: 404, hue: '178, 160, 255' }
@@ -295,6 +298,14 @@ export default function App() {
 
   const page = useMemo(() => pages.find((entry) => entry.id === panel) ?? pages[1] ?? PAGES[1], [pages, panel])
 
+  const unreadAlerts = useMemo(() => state?.alerts.filter((item) => !item.read).length ?? 0, [state?.alerts])
+
+  /** Seeing the page counts as reading its lines; anything new still lands unread. */
+  useEffect(() => {
+    if (panel !== 'alerts' || !expanded || unreadAlerts === 0) return
+    void window.qio.alerts.readAll()
+  }, [panel, expanded, unreadAlerts])
+
   const scale = useMemo(() => {
     const base = state?.settings.notchScale ?? 1
     return Math.round(base * 100) / 100
@@ -414,6 +425,15 @@ export default function App() {
                 {panel === 'football' && <FootballPanel state={state} />}
                 {panel === 'shelf' && <ShelfPanel state={state} />}
                 {panel === 'todo' && <TodoPanel state={state} />}
+                {panel === 'alerts' && (
+                  <NotificationsPanel
+                    state={state}
+                    onOpenPage={(next) => {
+                      setPanel(next)
+                      pin()
+                    }}
+                  />
+                )}
                 {panel === 'notes' && <NotesPanel state={state} />}
                 {panel === 'tools' && <ToolsPanel state={state} />}
                 {panel === 'ai' && (
@@ -445,6 +465,9 @@ export default function App() {
                       onClick={() => setPanel(entry.id)}
                     >
                       <meta.Icon size={ICON.xs} />
+                      {entry.id === 'alerts' && unreadAlerts > 0 && (
+                        <span className="tab-badge">{toPersianDigits(unreadAlerts)}</span>
+                      )}
                     </button>
                   )
                 })}
@@ -479,7 +502,17 @@ export default function App() {
           )}
         </div>
 
-        {nudge && nudge.id !== dismissed && <NudgePill nudge={nudge} onDismiss={() => setDismissed(nudge.id)} />}
+        {nudge && nudge.id !== dismissed && (
+          <NudgePill
+            nudge={nudge}
+            onDismiss={() => setDismissed(nudge.id)}
+            onOpenPage={(next) => {
+              setPanel(next)
+              setHover(true)
+              pin()
+            }}
+          />
+        )}
         </div>
       </div>
     </div>

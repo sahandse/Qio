@@ -53,6 +53,7 @@ const FOOTBALL_KEYS = ['enabled', 'goalAlerts', 'startAlerts', 'redAlerts', 'fin
 const MOVE_KEYS = ['enabled', 'everyMin', 'startHour', 'endHour', 'notify'] as const
 const COFFEE_KEYS = ['minutes', 'alert'] as const
 const CLIP_KEYS = ['enabled', 'limit'] as const
+const ALERT_KEYS = ['windows'] as const
 /** Page ids and sizes inside these are checked again by cleanLayout in main. */
 const LAYOUT_KEYS = ['order', 'hidden', 'size'] as const
 
@@ -90,6 +91,7 @@ export function pickSettingsPatch(raw: unknown): Partial<Settings> {
     ['move', MOVE_KEYS],
     ['coffee', COFFEE_KEYS],
     ['clipboard', CLIP_KEYS],
+    ['alerts', ALERT_KEYS],
     ['layout', LAYOUT_KEYS]
   ] as const) {
     const nested = pickNested(raw, key, keys)

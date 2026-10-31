@@ -1,10 +1,12 @@
-import type { Nudge } from '@shared/types'
+import type { Nudge, PageId } from '@shared/types'
 import {
   ICON,
   BallIcon,
+  BellIcon,
   BoltIcon,
   CloseIcon,
   CoffeeIcon,
+  DownloadIcon,
   HeadphonesIcon,
   LyricsIcon,
   ShelfIcon,
@@ -15,25 +17,38 @@ import {
   WifiIcon
 } from './Icons'
 
-function iconFor(kind: Nudge['kind']) {
-  if (kind === 'water') return <WaterIcon size={ICON.sm} />
-  if (kind === 'todo') return <TodoIcon size={ICON.sm} />
-  if (kind === 'power') return <BoltIcon size={ICON.sm} />
-  if (kind === 'shelf') return <ShelfIcon size={ICON.sm} />
-  if (kind === 'lyrics') return <LyricsIcon size={ICON.sm} />
-  if (kind === 'network') return <WifiIcon size={ICON.sm} />
-  if (kind === 'headphones') return <HeadphonesIcon size={ICON.sm} />
-  if (kind === 'football') return <BallIcon size={ICON.sm} />
-  if (kind === 'move') return <WalkIcon size={ICON.sm} />
-  if (kind === 'coffee') return <CoffeeIcon size={ICON.sm} />
-  return <TimerIcon size={ICON.sm} />
+/** The same mark for a nudge in the pill and for its line in the alerts page. */
+export function NudgeIcon({ kind, size = ICON.sm }: { kind: Nudge['kind']; size?: number }) {
+  if (kind === 'water') return <WaterIcon size={size} />
+  if (kind === 'todo') return <TodoIcon size={size} />
+  if (kind === 'power') return <BoltIcon size={size} />
+  if (kind === 'shelf') return <ShelfIcon size={size} />
+  if (kind === 'lyrics') return <LyricsIcon size={size} />
+  if (kind === 'network') return <WifiIcon size={size} />
+  if (kind === 'headphones') return <HeadphonesIcon size={size} />
+  if (kind === 'football') return <BallIcon size={size} />
+  if (kind === 'move') return <WalkIcon size={size} />
+  if (kind === 'coffee') return <CoffeeIcon size={size} />
+  if (kind === 'update') return <DownloadIcon size={size} />
+  if (kind === 'system') return <BellIcon size={size} />
+  return <TimerIcon size={size} />
 }
 
-export function NudgePill({ nudge, onDismiss }: { nudge: Nudge; onDismiss: () => void }) {
+export function NudgePill({
+  nudge,
+  onDismiss,
+  onOpenPage
+}: {
+  nudge: Nudge
+  onDismiss: () => void
+  onOpenPage?: (page: PageId) => void
+}) {
   const actions = nudge.actions ?? []
   return (
     <div className={`nudge nudge-${nudge.kind}`} role="status">
-      <span className="nudge-icon">{iconFor(nudge.kind)}</span>
+      <span className="nudge-icon">
+        <NudgeIcon kind={nudge.kind} />
+      </span>
       <span className="nudge-text">
         <strong>{nudge.title}</strong>
         {nudge.detail && <small>{nudge.detail}</small>}
@@ -45,7 +60,8 @@ export function NudgePill({ nudge, onDismiss }: { nudge: Nudge; onDismiss: () =>
                 type="button"
                 className={`nudge-action${action.primary ? ' primary' : ''}`}
                 onClick={() => {
-                  window.qio.nudgeAction(nudge.id, action.id)
+                  if (action.page) onOpenPage?.(action.page)
+                  else window.qio.nudgeAction(nudge.id, action.id)
                   onDismiss()
                 }}
               >

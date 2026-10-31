@@ -4,6 +4,7 @@ import {
   PAGE_SIZES,
   type AiMessage,
   type AiSettings,
+  type AlertSettings,
   type ClipSettings,
   type CoffeeSettings,
   type CoffeeState,
@@ -92,6 +93,11 @@ export const defaultCoffee: CoffeeSettings = {
 export const defaultClip: ClipSettings = {
   enabled: false,
   limit: 25
+}
+
+/** Mirroring only reads what Windows already shows; nothing leaves the machine. */
+export const defaultAlerts: AlertSettings = {
+  windows: true
 }
 
 /** Every page on the rail, in the shipped order, all one cell large. */
@@ -224,6 +230,7 @@ export const defaultSettings: Settings = {
   move: defaultMove,
   coffee: defaultCoffee,
   clipboard: defaultClip,
+  alerts: defaultAlerts,
   layout: defaultLayout
 }
 
@@ -326,6 +333,7 @@ export function mergeSettings(raw: unknown): Settings {
   const move = (input.move ?? {}) as Partial<Settings['move']>
   const coffee = (input.coffee ?? {}) as Partial<CoffeeSettings>
   const clipboard = (input.clipboard ?? {}) as Partial<ClipSettings>
+  const alerts = (input.alerts ?? {}) as Partial<AlertSettings>
   const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
   const presence = (input.presence ?? {}) as Partial<PresenceSettings>
   const moveStart = clampNumber(move.startHour, 5, 23, defaultMove.startHour)
@@ -404,6 +412,9 @@ export function mergeSettings(raw: unknown): Settings {
     clipboard: {
       enabled: Boolean(clipboard.enabled ?? defaultClip.enabled),
       limit: clampNumber(clipboard.limit, 5, 100, defaultClip.limit)
+    },
+    alerts: {
+      windows: Boolean(alerts.windows ?? defaultAlerts.windows)
     },
     layout: cleanLayout(input.layout)
   }

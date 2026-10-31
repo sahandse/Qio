@@ -4422,6 +4422,207 @@ select:focus-visible {
   text-overflow: ellipsis;
 }
 
+/* ----------------------------------------------------------------- alerts -- */
+
+.alerts-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.alerts-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-inline-end: 2px;
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 12px), transparent 100%);
+}
+
+.alert-row {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 5px 8px 5px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+  animation: page-in 240ms var(--spring) both;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.alert-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(var(--hue), 0.22);
+}
+
+.alert-row.unread {
+  background: linear-gradient(180deg, rgba(var(--hue), 0.09), rgba(var(--hue), 0.028));
+  border-color: rgba(var(--hue), 0.18);
+}
+
+.alert-icon {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--hue));
+  background: rgba(var(--hue), 0.12);
+}
+
+.alert-row.source-windows .alert-icon {
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.alert-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alert-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.alert-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-time {
+  flex: 0 0 auto;
+  font-size: 8.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.alert-detail {
+  font-size: 9.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.alert-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 1px;
+}
+
+.alert-app {
+  flex: 0 0 auto;
+  font-size: 8.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.alert-action {
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 8.5px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.07);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.alert-action:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: var(--text);
+}
+
+.alert-action:active {
+  transform: scale(var(--press));
+}
+
+.alert-action.primary {
+  color: #081018;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgb(var(--hue)));
+  font-weight: 500;
+}
+
+.alert-dot {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: rgb(var(--hue));
+  box-shadow: 0 0 6px rgba(var(--hue), 0.7);
+}
+
+.alerts-foot {
+  flex: 0 0 auto;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+.alerts-note {
+  flex: 0 0 auto;
+  font-size: 8.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+  opacity: 0.85;
+}
+
+.tab-badge {
+  position: absolute;
+  top: -3px;
+  inset-inline-end: -3px;
+  min-width: 11px;
+  height: 11px;
+  padding: 0 3px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 7.5px;
+  font-weight: 700;
+  line-height: 1;
+  color: #1a0f04;
+  background: linear-gradient(180deg, #ffe6b0, #f2c879);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
 /* ------------------------------------------------------------------ nudge -- */
 
 .nudge {

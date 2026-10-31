@@ -51,6 +51,7 @@ const state: UpdateState = {
 let candidate: Candidate | null = null
 let verified: { path: string; sha: string } | null = null
 let onChange: (() => void) | null = null
+let onAlert: ((version: string, detail: string) => void) | null = null
 let checking = false
 let downloading = false
 let announced = ''
@@ -59,8 +60,9 @@ function updateDir(): string {
   return join(app.getPath('temp'), 'qio-update')
 }
 
-export function initUpdater(push: () => void): void {
+export function initUpdater(push: () => void, alert?: (version: string, detail: string) => void): void {
   onChange = push
+  onAlert = alert ?? null
   state.current = app.getVersion()
   state.installable = app.isPackaged
   // A previous run may have left a half-downloaded installer behind.
@@ -79,10 +81,12 @@ function setState(patch: Partial<UpdateState>): void {
 function announce(version: string): void {
   if (announced === version) return
   announced = version
+  const body = `Qio ${toPersianDigits(version)} آماده است — برای دیدن جزئیات، روی این اعلان بزن.`
+  onAlert?.(version, body)
   if (!Notification.isSupported()) return
   const notification = new Notification({
     title: 'نسخهٔ تازهٔ Qio',
-    body: `Qio ${toPersianDigits(version)} آماده است — برای دیدن جزئیات، روی این اعلان بزن.`,
+    body,
     silent: true
   })
   notification.on('click', () => openSettingsWindow('about'))

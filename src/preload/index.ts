@@ -81,6 +81,13 @@ const api: QioApi = {
     sample: () => ipcRenderer.invoke('sys:sample') as Promise<SystemSample>
   },
 
+  alerts: {
+    act: (id, action) => ipcRenderer.invoke('alerts:act', id, action) as Promise<boolean>,
+    read: (id) => ipcRenderer.invoke('alerts:read', id) as Promise<boolean>,
+    readAll: () => ipcRenderer.invoke('alerts:read-all') as Promise<boolean>,
+    clear: () => ipcRenderer.invoke('alerts:clear') as Promise<boolean>
+  },
+
   football: {
     catalog: (force) => ipcRenderer.invoke('football:catalog', force === true),
     toggleTeam: (id) => ipcRenderer.invoke('football:team', id),

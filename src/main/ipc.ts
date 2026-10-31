@@ -6,6 +6,7 @@ import { basename, join } from 'node:path'
 import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, PickedColor, Settings } from '@shared/types'
 import { aiReady } from '@shared/ai'
 import type { Store } from './store'
+import type { AlertCenter } from './alerts'
 import type { WindowsBridge } from './bridge'
 import type { CoffeeService } from './coffee'
 import type { ClipService } from './clip'
@@ -34,6 +35,7 @@ export interface IpcContext {
   football: FootballService
   coffee: CoffeeService
   clip: ClipService
+  alerts: AlertCenter
   monitor: MonitorService
   getState(): AppState
   notify(title: string, body: string): void
@@ -165,6 +167,16 @@ export function registerIpc(ctx: IpcContext): void {
     if (Number.isFinite(amount) && amount > 0) store.addWater(amount)
   })
   ipcMain.handle('water:remove', (_event, id: string) => store.removeWaterEntry(id))
+
+  ipcMain.handle('alerts:act', (_event, id: string, action: string) => {
+    if (typeof id !== 'string' || typeof action !== 'string') return false
+    return ctx.alerts.act(id, action)
+  })
+  ipcMain.handle('alerts:read', (_event, id: string) =>
+    typeof id === 'string' ? ctx.alerts.read(id) : false
+  )
+  ipcMain.handle('alerts:read-all', () => ctx.alerts.readAll())
+  ipcMain.handle('alerts:clear', () => ctx.alerts.clear())
 
   ipcMain.handle('shelf:add', (_event, paths: string[]) => {
     const items: { kind: 'file'; path: string; name: string; size: number; isDir: boolean }[] = []

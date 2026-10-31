@@ -148,6 +148,20 @@ export function GeneralSection({
         </p>
       </Card>
 
+      <Card title="اعلان‌ها">
+        <Toggle
+          label="اعلان‌های ویندوز هم اینجا دیده شوند"
+          hint="فقط خوانده می‌شوند؛ متنشان نه ذخیره می‌شود نه جایی می‌رود"
+          checked={settings.alerts.windows}
+          onChange={(next) => onPatch({ alerts: { ...settings.alerts, windows: next } })}
+        />
+        <p className="settings-note">
+          هر اعلانی که Qio می‌فرستد در صفحهٔ «اعلان‌ها» می‌ماند و دکمه‌های پاسخش کار می‌کند.
+          اعلان‌های دیگر برنامه‌های ویندوز فقط نمایش داده می‌شوند؛ ویندوز به برنامه‌های دیگر
+          اجازهٔ پاسخ نمی‌دهد. فهرست در حافظه است و با بستن Qio پاک می‌شود.
+        </p>
+      </Card>
+
       <Card title="خاطرهٔ کلیپ‌بورد">
         <Toggle
           label="چیزهایی که کپی می‌کنی را به یاد آور"

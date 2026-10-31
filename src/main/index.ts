@@ -1,8 +1,10 @@
 import { BrowserWindow, Notification, app, dialog, globalShortcut, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
 import type { AppState, MediaState, Nudge, NudgeAction, OverlayPayload, PickedColor, SystemState } from '@shared/types'
+import { defaultAlertActions } from '@shared/alerts'
 import { toPersianDigits } from '@shared/persian'
 import { pickCoffeePatch } from '@shared/validate'
+import { AlertCenter, type AlertRecord } from './alerts'
 import { WindowsBridge } from './bridge'
 import { ClipService } from './clip'
 import { CoffeeService } from './coffee'
@@ -28,6 +30,7 @@ import {
   sizeNotch,
   showOverlay
 } from './windows'
+import { WindowsToastReader } from './winToasts'
 
 const APP_ID = 'com.sahandse.qio'
 const NUDGE_MS = 6500
@@ -59,6 +62,9 @@ const pickedColors: PickedColor[] = []
 const PICKED_LIMIT = 8
 let overlayArmed = false
 let lastWaterReminderAt = 0
+let waterSnoozeUntil = 0
+let alerts: AlertCenter | null = null
+let winToasts: WindowsToastReader | null = null
 let lowBatteryWarned = false
 let lastCharging: boolean | null = null
 let lastHeadphones: boolean | null = null
@@ -81,6 +87,7 @@ function getState(): AppState {
     media,
     system: { ...system, startWithWindows: app.isPackaged && app.getLoginItemSettings().openAtLogin },
     picked: pickedColors,
+    alerts: alerts?.list ?? [],
     updater: updateState(),
     version: app.getVersion()
   }
@@ -114,8 +121,21 @@ function notify(title: string, body: string): void {
 interface NudgeOptions {
   actions?: NudgeAction[]
   onAction?: (action: string) => void
+  /** Reply buttons that only the alerts page shows, so the pill stays calm. */
+  reply?: NudgeAction[]
+  onReply?: (action: string) => void
   /** Long enough for the buttons to be read and clicked. */
   ms?: number
+}
+
+/** One id per button; a page shortcut never repeats a reply that is already there. */
+function alertButtons(kind: Nudge['kind'], ...lists: (NudgeAction[] | undefined)[]): NudgeAction[] {
+  const merged = new Map<string, NudgeAction>()
+  for (const list of [...lists, defaultAlertActions(kind)]) {
+    for (const action of list ?? []) if (!merged.has(action.id)) merged.set(action.id, action)
+  }
+  if (merged.size === 0) merged.set('ok', { id: 'ok', label: 'باشه' })
+  return [...merged.values()]
 }
 
 /** A short in-notch alert: Qio taps you on the shoulder without opening a panel. */
@@ -133,6 +153,19 @@ function raiseNudge(
     dropNudge(nudge.id)
   }, options.ms ?? NUDGE_MS)
   nudges.set(nudge.id, timer)
+  alerts?.record({
+    kind,
+    title,
+    detail,
+    actions: alertButtons(kind, options.actions, options.reply),
+    onAction:
+      options.onAction || options.onReply
+        ? (action) => {
+            options.onAction?.(action)
+            options.onReply?.(action)
+          }
+        : undefined
+  })
   return nudge.id
 }
 
@@ -287,13 +320,24 @@ function checkTodos(now: number): void {
     if (todo.done || !todo.dueAt || todo.notified || todo.dueAt > now) continue
     store.updateTodo(todo.id, { notified: true })
     notify(todo.text, 'موعد این کار رسید.')
-    raiseNudge('todo', todo.text, 'همین حالا')
+    const id = todo.id
+    raiseNudge('todo', todo.text, 'همین حالا', {
+      reply: [
+        { id: 'done', label: 'انجام شد', primary: true },
+        { id: 'later', label: '۱۰ دقیقهٔ دیگر' }
+      ],
+      onReply: (action) => {
+        if (action === 'done') store.updateTodo(id, { done: true })
+        else if (action === 'later') store.updateTodo(id, { dueAt: Date.now() + 10 * 60_000, notified: false })
+      }
+    })
   }
 }
 
 function checkWater(): void {
   const settings = store.settings.water
   if (!settings.reminders) return
+  if (Date.now() < waterSnoozeUntil) return
   const now = new Date()
   const hour = now.getHours() + now.getMinutes() / 60
   if (hour < settings.startHour || hour >= settings.endHour) return
@@ -313,7 +357,21 @@ function checkWater(): void {
   raiseNudge(
     'water',
     'وقت آب خوردن',
-    `${toPersianDigits(water.total)} از ${toPersianDigits(water.goalMl)} میلی‌لیتر`
+    `${toPersianDigits(water.total)} از ${toPersianDigits(water.goalMl)} میلی‌لیتر`,
+    {
+      reply: [
+        { id: 'drank', label: 'نوشیدم', primary: true },
+        { id: 'later', label: '۱۰ دقیقه بعد' }
+      ],
+      onReply: (action) => {
+        if (action === 'drank') {
+          store.addWater(store.settings.water.bottleMl)
+          waterSnoozeUntil = 0
+        } else if (action === 'later') {
+          waterSnoozeUntil = Date.now() + 10 * 60_000
+        }
+      }
+    }
   )
 }
 
@@ -323,6 +381,7 @@ function startSchedulers(): void {
     applyFullscreen(fullscreen)
     football.handleSettingsChange()
     move.handleSettingsChange()
+    winToasts?.setEnabled(store.settings.alerts.windows)
   })
   let lastDay = dateKey()
 
@@ -483,6 +542,12 @@ if (!app.requestSingleInstanceLock()) {
       changed: (view) => sendToNotch('clip:changed', view)
     })
 
+    alerts = new AlertCenter(pushState)
+    winToasts = new WindowsToastReader((toasts) => {
+      alerts?.recordMany(toasts.map((toast): AlertRecord => ({ ...toast, kind: 'system' })))
+    })
+    winToasts.setEnabled(store.settings.alerts.windows)
+
     const monitor = new MonitorService()
 
     const notch = createNotchWindow(false)
@@ -501,6 +566,7 @@ if (!app.requestSingleInstanceLock()) {
       football,
       coffee,
       clip,
+      alerts,
       monitor,
       getState,
       notify,
@@ -527,7 +593,13 @@ if (!app.requestSingleInstanceLock()) {
     clip.start()
     applyLoginItem()
     bridge.start()
-    initUpdater(pushState)
+    initUpdater(pushState, (_version, detail) => {
+      raiseNudge('update', 'نسخهٔ تازهٔ Qio', detail, {
+        actions: [{ id: 'about', label: 'دیدن جزئیات', primary: true }],
+        onAction: () => openSettingsWindow('about'),
+        ms: 12_000
+      })
+    })
     startUpdateCheck()
     if (process.env['QIO_SELFCHECK']) runSelfCheck()
 
@@ -548,6 +620,7 @@ if (!app.requestSingleInstanceLock()) {
     move?.stop()
     coffee?.stop()
     clip?.stop()
+    winToasts?.stop()
     bridge?.stop()
     store?.flush()
   })

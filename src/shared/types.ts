@@ -9,6 +9,7 @@ export type PanelId =
   | 'football'
   | 'shelf'
   | 'todo'
+  | 'alerts'
   | 'notes'
   | 'tools'
   | 'ai'
@@ -24,6 +25,7 @@ export const PAGE_IDS = [
   'football',
   'shelf',
   'todo',
+  'alerts',
   'notes',
   'tools',
   'ai'
@@ -144,6 +146,12 @@ export interface CoffeeSettings {
   alert: boolean
 }
 
+/** The alerts page keeps its list in RAM only; these switches decide what feeds it. */
+export interface AlertSettings {
+  /** Mirror Windows toasts into Qio. Read-only, in memory, and only while Qio runs. */
+  windows: boolean
+}
+
 /** Clipboard history lives in RAM only: turning it off, or quitting, forgets everything. */
 export interface ClipSettings {
   /** Off by default — Qio never reads the clipboard until it is asked to. */
@@ -225,6 +233,7 @@ export interface Settings {
   move: MoveSettings
   coffee: CoffeeSettings
   clipboard: ClipSettings
+  alerts: AlertSettings
   layout: LayoutSettings
 }
 
@@ -604,6 +613,8 @@ export interface AppState {
   system: SystemState
   /** Eyedropper history for this session, newest first. */
   picked: PickedColor[]
+  /** Every notification this run saw, newest first; never written to disk. */
+  alerts: AlertItem[]
   updater: UpdateState
   version: string
 }
@@ -635,12 +646,16 @@ export type NudgeKind =
   | 'move'
   | 'football'
   | 'coffee'
+  | 'update'
+  | 'system'
 
 export interface NudgeAction {
   id: string
   label: string
   /** The filled button; the rest are quiet. */
   primary?: boolean
+  /** Opening a Qio page instead of handing the action to main. */
+  page?: PageId
 }
 
 export interface Nudge {
@@ -649,6 +664,21 @@ export interface Nudge {
   title: string
   detail?: string
   actions?: NudgeAction[]
+}
+
+/** One line in the alerts page. Qio's own nudges keep their buttons; toasts are read-only. */
+export interface AlertItem {
+  id: string
+  source: 'qio' | 'windows'
+  kind: NudgeKind
+  title: string
+  detail?: string
+  /** Milliseconds since the epoch. */
+  at: number
+  read: boolean
+  actions: NudgeAction[]
+  /** The app that raised a mirrored Windows toast. */
+  app?: string
 }
 
 export interface OverlayPayload {
