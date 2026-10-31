@@ -492,6 +492,99 @@ select:focus-visible {
   }
 }
 
+/* The resting clock steps aside for whatever is actually happening right now. */
+.bar-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
+  transform: translateX(-13px);
+  animation: bar-badge-in 340ms var(--ease-back) both;
+}
+
+@keyframes bar-badge-in {
+  from {
+    opacity: 0;
+    transform: translate(-13px, 3px) scale(0.96);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-13px);
+    filter: blur(0);
+  }
+}
+
+.bar-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 7px rgba(240, 138, 122, 0.65);
+  animation: fb-pulse 1.6s ease-in-out infinite;
+}
+
+.bar-badge-score {
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+
+.bar-badge-minute {
+  font-size: 10.5px;
+  color: var(--danger);
+}
+
+.bar-badge-time {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.bar-badge.work .bar-badge-time {
+  color: var(--warn);
+}
+
+.bar-badge.focus:not(.work) .bar-badge-time {
+  color: var(--accent);
+}
+
+/* A miniature copy of the ring around the face, so a running round reads at a glance. */
+.bar-badge-ring {
+  --p: 0deg;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  padding: 1.25px;
+  background: conic-gradient(var(--warn) var(--p), rgba(255, 255, 255, 0.12) 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.bar-badge.focus:not(.work) .bar-badge-ring {
+  background: conic-gradient(var(--accent) var(--p), rgba(255, 255, 255, 0.12) 0);
+}
+
+.bar-badge.coffee svg {
+  color: var(--warn);
+}
+
+.bar-badge.coffee .bar-badge-time {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
 /* Odometer digits: the cell clips the line box, the glyph rolls in from below. */
 .roll {
   display: inline-flex;
@@ -7402,7 +7495,12 @@ body.overlay-body {
 }
 
 :root[data-calm='on'] .fb-live-dot,
+:root[data-calm='on'] .bar-badge-dot,
 :root[data-calm='on'] .fb-refresh.busy svg {
+  animation: none;
+}
+
+:root[data-calm='on'] .bar-badge {
   animation: none;
 }
 

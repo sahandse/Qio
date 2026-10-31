@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AppState, MascotState } from '@shared/types'
+import type { AppState, FocusMode, MascotState } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useClockPresence } from '../lib/state'
 import { ClockDate, ClockText, ClockWeek } from './Clock'
-import { ICON, MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
+import { ICON, CoffeeIcon, MuteIcon, SettingsIcon, VolumeIcon } from './Icons'
 import { Mascot } from './Mascot'
 
 interface Props {
@@ -117,6 +117,86 @@ function BarEdgeLine({ pct, color }: { pct: number; color: string }) {
       }}
     />
   )
+}
+
+const FOCUS_LABEL: Record<FocusMode, string> = {
+  work: 'تمرکز',
+  short: 'استراحت کوتاه',
+  long: 'استراحت بلند'
+}
+
+type BarBadge =
+  | { kind: 'match'; title: string; score: string; minute: string }
+  | { kind: 'focus'; title: string; left: string; work: boolean }
+  | { kind: 'coffee'; title: string; left: string }
+
+function scoreText(score: number | null): string {
+  return score === null ? '—' : toPersianDigits(score)
+}
+
+function countdownText(ms: number): string {
+  const total = Math.max(0, Math.ceil(ms / 1000))
+  const minutes = Math.floor(total / 60)
+  const seconds = total % 60
+  return toPersianDigits(`${`${minutes}`.padStart(2, '0')}:${`${seconds}`.padStart(2, '0')}`)
+}
+
+/** Wall clock for badge countdowns; null-parked while nothing needs one. */
+function useBadgeNow(active: boolean): number {
+  const [now, setNow] = useState<number | null>(null)
+  useEffect(() => {
+    if (!active) {
+      setNow(null)
+      return
+    }
+    setNow(Date.now())
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000)
+    return () => window.clearInterval(timer)
+  }, [active])
+  return now ?? Date.now()
+}
+
+/** The collapsed notch says what is happening: a live match, a focus round, then coffee. */
+function useBarBadge(state: AppState | null): BarBadge | null {
+  const live = state?.football.matches.find((match) => match.status === 'live') ?? null
+  const focus = state?.focus.running ? state.focus : null
+  const coffee = state?.coffee.active ? state.coffee : null
+  const ticking = Boolean(focus?.endsAt) || (coffee?.endsAt ?? null) !== null
+  const now = useBadgeNow(ticking)
+
+  if (live) {
+    const host = scoreText(live.host.score)
+    const guest = scoreText(live.guest.score)
+    return {
+      kind: 'match',
+      title: `${live.host.name} ${host} – ${guest} ${live.guest.name}`,
+      score: `${host} – ${guest}`,
+      minute: live.minute ? `${toPersianDigits(live.minute)}′` : live.statusLabel || 'زنده'
+    }
+  }
+
+  if (focus?.endsAt) {
+    const left = focus.endsAt - now
+    if (left > 0) {
+      const time = countdownText(left)
+      return {
+        kind: 'focus',
+        work: focus.mode === 'work',
+        left: time,
+        title: `${FOCUS_LABEL[focus.mode]} — ${time} مانده`
+      }
+    }
+  }
+
+  if (coffee) {
+    if (coffee.endsAt === null) {
+      return { kind: 'coffee', left: 'بیدار', title: 'صفحه تا اطلاع بعدی بیدار می‌ماند' }
+    }
+    const time = countdownText(coffee.endsAt - now)
+    return { kind: 'coffee', left: time, title: `صفحه — ${time} دیگر روشن می‌ماند` }
+  }
+
+  return null
 }
 
 export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotState }: Props) {
@@ -353,6 +433,7 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
 
   const clockOn = useClockPresence(state?.settings.presence ?? FALLBACK_PRESENCE, expanded)
   const focusPct = useFocusProgress(state)
+  const badge = useBarBadge(expanded ? null : state)
   const ending = Boolean(state?.focus.running && state.focus.endsAt && state.focus.endsAt - Date.now() <= 10_000)
 
   /** Each return of a resting clock opens like an eyelid instead of just fading in. */
@@ -374,10 +455,11 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
   if (!expanded) {
     const faceState: MascotState =
       mascotState === 'work' || mascotState === 'success' || mascotState === 'error' ? mascotState : face
+    const shownBadge = minimal ? null : badge
     return (
       <button
         type="button"
-        className={`bar${minimal ? ' minimal' : ''}${clockOn ? '' : ' quiet'}`}
+        className={`bar${minimal ? ' minimal' : ''}${clockOn || shownBadge ? '' : ' quiet'}`}
         onClick={onOpen}
         title="باز کردن Qio"
         aria-label="باز کردن Qio"
@@ -414,7 +496,39 @@ export function NotchBar({ state, expanded, title, onOpen, onSettings, mascotSta
             <span className="status-pin" />
           )}
         </span>
-        <ClockText hour24={hour24} className={`bar-clock${lidOpening ? ' opening' : ''}`} off={!clockOn} />
+        {shownBadge ? (
+          <span
+            key={shownBadge.kind}
+            className={`bar-badge ${shownBadge.kind}${shownBadge.kind === 'focus' && shownBadge.work ? ' work' : ''}`}
+            title={shownBadge.title}
+          >
+            {shownBadge.kind === 'match' && (
+              <>
+                <span className="bar-badge-dot" aria-hidden="true" />
+                <span className="bar-badge-score">{shownBadge.score}</span>
+                <span className="bar-badge-minute">{shownBadge.minute}</span>
+              </>
+            )}
+            {shownBadge.kind === 'focus' && (
+              <>
+                <span
+                  className="bar-badge-ring"
+                  style={{ ['--p' as string]: `${Math.round(focusPct * 360)}deg` }}
+                  aria-hidden="true"
+                />
+                <span className="bar-badge-time">{shownBadge.left}</span>
+              </>
+            )}
+            {shownBadge.kind === 'coffee' && (
+              <>
+                <CoffeeIcon size={ICON.xs} />
+                <span className="bar-badge-time">{shownBadge.left}</span>
+              </>
+            )}
+          </span>
+        ) : (
+          <ClockText hour24={hour24} className={`bar-clock${lidOpening ? ' opening' : ''}`} off={!clockOn} />
+        )}
       </button>
     )
   }
