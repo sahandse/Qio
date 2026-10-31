@@ -69,7 +69,11 @@ export function AiSection({ ai }: { ai: AiPublicSettings }) {
         </div>
         <p className="settings-note">
           {provider.hint}
-          {provider.needsKey ? ' · کلید لازم است' : ' · بدون کلید کار می‌کند'}
+          {provider.needsKey
+            ? ' · کلید لازم است'
+            : provider.id === 'freebuff'
+              ? ' · توکن را در پروکسی بگذار'
+              : ' · بدون کلید کار می‌کند'}
         </p>
       </section>
 
@@ -95,7 +99,7 @@ export function AiSection({ ai }: { ai: AiPublicSettings }) {
         <label className="setting-row">
           <span className="setting-text">
             <strong>مدل</strong>
-            <small>خالی بماند، مدل پیش‌فرض سرویس انتخاب می‌شود.</small>
+            <small>خالی بماند، پیش‌فرض سرویس؛ یا یکی از پیشنهادهای زیر را بزن.</small>
           </span>
           <input
             className="setting-input"
@@ -109,6 +113,32 @@ export function AiSection({ ai }: { ai: AiPublicSettings }) {
             }}
           />
         </label>
+        {provider.models.length > 0 && (
+          <div className="ai-models">
+            <span className="ai-prov-label">پیشنهادها · {toPersianDigits(provider.models.length)}</span>
+            <div className="ai-prov-chips ai-model-chips">
+              {provider.models.map((name) => {
+                const active = (model.trim() || provider.model) === name
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    dir="ltr"
+                    className={`ai-chip ai-model-chip${active ? ' on' : ''}`}
+                    title={name}
+                    aria-pressed={active}
+                    onClick={() => {
+                      setModel(name)
+                      commit({ model: name })
+                    }}
+                  >
+                    {name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
         <label className="setting-row">
           <span className="setting-text">
             <strong>کلید API</strong>

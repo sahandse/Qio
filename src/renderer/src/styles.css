@@ -6202,6 +6202,29 @@ body.overlay-body {
   font-weight: 600;
 }
 
+.ai-models {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: -2px 0 10px;
+}
+
+.ai-model-chips {
+  max-height: 128px;
+  overflow-y: auto;
+  padding: 2px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.ai-model-chip {
+  height: 21px;
+  padding: 0 8px;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 9px;
+  letter-spacing: -0.01em;
+}
+
 /* --------------------------------------------------------------- settings -- */
 
 .settings-page {
