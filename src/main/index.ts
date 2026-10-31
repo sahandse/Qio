@@ -14,7 +14,7 @@ import { openEyedropper } from './screen'
 import { Store } from './store'
 import { dateKey } from './store/defaults'
 import { refreshTray, setTrayNotchVisible, setupTray } from './tray'
-import { startUpdateCheck } from './updater'
+import { startUpdateCheck, initUpdater, updateState } from './updater'
 import {
   createNotchWindow,
   createOverlayWindow,
@@ -81,6 +81,7 @@ function getState(): AppState {
     media,
     system: { ...system, startWithWindows: app.isPackaged && app.getLoginItemSettings().openAtLogin },
     picked: pickedColors,
+    updater: updateState(),
     version: app.getVersion()
   }
 }
@@ -526,6 +527,7 @@ if (!app.requestSingleInstanceLock()) {
     clip.start()
     applyLoginItem()
     bridge.start()
+    initUpdater(pushState)
     startUpdateCheck()
     if (process.env['QIO_SELFCHECK']) runSelfCheck()
 

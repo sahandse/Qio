@@ -7089,6 +7089,76 @@ body.overlay-body {
   grid-column: 1 / -1;
 }
 
+/* --------------------------------------------------------------- updater -- */
+
+.update-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 10px;
+  flex-wrap: wrap;
+}
+
+.update-version {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.update-state {
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  text-align: end;
+}
+
+.update-state.is-error {
+  color: var(--danger);
+}
+
+.update-state.is-ready {
+  color: var(--accent);
+}
+
+.update-state.is-checking,
+.update-state.is-downloading,
+.update-state.is-verifying,
+.update-state.is-installing {
+  color: rgb(var(--hue));
+}
+
+.update-bar {
+  margin-top: 10px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.update-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: rgb(var(--hue));
+  transition: width 280ms var(--ease);
+}
+
+.update-sha {
+  margin: 9px 0 0;
+  font-size: 9.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.update-dev {
+  font-size: 9.5px;
+  color: var(--text-faint);
+  align-self: center;
+}
+
 .settings-about {
   grid-column: 1 / -1;
 }

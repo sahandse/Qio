@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, PickerFrame, Settings, SystemSample, Todo } from '@shared/types'
+import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, PickerFrame, Settings, SystemSample, Todo, UpdateState } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -111,6 +111,12 @@ const api: QioApi = {
     openDraw: () => ipcRenderer.invoke('screen:draw-open') as Promise<boolean>,
     closeDraw: () => ipcRenderer.invoke('screen:draw-close') as Promise<boolean>,
     copy: (text) => ipcRenderer.invoke('screen:copy', text) as Promise<boolean>
+  },
+
+  updater: {
+    check: () => ipcRenderer.invoke('updater:check') as Promise<UpdateState>,
+    download: () => ipcRenderer.invoke('updater:download') as Promise<boolean>,
+    install: () => ipcRenderer.invoke('updater:install') as Promise<boolean>
   },
 
   system: {

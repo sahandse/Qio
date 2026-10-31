@@ -15,6 +15,7 @@ import { AiAbortError, streamCompletion, testCompletion } from './ai'
 import type { AiPrompt } from './ai'
 import { fetchLyrics } from './lyrics'
 import { dismissPicker, openEyedropper, pickerFrame, showPicker } from './screen'
+import { checkForUpdate, downloadUpdate, installUpdate } from './updater'
 import {
   closeDrawWindow,
   hideOverlay,
@@ -333,6 +334,10 @@ export function registerIpc(ctx: IpcContext): void {
     clipboard.writeText(text)
     return true
   })
+
+  ipcMain.handle('updater:check', () => checkForUpdate())
+  ipcMain.handle('updater:download', () => downloadUpdate())
+  ipcMain.handle('updater:install', () => installUpdate())
 
   ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
   ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))

@@ -20,7 +20,8 @@ import type {
   PickerFrame,
   Settings,
   SystemSample,
-  Todo
+  Todo,
+  UpdateState
 } from './types'
 
 export type Unsubscribe = () => void
@@ -144,6 +145,12 @@ export interface QioApi {
     openDraw(): Promise<boolean>
     closeDraw(): Promise<boolean>
     copy(text: string): Promise<boolean>
+  }
+
+  updater: {
+    check(): Promise<UpdateState>
+    download(): Promise<boolean>
+    install(): Promise<boolean>
   }
 
   system: {

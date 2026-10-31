@@ -62,6 +62,33 @@ export interface PickerFrame {
   scale: number
 }
 
+/** The updater walks these phases; the installer only runs after its hash matches. */
+export type UpdatePhase =
+  | 'idle'
+  | 'checking'
+  | 'latest'
+  | 'available'
+  | 'downloading'
+  | 'verifying'
+  | 'ready'
+  | 'installing'
+  | 'error'
+
+export interface UpdateState {
+  phase: UpdatePhase
+  current: string
+  latest: string | null
+  /** 0–1 while a download runs. */
+  progress: number
+  /** The SHA-256 the downloaded installer matched, hex without a prefix. */
+  sha: string | null
+  /** Installer size in megabytes, once the release is known. */
+  sizeMb: number | null
+  error: string | null
+  /** Installing only makes sense inside a packaged build. */
+  installable: boolean
+}
+
 export interface WaterSettings {
   bottleMl: number
   goalMl: number
@@ -519,6 +546,7 @@ export interface AppState {
   system: SystemState
   /** Eyedropper history for this session, newest first. */
   picked: PickedColor[]
+  updater: UpdateState
   version: string
 }
 

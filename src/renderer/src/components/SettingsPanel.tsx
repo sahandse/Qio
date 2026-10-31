@@ -14,6 +14,7 @@ import { HealthSection } from './settings/HealthSection'
 import { LayoutSection } from './settings/LayoutSection'
 import { MediaSection } from './settings/MediaSection'
 import { Toggle } from './settings/controls'
+import { UpdateSection } from './settings/UpdateSection'
 import { Skeleton } from './Skeleton'
 
 type SettingsTab = 'general' | 'layout' | 'mascot' | 'ai' | 'media' | 'health' | 'football' | 'about'
@@ -155,7 +156,12 @@ export function SettingsPage() {
 
             {tab === 'football' && <FootballSection settings={settings} onPatch={patch} />}
 
-            {tab === 'about' && <AboutSection />}
+            {tab === 'about' && (
+              <>
+                <UpdateSection update={state.updater} />
+                <AboutSection />
+              </>
+            )}
           </div>
         </div>
       </div>
