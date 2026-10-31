@@ -3305,6 +3305,222 @@ select:focus-visible {
   padding: 6px 2px;
 }
 
+/* The two faces of the football page: the slate and the league table. */
+.football-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.fb-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.fb-tab {
+  height: 23px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 8px;
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.fb-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+}
+
+.fb-tab.on {
+  background: rgba(var(--hue), 0.16);
+  color: rgb(var(--hue));
+}
+
+.fb-tab-count {
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.fb-tab.on .fb-tab-count {
+  background: rgba(var(--hue), 0.14);
+  color: rgb(var(--hue));
+}
+
+.fb-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fb-body > .football-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+/* The table tab: league chips on top, then one scrollable table. */
+.fb-tables {
+  gap: 6px;
+}
+
+.fb-league-chips {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+
+.fb-league-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.fb-league-chip {
+  flex: 0 0 auto;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 9.5px;
+  color: var(--text-faint);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.fb-league-chip:hover {
+  color: var(--text-dim);
+  background: var(--bg-raised);
+}
+
+.fb-league-chip.on {
+  color: rgb(var(--hue));
+  border-color: rgba(var(--hue), 0.45);
+  background: rgba(var(--hue), 0.11);
+}
+
+.fb-table-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fb-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-inline-end: 3px;
+  padding-bottom: 2px;
+}
+
+.fb-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fb-tr {
+  display: grid;
+  grid-template-columns: 26px minmax(96px, 1fr) repeat(4, 25px) repeat(2, 27px) 33px 32px;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fb-tr-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-block: 3px;
+  background: var(--bg-raised);
+  font-size: 8.5px;
+  color: var(--text-faint);
+}
+
+.fb-tr.mine {
+  border: 1px solid rgba(var(--hue), 0.28);
+  background: rgba(var(--hue), 0.1);
+  padding: 3px 5px;
+}
+
+.fb-tr.mine .fb-team-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.fb-td {
+  min-width: 0;
+  text-align: center;
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.fb-td.fb-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+.fb-rank-mark {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.fb-td.fb-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: start;
+}
+
+.fb-team-name {
+  min-width: 0;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fb-td.fb-points {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 .fb-list {
   display: flex;
   flex-direction: column;

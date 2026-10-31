@@ -10,6 +10,7 @@ import type {
   FocusState,
   FootballCatalog,
   FootballSettings,
+  FootballTables,
   FootballView,
   LyricResult,
   MediaCommand,
@@ -117,6 +118,8 @@ export interface QioApi {
     toggleTeam(id: string): Promise<FootballSettings>
     /** Ask for a fresh slate right now (the retry button in the panel). */
     refresh(): Promise<FootballView>
+    /** The table of each followed league, cached in main for ten minutes. */
+    tables(force?: boolean): Promise<FootballTables>
   }
 
   ai: {

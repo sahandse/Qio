@@ -84,7 +84,8 @@ const api: QioApi = {
   football: {
     catalog: (force) => ipcRenderer.invoke('football:catalog', force === true),
     toggleTeam: (id) => ipcRenderer.invoke('football:team', id),
-    refresh: () => ipcRenderer.invoke('football:refresh')
+    refresh: () => ipcRenderer.invoke('football:refresh'),
+    tables: (force) => ipcRenderer.invoke('football:tables', force === true)
   },
 
   ai: {

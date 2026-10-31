@@ -3,6 +3,8 @@ import type {
   FootballCatalog,
   FootballMatch,
   FootballSettings,
+  FootballTable,
+  FootballTables,
   FootballTeam,
   FootballView,
   Settings
@@ -14,7 +16,9 @@ import {
   matchHasTeam,
   mergeMatchDetail,
   parseLivescore,
-  parseMatchDetail
+  parseMatchDetail,
+  parseStanding,
+  standingTabHref
 } from '@shared/football'
 
 const BASE = 'https://web-api.varzesh3.com/v2.0'
@@ -27,6 +31,8 @@ const RETRY_MS = 90_000
 const DETAIL_LIVE_MS = 40_000
 const DETAIL_FINAL_MS = 10 * 60_000
 const CATALOG_MS = 30 * 60_000
+const TABLE_MS = 10 * 60_000
+const LEAGUE_TAB_MS = 6 * 3_600_000
 const MAX_TEAMS = 10
 const MAX_LOGOS = 200
 
@@ -92,6 +98,10 @@ export class FootballService {
   private catalogState: FootballCatalog = { teams: [], updatedAt: null, loading: false, error: null }
   private catalogAt = 0
   private catalogInFlight: Promise<FootballCatalog> | null = null
+  private tableCache = new Map<string, { at: number; table: FootballTable }>()
+  private tableHrefs = new Map<string, { at: number; href: string }>()
+  private tablesInFlight: Promise<FootballTables> | null = null
+  private tablesAt: number | null = null
   private timer: NodeJS.Timeout | null = null
   private running = false
   private inFlight = false
@@ -197,12 +207,138 @@ export class FootballService {
       id: found.id,
       name: found.name,
       logo,
-      league: found.league
+      league: found.league,
+      leagueId: found.leagueId
     }
     this.deps.patchFootball({
       teams: [...this.deps.settings().football.teams, team].slice(0, MAX_TEAMS)
     })
     return this.deps.settings().football
+  }
+
+  /** The table of every followed league; asked for only while the table tab is open. */
+  tables(force = false): Promise<FootballTables> {
+    if (!this.tablesInFlight) {
+      this.tablesInFlight = this.fetchTables(force).finally(() => {
+        this.tablesInFlight = null
+      })
+    }
+    return this.tablesInFlight
+  }
+
+  private async fetchTables(force: boolean): Promise<FootballTables> {
+    const settings = this.deps.settings().football
+    const teams = settings.enabled ? settings.teams : []
+    if (teams.length === 0) return { tables: [], updatedAt: null, logosPending: 0, unplaced: 0 }
+    const { leagues, unplaced } = await this.resolveLeagues(teams)
+    if (leagues.length === 0) return { tables: [], updatedAt: null, logosPending: 0, unplaced }
+    const followedIds = new Set(teams.map((team) => team.id))
+    const now = Date.now()
+    const tables = await Promise.all(
+      leagues.map(async (league) => {
+        const cached = this.tableCache.get(league.id)
+        if (!force && cached && now - cached.at < TABLE_MS) return cached.table
+        return this.fetchTable(league)
+      })
+    )
+    let logosPending = 0
+    const decorated = tables.map((table) => ({
+      ...table,
+      rows: table.rows.map((row) => {
+        const logo = this.logoFor(row.logo)
+        if (row.logo && !logo && !this.logoFailed.has(row.logo)) logosPending += 1
+        return { ...row, logo, followed: followedIds.has(row.teamId) }
+      })
+    }))
+    if (decorated.some((table) => table.rows.length > 0)) this.tablesAt = Date.now()
+    return { tables: decorated, updatedAt: this.tablesAt, logosPending, unplaced }
+  }
+
+  /**
+   * Every followed team's league, preferring the league id saved with the team,
+   * then today's slate and finally the wider catalog.
+   */
+  private async resolveLeagues(
+    teams: FootballTeam[]
+  ): Promise<{ leagues: { id: string; name: string }[]; unplaced: number }> {
+    const byTeam = new Map<string, { id: string; name: string }>()
+    const byName = new Map<string, { id: string; name: string }>()
+    const remember = (teamId: string, league: { id: string; name: string }) => {
+      if (teamId) byTeam.set(teamId, league)
+      if (league.name && !byName.has(league.name)) byName.set(league.name, league)
+    }
+    for (const match of this.slate) {
+      if (!match.leagueId) continue
+      const league = { id: match.leagueId, name: match.league }
+      remember(match.host.id, league)
+      remember(match.guest.id, league)
+    }
+    const missing = teams.some((team) => !team.leagueId && !byTeam.has(team.id) && !byName.has(team.league))
+    if (missing) {
+      const catalog = this.catalogState.teams.length > 0 ? this.catalogState : await this.catalog()
+      for (const team of catalog.teams) {
+        if (!team.leagueId) continue
+        remember(team.id, { id: team.leagueId, name: team.league })
+      }
+    }
+    const seen = new Map<string, { id: string; name: string }>()
+    let unplaced = 0
+    for (const team of teams) {
+      const known = team.leagueId
+        ? { id: team.leagueId, name: team.league }
+        : byTeam.get(team.id) ?? byName.get(team.league)
+      if (!known || !known.id) {
+        unplaced += 1
+        continue
+      }
+      const existing = seen.get(known.id)
+      if (existing) {
+        if (!existing.name && known.name) existing.name = known.name
+        continue
+      }
+      seen.set(known.id, { id: known.id, name: known.name || team.league })
+    }
+    return { leagues: [...seen.values()], unplaced }
+  }
+
+  private async fetchTable(league: { id: string; name: string }): Promise<FootballTable> {
+    const empty: FootballTable = {
+      leagueId: league.id,
+      league: league.name,
+      title: '',
+      rows: [],
+      updatedAt: null,
+      error: null
+    }
+    const cached = this.tableCache.get(league.id)
+    const fallback = (error: string): FootballTable =>
+      cached ? { ...cached.table, error } : { ...empty, error }
+    try {
+      const href = await this.standingHref(league.id)
+      if (!href) return fallback('ورزش۳ برای این لیگ جدولی ندارد.')
+      const raw = await getJson(href, 15_000)
+      const parsed = parseStanding(raw)
+      if (parsed.rows.length === 0) return fallback('جدول این لیگ هنوز خالی است.')
+      const table: FootballTable = {
+        ...empty,
+        title: parsed.title,
+        rows: parsed.rows,
+        updatedAt: Date.now()
+      }
+      this.tableCache.set(league.id, { at: Date.now(), table })
+      return table
+    } catch {
+      return fallback(cached ? 'جدول تازه نشد؛ نسخهٔ قبلی است.' : 'دریافت جدول از ورزش۳ ممکن نشد.')
+    }
+  }
+
+  private async standingHref(leagueId: string): Promise<string> {
+    const cached = this.tableHrefs.get(leagueId)
+    if (cached && Date.now() - cached.at < LEAGUE_TAB_MS) return cached.href
+    const raw = await getJson(`${BASE}/football/leagues/${encodeURIComponent(leagueId)}`, 15_000)
+    const href = standingTabHref(raw)
+    this.tableHrefs.set(leagueId, { at: Date.now(), href })
+    return href
   }
 
   private keyOf(settings: FootballSettings): string {

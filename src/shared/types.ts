@@ -112,6 +112,8 @@ export interface FootballTeam {
   name: string
   logo: string
   league: string
+  /** Varzesh3 league id, used to fetch that league's table. */
+  leagueId: string
 }
 
 export interface FootballSettings {
@@ -456,6 +458,7 @@ export interface FootballMatch {
   /** The provider's Jalali day, e.g. "8 آبان 1405". */
   day: string
   league: string
+  leagueId: string
   stage: string
   host: FootballSide
   guest: FootballSide
@@ -488,6 +491,7 @@ export interface FootballCatalogTeam {
   /** Remote crest address; used once, when the team is picked, to build a data URL. */
   logo: string
   league: string
+  leagueId: string
   /** Matches in the covered window. */
   matches: number
   /** Next kickoff still ahead (or in progress), in UTC milliseconds; 0 when none. */
@@ -499,6 +503,47 @@ export interface FootballCatalog {
   updatedAt: number | null
   loading: boolean
   error: string | null
+}
+
+/** One team's line in a league table, numbers kept as the provider sent them. */
+export interface FootballStandingRow {
+  rank: number
+  teamId: string
+  name: string
+  /** Data URL once main has downloaded the crest. */
+  logo: string
+  played: number | null
+  wins: number | null
+  draws: number | null
+  losses: number | null
+  goalFor: number | null
+  goalAgainst: number | null
+  goalDifference: number | null
+  points: number | null
+  /** The team is one of the followed ones. */
+  followed: boolean
+  /** The provider's qualification colour, e.g. "#0f40d2"; empty when there is none. */
+  accent: string
+}
+
+export interface FootballTable {
+  leagueId: string
+  league: string
+  /** The provider's own title, e.g. "جدول لیگ برتر ایران (خلیج فارس)". */
+  title: string
+  rows: FootballStandingRow[]
+  updatedAt: number | null
+  error: string | null
+}
+
+/** The tables of every followed league, fetched only while the table tab is open. */
+export interface FootballTables {
+  tables: FootballTable[]
+  updatedAt: number | null
+  /** Rows whose crest is still downloading; the panel asks once more shortly. */
+  logosPending: number
+  /** Followed teams whose league could not be identified. */
+  unplaced: number
 }
 
 export type PlaybackStatus = 'playing' | 'paused' | 'stopped' | 'unavailable'

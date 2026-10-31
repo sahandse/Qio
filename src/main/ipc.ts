@@ -342,6 +342,7 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
   ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))
   ipcMain.handle('football:refresh', () => ctx.football.refresh())
+  ipcMain.handle('football:tables', (_event, force?: unknown) => ctx.football.tables(force === true))
 
   ipcMain.handle('media:command', (_event, command: MediaCommand, value?: number) => {
     bridge.mediaCommand(command, typeof value === 'number' ? value : undefined)

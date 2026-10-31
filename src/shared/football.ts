@@ -10,6 +10,7 @@ import type {
   FootballMatch,
   FootballSettings,
   FootballSide,
+  FootballStandingRow,
   FootballStatus,
   FootballTeam
 } from './types'
@@ -103,7 +104,7 @@ function parseKickoff(value: unknown): number | null {
   return Number.isFinite(at) ? at : null
 }
 
-function parseMatchBase(raw: Json, leagueTitle: string): FootballMatch | null {
+function parseMatchBase(raw: Json, leagueTitle: string, leagueId = ''): FootballMatch | null {
   const id = idOf(raw.id)
   const hostRaw = record(raw.host)
   const guestRaw = record(raw.guest)
@@ -124,6 +125,7 @@ function parseMatchBase(raw: Json, leagueTitle: string): FootballMatch | null {
     clock: text(raw.time),
     day: text(raw.date),
     league,
+    leagueId,
     stage,
     host: parseSide(hostRaw, hostScore),
     guest: parseSide(guestRaw, guestScore),
@@ -200,13 +202,14 @@ export function parseLivescore(raw: unknown): FootballMatch[] {
     if (!isObject(leagueRaw)) continue
     if (count(leagueRaw.sport) !== 1) continue
     const leagueTitle = text(leagueRaw.title)
+    const leagueId = idOf(leagueRaw.id)
     const days = Array.isArray(leagueRaw.dates) ? leagueRaw.dates : []
     for (const dayRaw of days) {
       if (!isObject(dayRaw)) continue
       const dayMatches = Array.isArray(dayRaw.matches) ? dayRaw.matches : []
       for (const matchRaw of dayMatches) {
         if (!isObject(matchRaw)) continue
-        const match = parseMatchBase(matchRaw, leagueTitle)
+        const match = parseMatchBase(matchRaw, leagueTitle, leagueId)
         if (match) matches.push(match)
       }
     }
@@ -217,8 +220,8 @@ export function parseLivescore(raw: unknown): FootballMatch[] {
 /** One match's detail page: the same match plus its events. */
 export function parseMatchDetail(raw: unknown): FootballMatch | null {
   if (!isObject(raw)) return null
-  const leagueTitle = text(record(raw.league).title)
-  const match = parseMatchBase(raw, leagueTitle)
+  const league = record(raw.league)
+  const match = parseMatchBase(raw, text(league.title), idOf(league.id))
   if (!match) return null
   const list = Array.isArray(raw.events) ? raw.events : []
   match.events = sortFootballEvents(
@@ -229,6 +232,79 @@ export function parseMatchDetail(raw: unknown): FootballMatch | null {
   match.hasDetails = true
   match.eventsLoaded = true
   return match
+}
+
+function signed(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return Math.round(value)
+}
+
+function isStandingHref(value: string): boolean {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' && url.hostname === 'web-api.varzesh3.com' && /\/standing\/?$/.test(url.pathname)
+  } catch {
+    return false
+  }
+}
+
+/** The table endpoint hidden among a league response's tabs, or "" when there is none. */
+export function standingTabHref(raw: unknown): string {
+  if (!isObject(raw)) return ''
+  const tabs = Array.isArray(raw.tabs) ? raw.tabs : []
+  for (const tab of tabs) {
+    if (!isObject(tab)) continue
+    const links = Array.isArray(tab._links) ? tab._links : []
+    for (const link of links) {
+      if (!isObject(link)) continue
+      const href = text(link.href)
+      if (href && isStandingHref(href)) return href
+    }
+  }
+  return ''
+}
+
+/** One league table: the provider's title plus every team line, in rank order. */
+export function parseStanding(raw: unknown): { title: string; rows: FootballStandingRow[] } {
+  if (!isObject(raw)) return { title: '', rows: [] }
+  const title = text(raw.title)
+  const list = Array.isArray(raw.teams) ? raw.teams : []
+  const rows: FootballStandingRow[] = []
+  const seen = new Set<string>()
+  const seenNames = new Set<string>()
+  list.forEach((item, index) => {
+    if (!isObject(item)) return
+    const name = text(item.name)
+    if (!name) return
+    const teamId = idOf(item.id) || name
+    if (seen.has(teamId) || seenNames.has(name)) return
+    seen.add(teamId)
+    seenNames.add(name)
+    const rank = count(item.rank)
+    const goalFor = count(item.goalFor)
+    const goalAgainst = count(item.goalAgainst)
+    const difference = signed(item.goalDifference)
+    const accent = text(item.qualificationColor)
+    rows.push({
+      rank: rank && rank > 0 ? rank : index + 1,
+      teamId,
+      name,
+      logo: text(item.logo),
+      played: count(item.played),
+      wins: count(item.wins),
+      draws: count(item.draws),
+      losses: count(item.losses),
+      goalFor,
+      goalAgainst,
+      goalDifference:
+        difference ?? (goalFor !== null && goalAgainst !== null ? goalFor - goalAgainst : null),
+      points: count(item.points),
+      followed: false,
+      accent: /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(accent) ? accent : ''
+    })
+  })
+  rows.sort((a, b) => a.rank - b.rank)
+  return { title, rows }
 }
 
 const STATUS_RANK: Record<FootballStatus, number> = {
@@ -276,6 +352,7 @@ export function mergeMatchDetail(base: FootballMatch, detail: FootballMatch): Fo
     day: detail.day || base.day,
     kickoffAt: detail.kickoffAt ?? base.kickoffAt,
     league: base.league || detail.league,
+    leagueId: base.leagueId || detail.leagueId,
     stage: base.stage || detail.stage,
     host: { ...base.host, score: detail.host.score ?? base.host.score },
     guest: { ...base.guest, score: detail.guest.score ?? base.guest.score },
@@ -301,6 +378,7 @@ export function buildCatalog(matches: FootballMatch[], now = Date.now()): Footba
           name: side.name,
           logo: side.logo,
           league: match.league,
+          leagueId: match.leagueId,
           matches: 1,
           nextAt: upcoming ? at : 0
         })
@@ -310,6 +388,7 @@ export function buildCatalog(matches: FootballMatch[], now = Date.now()): Footba
       if (upcoming && (known.nextAt === 0 || at < known.nextAt)) {
         known.nextAt = at
         known.league = match.league || known.league
+        known.leagueId = match.leagueId || known.leagueId
       }
     }
   }

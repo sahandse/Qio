@@ -175,7 +175,8 @@ export function cleanFootballTeams(raw: unknown): FootballTeam[] {
       id,
       name,
       logo: cleanCrest(team.logo),
-      league: cleanText(team.league, 80)
+      league: cleanText(team.league, 80),
+      leagueId: typeof team.leagueId === 'string' ? team.leagueId.trim().slice(0, 32) : ''
     })
     if (teams.length >= MAX_TEAMS) break
   }

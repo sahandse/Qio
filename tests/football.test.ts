@@ -10,7 +10,9 @@ import {
   mergeMatchDetail,
   parseLivescore,
   parseMatchDetail,
-  scoreLine
+  parseStanding,
+  scoreLine,
+  standingTabHref
 } from '../src/shared/football.ts'
 import type { FootballMatch } from '../src/shared/types.ts'
 
@@ -114,6 +116,7 @@ test('livescore parsing keeps football only and carries the real fixture data', 
   assert.equal(matches[1].kickoffAt, Date.parse('2026-10-29T13:15:00Z'))
   assert.deepEqual(matches[1].events, [])
   assert.equal(matches[0].league, 'لیگ برتر ایران')
+  assert.equal(matches[0].leagueId, '6')
   assert.equal(matches[0].stage, 'هفته 11')
 })
 
@@ -243,6 +246,85 @@ test('catalog collects each team once with its next kickoff', () => {
     ['98', '99']
   )
   assert.equal(catalog.filter((team) => team.id === '2').length, 1)
+})
+
+test('the standing link comes from the league tabs and nowhere else', () => {
+  const league = {
+    tabs: [
+      {
+        title: 'جدول',
+        type: 1,
+        _links: [
+          { href: 'https://web-api.varzesh3.com/v2.0/football/leagues/6/seasons/903038/records' },
+          { href: 'https://web-api.varzesh3.com/v2.0/football/leagues/6/seasons/903038/standing' }
+        ]
+      },
+      { title: 'بازی ها', type: 2, _links: [{ href: 'https://web-api.varzesh3.com/v2.0/football/leagues/6/matches' }] }
+    ]
+  }
+  assert.equal(
+    standingTabHref(league),
+    'https://web-api.varzesh3.com/v2.0/football/leagues/6/seasons/903038/standing'
+  )
+  assert.equal(
+    standingTabHref({
+      tabs: [{ _links: [{ href: 'https://example.com/v2.0/standing' }] }]
+    }),
+    ''
+  )
+  assert.equal(standingTabHref({ tabs: 'nope' }), '')
+  assert.equal(standingTabHref(null), '')
+})
+
+test('a league table keeps ranks, numbers and only real accent colours', () => {
+  const parsed = parseStanding({
+    title: 'جدول لیگ برتر ایران (خلیج فارس)',
+    teams: [
+      {
+        rank: 2,
+        id: 18,
+        name: 'تراکتور',
+        logo: 'https://match-cdn.varzesh3.com/football-team/0bi4mf3k.png',
+        played: 11,
+        wins: 6,
+        draws: 3,
+        losses: 2,
+        goalFor: 15,
+        goalAgainst: 8,
+        goalDifference: 7,
+        points: 21,
+        qualificationColor: '#0f40d2'
+      },
+      {
+        rank: 1,
+        id: 10,
+        name: 'سپاهان',
+        logo: '',
+        played: 11,
+        wins: 7,
+        draws: 2,
+        losses: 2,
+        goalFor: 19,
+        goalAgainst: 7,
+        points: 23,
+        qualificationColor: 'javascript:alert(1)'
+      },
+      { rank: 0, name: 'بدون شناسه', points: -4 },
+      { name: '' },
+      { name: 'تراکتور', rank: 9 }
+    ]
+  })
+  assert.equal(parsed.title, 'جدول لیگ برتر ایران (خلیج فارس)')
+  assert.deepEqual(parsed.rows.map((row) => row.name), ['سپاهان', 'تراکتور', 'بدون شناسه'])
+  assert.deepEqual(parsed.rows.map((row) => row.rank), [1, 2, 3])
+  assert.equal(parsed.rows[0].goalDifference, 12)
+  assert.equal(parsed.rows[0].accent, '')
+  assert.equal(parsed.rows[1].accent, '#0f40d2')
+  assert.equal(parsed.rows[1].teamId, '18')
+  assert.equal(parsed.rows[2].teamId, 'بدون شناسه')
+  assert.equal(parsed.rows[2].points, 0)
+  assert.equal(parsed.rows[2].goalDifference, null)
+  assert.equal(parsed.rows[1].followed, false)
 })
 
 function goalMatch(overrides: Partial<FootballMatch> = {}): FootballMatch {
