@@ -53,6 +53,7 @@ const FOOTBALL_KEYS = ['enabled', 'goalAlerts', 'startAlerts', 'redAlerts', 'fin
 const MOVE_KEYS = ['enabled', 'everyMin', 'startHour', 'endHour', 'notify'] as const
 const COFFEE_KEYS = ['minutes', 'alert'] as const
 const CLIP_KEYS = ['enabled', 'limit'] as const
+/** Launch shortcuts are deliberately absent too: only the picker in main may add or move them. */
 const ALERT_KEYS = ['windows'] as const
 /** Page ids and sizes inside these are checked again by cleanLayout in main. */
 const LAYOUT_KEYS = ['order', 'hidden', 'size'] as const

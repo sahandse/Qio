@@ -419,3 +419,12 @@ export const GridIcon = (props: IconProps) => (
   </Icon>
 )
 
+export const LaunchIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="4" y="4" width="6.4" height="6.4" rx="1.6" />
+    <rect x="13.6" y="4" width="6.4" height="6.4" rx="1.6" />
+    <rect x="4" y="13.6" width="6.4" height="6.4" rx="1.6" />
+    <path d="M14 16.8h5.6M17.2 13.8l3 3-3 3" />
+  </Icon>
+)
+

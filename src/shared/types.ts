@@ -46,7 +46,7 @@ export interface LayoutSettings {
 }
 
 /** One of the five pages inside the tools tab. */
-export type ToolId = 'coffee' | 'calc' | 'system' | 'screen'
+export type ToolId = 'coffee' | 'calc' | 'system' | 'screen' | 'launch'
 
 /** A colour lifted from the screen; kept in memory for the session only. */
 export interface PickedColor {
@@ -160,6 +160,23 @@ export interface ClipSettings {
   limit: number
 }
 
+export type LaunchKind = 'file' | 'folder' | 'url'
+
+/** A pinned shortcut for the quick-launch tool. The target stays a local path or an http(s) address. */
+export interface LaunchItem {
+  id: string
+  kind: LaunchKind
+  /** Absolute path for a file or folder; a normalized http(s) address for a site. */
+  target: string
+  name: string
+  addedAt: number
+}
+
+/** Quick launch: the order here is the order the notch draws. Items are changed in main only. */
+export interface LaunchSettings {
+  items: LaunchItem[]
+}
+
 /** Live keep-awake state; survives a restart so a meeting does not end with a crash. */
 export interface CoffeeState {
   active: boolean
@@ -233,6 +250,7 @@ export interface Settings {
   move: MoveSettings
   coffee: CoffeeSettings
   clipboard: ClipSettings
+  launch: LaunchSettings
   alerts: AlertSettings
   layout: LayoutSettings
 }

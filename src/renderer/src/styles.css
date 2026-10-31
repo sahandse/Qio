@@ -5449,6 +5449,137 @@ select:focus-visible {
   color: #ff8a8a;
 }
 
+/* ----------------------------------------------------------- quick launch -- */
+
+.launch-tool {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.launch-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  grid-auto-rows: min-content;
+  gap: 5px;
+  overflow-y: auto;
+  padding: 1px;
+}
+
+.launch-tile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: var(--bg-sunken);
+  color: var(--text);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    transform 180ms var(--spring);
+}
+
+.launch-tile:hover {
+  background: var(--bg-raised);
+  border-color: rgba(var(--hue), 0.32);
+}
+
+.launch-tile:active {
+  transform: scale(var(--press));
+}
+
+.launch-tile.missing {
+  border-color: rgba(240, 138, 122, 0.4);
+  opacity: 0.7;
+}
+
+.launch-tile-art {
+  width: 100%;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+}
+
+.launch-tile-art img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.launch-tile-name {
+  width: 100%;
+  font-size: 8.5px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launch-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 16px;
+}
+
+.launch-hint {
+  font-size: 8.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launch-manage {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-faint);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.launch-manage:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.launch-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  text-align: center;
+}
+
+.launch-empty p {
+  margin: 0;
+  max-width: 300px;
+  font-size: 10px;
+  line-height: 1.75;
+  color: var(--text-faint);
+}
+
 /* ---------------------------------------------------------------- picker -- */
 
 body.picker-body {
@@ -7481,6 +7612,146 @@ body.overlay-body {
 
 .settings-card.wide {
   grid-column: 1 / -1;
+}
+
+/* Quick launch inside Settings: the picker, then the ordered list. */
+.launch-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0 7px;
+}
+
+.launch-add-row .pill {
+  height: 28px;
+}
+
+.launch-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 4px;
+}
+
+.launch-url-row .setting-input {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.launch-url-row .pill {
+  flex: 0 0 auto;
+  height: 28px;
+}
+
+.launch-status {
+  margin-bottom: 4px;
+}
+
+.launch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 2px 2px 5px;
+}
+
+.launch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--bg-raised);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.launch-row:hover {
+  border-color: var(--border);
+}
+
+.launch-row-art {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+}
+
+.launch-row-art img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.launch-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.launch-row-text strong {
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launch-row-text small {
+  font-size: 9px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+}
+
+.launch-row-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.launch-order {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--text-faint);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.launch-order:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.launch-order:disabled {
+  opacity: 0.3;
+}
+
+/* One chevron, turned upright for the two vertical ends. */
+.launch-order.up svg {
+  transform: rotate(-90deg);
+}
+
+.launch-order.down svg {
+  transform: rotate(90deg);
+}
+
+.launch-order.launch-remove:hover {
+  color: var(--danger);
+  background: rgba(240, 138, 122, 0.12);
 }
 
 /* --------------------------------------------------------------- updater -- */

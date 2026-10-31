@@ -3,8 +3,9 @@ import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
-import type { AiEvent, AiSettings, AppState, MediaCommand, Note, Nudge, PickedColor, Settings } from '@shared/types'
+import type { AiEvent, AiSettings, AppState, LaunchItem, MediaCommand, Note, Nudge, PickedColor, Settings } from '@shared/types'
 import { aiReady } from '@shared/ai'
+import { addLaunchItems, baseName, moveLaunch, urlName, webUrl } from '@shared/launch'
 import type { Store } from './store'
 import type { AlertCenter } from './alerts'
 import type { WindowsBridge } from './bridge'
@@ -59,6 +60,37 @@ function isWebUrl(value: string): boolean {
 export function registerIpc(ctx: IpcContext): void {
   const { store, bridge } = ctx
   const streams = new Map<string, AbortController>()
+
+  const launchList = (): LaunchItem[] => store.settings.launch.items
+  const commitLaunch = (items: LaunchItem[]): LaunchItem[] => {
+    store.patchSettings({ launch: { items } })
+    return store.settings.launch.items
+  }
+  const makeLaunch = (kind: LaunchItem['kind'], target: string, name = ''): LaunchItem => ({
+    id: randomUUID(),
+    kind,
+    target,
+    name: name.trim().slice(0, 80) || (kind === 'url' ? urlName(target) : baseName(target)),
+    addedAt: Date.now()
+  })
+
+  /** The renderer never supplies paths; Windows' own picker does. */
+  const pickPaths = async (
+    sender: Electron.WebContents,
+    properties: ('openFile' | 'openDirectory' | 'multiSelections')[]
+  ): Promise<string[]> => {
+    const parent = BrowserWindow.fromWebContents(sender)
+    const options: Electron.OpenDialogOptions = {
+      title: 'افزودن به اجرای سریع',
+      buttonLabel: 'افزودن',
+      properties
+    }
+    const result =
+      parent && !parent.isDestroyed()
+        ? await dialog.showOpenDialog(parent, options)
+        : await dialog.showOpenDialog(options)
+    return result.canceled ? [] : result.filePaths
+  }
 
   ipcMain.handle('app:state', () => ctx.getState())
   ipcMain.handle('app:meta', () => ({
@@ -280,6 +312,90 @@ export function registerIpc(ctx: IpcContext): void {
       event.sender.startDrag({ file: files[0], files, icon })
     } catch (error) {
       console.error('[qio] drag out failed', error)
+    }
+  })
+
+  ipcMain.handle('launch:add-files', async (event) => {
+    const picked = await pickPaths(event.sender, ['openFile', 'multiSelections'])
+    if (picked.length === 0) return null
+    const fresh: LaunchItem[] = []
+    for (const path of picked) {
+      try {
+        const info = statSync(path)
+        fresh.push(makeLaunch(info.isDirectory() ? 'folder' : 'file', path))
+      } catch {
+        // Gone between the pick and the stat; leaving it out is kinder than a dead tile.
+      }
+    }
+    return commitLaunch(addLaunchItems(launchList(), fresh))
+  })
+
+  ipcMain.handle('launch:add-folder', async (event) => {
+    const picked = await pickPaths(event.sender, ['openDirectory', 'multiSelections'])
+    if (picked.length === 0) return null
+    const fresh: LaunchItem[] = []
+    for (const path of picked) {
+      try {
+        if (statSync(path).isDirectory()) fresh.push(makeLaunch('folder', path))
+      } catch {
+        // Same as above: a path that is already gone is not a shortcut.
+      }
+    }
+    return commitLaunch(addLaunchItems(launchList(), fresh))
+  })
+
+  // Only http(s) survives webUrl; null tells the settings panel the address was refused.
+  ipcMain.handle('launch:add-url', (_event, raw: unknown) => {
+    const target = webUrl(raw)
+    if (!target) return null
+    return commitLaunch(addLaunchItems(launchList(), [makeLaunch('url', target)]))
+  })
+
+  ipcMain.handle('launch:remove', (_event, id: unknown) => {
+    if (typeof id !== 'string') return launchList()
+    return commitLaunch(launchList().filter((item) => item.id !== id))
+  })
+
+  ipcMain.handle('launch:move', (_event, id: unknown, delta: unknown) => {
+    if (typeof id !== 'string' || typeof delta !== 'number' || !Number.isFinite(delta)) return launchList()
+    return commitLaunch(moveLaunch(launchList(), id, delta))
+  })
+
+  ipcMain.handle('launch:open', async (_event, id: unknown) => {
+    if (typeof id !== 'string') return false
+    const item = launchList().find((entry) => entry.id === id)
+    if (!item) return false
+    if (item.kind === 'url') {
+      try {
+        await shell.openExternal(item.target)
+        return true
+      } catch {
+        ctx.raiseNudge('system', `«${item.name}» باز نشد`, 'مرورگر پیش‌فرض این نشانی را نپذیرفت.')
+        return false
+      }
+    }
+    if (!existsSync(item.target)) {
+      ctx.raiseNudge('system', `«${item.name}» پیدا نشد`, 'مسیر عوض شده یا فایل پاک شده است.')
+      return false
+    }
+    const error = await shell.openPath(item.target)
+    if (error) ctx.raiseNudge('system', `«${item.name}» باز نشد`, error)
+    return !error
+  })
+
+  ipcMain.handle('launch:icon', async (_event, id: unknown) => {
+    if (typeof id !== 'string') return ''
+    const item = launchList().find((entry) => entry.id === id)
+    if (!item || item.kind === 'url') return ''
+    const cached = iconCache.get(item.target)
+    if (cached) return cached
+    try {
+      const icon = await app.getFileIcon(item.target, { size: 'large' })
+      const dataUrl = icon.isEmpty() ? '' : icon.toDataURL()
+      if (dataUrl) iconCache.set(item.target, dataUrl)
+      return dataUrl
+    } catch {
+      return ''
     }
   })
 

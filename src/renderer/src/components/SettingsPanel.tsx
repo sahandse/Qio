@@ -4,20 +4,21 @@ import type { AppMeta } from '@shared/api'
 import type { AppState, Settings } from '@shared/types'
 import { toPersianDigits } from '../lib/jalali'
 import { useCalm, useNightTheme } from '../lib/state'
-import { ICON, BallIcon, CloseIcon, GridIcon, InfoIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
+import { ICON, BallIcon, CloseIcon, GridIcon, InfoIcon, LaunchIcon, SettingsIcon, SparklesIcon, VolumeIcon, WaterIcon } from './Icons'
 import { MascotSettingsCard } from './MascotSettings'
 import { AboutSection } from './settings/AboutSection'
 import { AiSection } from './settings/AiSection'
 import { FootballSection } from './settings/FootballSection'
 import { GeneralSection } from './settings/GeneralSection'
 import { HealthSection } from './settings/HealthSection'
+import { LaunchSection } from './settings/LaunchSection'
 import { LayoutSection } from './settings/LayoutSection'
 import { MediaSection } from './settings/MediaSection'
 import { Toggle } from './settings/controls'
 import { UpdateSection } from './settings/UpdateSection'
 import { Skeleton } from './Skeleton'
 
-type SettingsTab = 'general' | 'layout' | 'mascot' | 'ai' | 'media' | 'health' | 'football' | 'about'
+type SettingsTab = 'general' | 'layout' | 'mascot' | 'ai' | 'media' | 'launch' | 'health' | 'football' | 'about'
 
 const TABS: { id: SettingsTab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
   { id: 'general', label: 'عمومی', Icon: SettingsIcon },
@@ -25,6 +26,7 @@ const TABS: { id: SettingsTab; label: string; Icon: ComponentType<{ size?: numbe
   { id: 'mascot', label: 'ماسکوت', Icon: SparklesIcon },
   { id: 'ai', label: 'هوش مصنوعی', Icon: SparklesIcon },
   { id: 'media', label: 'صدا و صفحه', Icon: VolumeIcon },
+  { id: 'launch', label: 'اجرای سریع', Icon: LaunchIcon },
   { id: 'health', label: 'آب و تمرکز', Icon: WaterIcon },
   { id: 'football', label: 'فوتبال', Icon: BallIcon },
   { id: 'about', label: 'درباره', Icon: InfoIcon }
@@ -151,6 +153,8 @@ export function SettingsPage() {
             {tab === 'ai' && <AiSection ai={state.ai.settings} />}
 
             {tab === 'media' && <MediaSection system={system} />}
+
+            {tab === 'launch' && <LaunchSection settings={settings} />}
 
             {tab === 'health' && <HealthSection settings={settings} onPatch={patch} />}
 

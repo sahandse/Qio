@@ -12,6 +12,7 @@ import type {
   FootballSettings,
   FootballTables,
   FootballView,
+  LaunchItem,
   LyricResult,
   MediaCommand,
   Note,
@@ -84,6 +85,19 @@ export interface QioApi {
     reveal(id: string): Promise<boolean>
     icon(id: string): Promise<string>
     drag(ids: string[]): void
+  }
+
+  /** Quick launch: pinned files, folders and sites. Main owns the list. */
+  launch: {
+    addFiles(): Promise<LaunchItem[] | null>
+    addFolder(): Promise<LaunchItem[] | null>
+    /** null when the address is not a plain http(s) URL. */
+    addUrl(url: string): Promise<LaunchItem[] | null>
+    remove(id: string): Promise<LaunchItem[]>
+    move(id: string, delta: number): Promise<LaunchItem[]>
+    open(id: string): Promise<boolean>
+    /** A Windows file icon as a data URL; empty for sites and files that vanished. */
+    icon(id: string): Promise<string>
   }
 
   focus: {

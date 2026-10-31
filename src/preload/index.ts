@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { AppMeta, QioApi, Unsubscribe } from '@shared/api'
-import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, PickerFrame, Settings, SystemSample, Todo, UpdateState } from '@shared/types'
+import type { AiEvent, AppState, ClipView, CoffeeState, FocusState, LaunchItem, LyricResult, MediaCommand, Note, Nudge, OverlayPayload, PanelId, PickerFrame, Settings, SystemSample, Todo, UpdateState } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): Unsubscribe {
   const listener = (_event: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -57,6 +57,16 @@ const api: QioApi = {
     reveal: (id) => ipcRenderer.invoke('shelf:reveal', id) as Promise<boolean>,
     icon: (id) => ipcRenderer.invoke('shelf:icon', id) as Promise<string>,
     drag: (ids) => ipcRenderer.send('shelf:drag', ids)
+  },
+
+  launch: {
+    addFiles: () => ipcRenderer.invoke('launch:add-files') as Promise<LaunchItem[] | null>,
+    addFolder: () => ipcRenderer.invoke('launch:add-folder') as Promise<LaunchItem[] | null>,
+    addUrl: (url) => ipcRenderer.invoke('launch:add-url', url) as Promise<LaunchItem[] | null>,
+    remove: (id) => ipcRenderer.invoke('launch:remove', id) as Promise<LaunchItem[]>,
+    move: (id, delta) => ipcRenderer.invoke('launch:move', id, delta) as Promise<LaunchItem[]>,
+    open: (id) => ipcRenderer.invoke('launch:open', id) as Promise<boolean>,
+    icon: (id) => ipcRenderer.invoke('launch:icon', id) as Promise<string>
   },
 
   focus: {

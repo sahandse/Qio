@@ -63,6 +63,13 @@ test('move settings keep only the five known fields', () => {
   assert.deepEqual(patch, { move: { enabled: true, everyMin: 45, startHour: 8, endHour: 20, notify: true } })
 })
 
+test('a renderer cannot rewrite the quick-launch list', () => {
+  const patch = pickSettingsPatch({
+    launch: { items: [{ id: 'x', kind: 'url', target: 'https://evil.example', name: 'evil' }] }
+  })
+  assert.deepEqual(patch, {})
+})
+
 test('layout passes its three known keys and nothing else', () => {
   const patch = pickSettingsPatch({
     layout: {

@@ -11,6 +11,7 @@ import {
   type FocusState,
   type FootballSettings,
   type FootballTeam,
+  type LaunchSettings,
   type LayoutSettings,
   type MascotSettings,
   type MascotShape,
@@ -28,6 +29,7 @@ import {
   type WaterEntry
 } from '@shared/types'
 import { AI_PROVIDERS, DEFAULT_SYSTEM_PROMPT } from '@shared/ai'
+import { cleanLaunchItems } from '@shared/launch'
 
 /** The shape of qio.json. `version` records which migration produced the file. */
 export interface Persisted {
@@ -98,6 +100,11 @@ export const defaultClip: ClipSettings = {
 /** Mirroring only reads what Windows already shows; nothing leaves the machine. */
 export const defaultAlerts: AlertSettings = {
   windows: true
+}
+
+/** Quick launch starts empty; the list is only ever grown by the picker in settings. */
+export const defaultLaunch: LaunchSettings = {
+  items: []
 }
 
 /** Every page on the rail, in the shipped order, all one cell large. */
@@ -230,6 +237,7 @@ export const defaultSettings: Settings = {
   move: defaultMove,
   coffee: defaultCoffee,
   clipboard: defaultClip,
+  launch: defaultLaunch,
   alerts: defaultAlerts,
   layout: defaultLayout
 }
@@ -333,6 +341,7 @@ export function mergeSettings(raw: unknown): Settings {
   const move = (input.move ?? {}) as Partial<Settings['move']>
   const coffee = (input.coffee ?? {}) as Partial<CoffeeSettings>
   const clipboard = (input.clipboard ?? {}) as Partial<ClipSettings>
+  const launch = (input.launch ?? {}) as Partial<LaunchSettings>
   const alerts = (input.alerts ?? {}) as Partial<AlertSettings>
   const style = (input.mascotStyle ?? {}) as Partial<MascotSettings>
   const presence = (input.presence ?? {}) as Partial<PresenceSettings>
@@ -412,6 +421,9 @@ export function mergeSettings(raw: unknown): Settings {
     clipboard: {
       enabled: Boolean(clipboard.enabled ?? defaultClip.enabled),
       limit: clampNumber(clipboard.limit, 5, 100, defaultClip.limit)
+    },
+    launch: {
+      items: cleanLaunchItems(launch.items)
     },
     alerts: {
       windows: Boolean(alerts.windows ?? defaultAlerts.windows)
