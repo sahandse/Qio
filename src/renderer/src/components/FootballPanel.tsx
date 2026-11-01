@@ -508,7 +508,7 @@ export function FootballPanel({ state }: { state: AppState | null }) {
                   <header className="fb-view-head">
                     <span className="fb-view-title">
                       <span className="fb-view-league">{selected.league || 'بازی دوستانه'}</span>
-                      {selected.stage && <span className="fb-view-stage">{selected.stage}</span>}
+                      {selected.stage && <span className="fb-view-stage">{toPersianDigits(selected.stage)}</span>}
                     </span>
                     <span className="fb-view-tools">
                       {football.updatedAt && (
