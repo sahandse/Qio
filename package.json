@@ -1,6 +1,6 @@
 {
   "name": "qio",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Qio — a living notch for Windows. Music, synced lyrics, focus timers, water reminders, a file shelf, notes, an eye mascot and a built-in AI chat.",
   "main": "./out/main/index.js",
   "author": "sahandse",
