@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { FootballCatalog, FootballSettings, Settings } from '@shared/types'
+import type { FootballCatalog, FootballLeagueCatalog, FootballSettings, Settings } from '@shared/types'
 import { crestText } from '../../lib/crest'
 import { formatJalali, toPersianDigits } from '../../lib/jalali'
 import { CheckIcon, CloseIcon, ICON, PlusIcon, ResetIcon } from '../Icons'
@@ -8,6 +8,7 @@ import { Status } from '../Status'
 import { Toggle } from './controls'
 
 const MAX_TEAMS = 10
+const MAX_TABLES = 2
 
 function nextLabel(at: number): string {
   const date = new Date(at)
@@ -31,6 +32,9 @@ export function FootballSection({
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [pending, setPending] = useState<string | null>(null)
+  const [leagueCatalog, setLeagueCatalog] = useState<FootballLeagueCatalog | null>(null)
+  const [leagueLoading, setLeagueLoading] = useState(true)
+  const [leagueQuery, setLeagueQuery] = useState('')
 
   const load = useCallback(async (force: boolean) => {
     setLoading(true)
@@ -44,9 +48,22 @@ export function FootballSection({
     }
   }, [])
 
+  const loadLeagues = useCallback(async (force: boolean) => {
+    setLeagueLoading(true)
+    try {
+      const next = await window.qio.football.leagueCatalog(force)
+      setLeagueCatalog(next)
+    } catch {
+      setLeagueCatalog({ leagues: [], updatedAt: null, loading: false, error: 'فهرست لیگ‌ها دریافت نشد.' })
+    } finally {
+      setLeagueLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     void load(false)
-  }, [load])
+    void loadLeagues(false)
+  }, [load, loadLeagues])
 
   const setAlerts = (
     patch: Partial<Pick<FootballSettings, 'goalAlerts' | 'startAlerts' | 'redAlerts' | 'finalAlerts'>>
@@ -62,6 +79,16 @@ export function FootballSection({
     }
   }
 
+  const toggleLeague = async (id: string) => {
+    if (pending) return
+    setPending(id)
+    try {
+      await window.qio.football.toggleLeague(id)
+    } finally {
+      setPending(null)
+    }
+  }
+
   const picked = useMemo(() => new Set(football.teams.map((team) => team.id)), [football.teams])
   const filtered = useMemo(() => {
     const list = catalog?.teams ?? []
@@ -70,7 +97,16 @@ export function FootballSection({
     return list.filter((team) => team.name.includes(needle) || team.league.includes(needle))
   }, [catalog, query])
 
+  const pickedLeagues = useMemo(() => new Set(football.leagues.map((league) => league.id)), [football.leagues])
+  const filteredLeagues = useMemo(() => {
+    const list = leagueCatalog?.leagues ?? []
+    const needle = leagueQuery.trim()
+    if (!needle) return list
+    return list.filter((league) => league.name.includes(needle))
+  }, [leagueCatalog, leagueQuery])
+
   const full = football.teams.length >= MAX_TEAMS
+  const tablesFull = football.leagues.length >= MAX_TABLES
 
   return (
     <>
@@ -78,7 +114,7 @@ export function FootballSection({
         <h3>مسابقات فوتبال</h3>
         <Toggle
           label="پوشش بازی‌ها"
-          hint="تب «بازی‌ها» فقط روز مسابقه در نچ ظاهر می‌شود"
+          hint="تب «بازی‌ها» همیشه در نچ است؛ روز بدون بازی را خالی نشان می‌دهد"
           checked={football.enabled}
           onChange={(next) => onPatch({ football: { ...football, enabled: next } })}
         />
@@ -221,6 +257,97 @@ export function FootballSection({
         <p className="settings-note">
           {toPersianDigits(football.teams.length)} از {toPersianDigits(MAX_TEAMS)} تیم انتخاب شده.
           فهرست از بازی‌های دیروز تا دو روز آینده ساخته می‌شود و نیم‌ساعت کش می‌ماند.
+        </p>
+      </section>
+
+      <section className="settings-card wide">
+        <h3>جدول لیگ‌ها</h3>
+
+        {football.leagues.length === 0 ? (
+          <p className="settings-note">هنوز جدولی انتخاب نشده — از فهرست پایین لیگ اضافه کن.</p>
+        ) : (
+          <div className="fb-team-chips">
+            {football.leagues.map((league) => (
+              <button
+                key={league.id}
+                type="button"
+                className="fb-team-chip"
+                onClick={() => void toggleLeague(league.id)}
+                title={`حذف ${league.name}`}
+                aria-label={`حذف ${league.name} از جدول‌ها`}
+                disabled={pending === league.id}
+              >
+                <span className="fb-mono">{crestText(league.name)}</span>
+                <span className="fb-team-chip-name">{league.name}</span>
+                <CloseIcon size={ICON.xs} />
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="fb-search-row">
+          <input
+            className="setting-input"
+            value={leagueQuery}
+            placeholder="جست‌وجوی لیگ…"
+            onChange={(event) => setLeagueQuery(event.target.value)}
+            aria-label="جست‌وجوی لیگ"
+          />
+          <button type="button" className="pill" disabled={leagueLoading} onClick={() => void loadLeagues(true)}>
+            <ResetIcon size={ICON.xs} /> {leagueLoading ? 'در حال گرفتن…' : 'به‌روزرسانی'}
+          </button>
+        </div>
+
+        {leagueCatalog?.error && (
+          <Status tone="warn" className="fb-catalog-error">
+            {leagueCatalog.error}
+          </Status>
+        )}
+
+        {leagueLoading && !leagueCatalog ? (
+          <Skeleton lines={4} />
+        ) : filteredLeagues.length === 0 ? (
+          <p className="settings-note">
+            {leagueCatalog?.error ? 'فهرست لیگ‌ها در دسترس نیست.' : 'لیگی با این نام پیدا نشد.'}
+          </p>
+        ) : (
+          <div className="fb-pick-list" data-scroll>
+            {filteredLeagues.map((league) => {
+              const selected = pickedLeagues.has(league.id)
+              const disabled = pending === league.id || (!selected && tablesFull)
+              return (
+                <button
+                  key={league.id}
+                  type="button"
+                  className={`fb-pick${selected ? ' on' : ''}`}
+                  onClick={() => void toggleLeague(league.id)}
+                  disabled={disabled}
+                  aria-pressed={selected}
+                  title={
+                    selected
+                      ? `حذف ${league.name}`
+                      : tablesFull
+                        ? 'بیشتر از دو جدول نمی‌شود'
+                        : `افزودن جدول ${league.name}`
+                  }
+                >
+                  <span className="fb-mono">{crestText(league.name)}</span>
+                  <span className="fb-pick-text">
+                    <strong>{league.name}</strong>
+                    <small>جدول رده‌بندی</small>
+                  </span>
+                  <span className="fb-pick-mark" aria-hidden="true">
+                    {selected ? <CheckIcon size={ICON.xs} /> : <PlusIcon size={ICON.xs} />}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        <p className="settings-note">
+          {toPersianDigits(football.leagues.length)} از {toPersianDigits(MAX_TABLES)} جدول انتخاب شده.
+          بدون انتخاب، سربرگ «جدول» لیگ تیم‌های دنبال‌شده را نشان می‌دهد.
         </p>
       </section>
     </>

@@ -107,6 +107,9 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.handle('settings:patch', (_event, patch: Partial<Settings>) => {
     const clean = pickSettingsPatch(patch)
+    // Followed teams and picked league tables belong to main's toggles; a switch
+    // patch arrives without them, and merging here keeps them instead of erasing.
+    if (clean.football) clean.football = { ...store.settings.football, ...clean.football }
     const before = store.settings.startWithWindows
     const settings = store.patchSettings(clean)
     if (settings.startWithWindows !== before) ctx.applyLoginItem()
@@ -256,6 +259,32 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.handle('shelf:remove', (_event, id: string) => store.removeShelf(id))
   ipcMain.handle('shelf:clear', () => store.clearShelf())
+
+  /**
+   * Files go to the Recycle Bin, never deleted outright, and only for paths this
+   * store already holds — the renderer names shelf ids, never a filesystem path.
+   * Folders are left alone: dropping a whole directory is not a stray file.
+   */
+  ipcMain.handle('shelf:trash', async (_event, ids: unknown) => {
+    const wanted = new Set(
+      Array.isArray(ids) ? ids.filter((id: unknown): id is string => typeof id === 'string') : []
+    )
+    const items = store.shelf.filter(
+      (entry) => wanted.has(entry.id) && entry.kind === 'file' && !entry.isDir
+    )
+    let trashed = 0
+    for (const item of items) {
+      try {
+        await shell.trashItem(item.path)
+        store.removeShelf(item.id)
+        trashed += 1
+      } catch {
+        // Locked by another app, or already moved: the entry stays so the tile still says where it was.
+      }
+    }
+    if (items.length > trashed) ctx.raiseNudge('shelf', 'بعضی فایل‌ها حذف نشد', 'قفل‌اند یا از جایشان رفته‌اند.')
+    return trashed
+  })
 
   ipcMain.handle('shelf:open', async (_event, id: string) => {
     const item = store.shelf.find((entry) => entry.id === id)
@@ -469,6 +498,8 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.handle('football:catalog', (_event, force?: unknown) => ctx.football.catalog(force === true))
   ipcMain.handle('football:team', (_event, id: unknown) => ctx.football.toggleTeam(id))
+  ipcMain.handle('football:league-catalog', (_event, force?: unknown) => ctx.football.leagues(force === true))
+  ipcMain.handle('football:league', (_event, id: unknown) => ctx.football.toggleLeague(id))
   ipcMain.handle('football:refresh', () => ctx.football.refresh())
   ipcMain.handle('football:tables', (_event, force?: unknown) => ctx.football.tables(force === true))
 

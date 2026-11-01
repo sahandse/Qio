@@ -1,6 +1,8 @@
 import { nativeImage } from 'electron'
 import type {
   FootballCatalog,
+  FootballLeague,
+  FootballLeagueCatalog,
   FootballMatch,
   FootballSettings,
   FootballTable,
@@ -15,6 +17,7 @@ import {
   footballAlerts,
   matchHasTeam,
   mergeMatchDetail,
+  parseLeagues,
   parseLivescore,
   parseMatchDetail,
   parseStanding,
@@ -33,7 +36,9 @@ const DETAIL_FINAL_MS = 10 * 60_000
 const CATALOG_MS = 30 * 60_000
 const TABLE_MS = 10 * 60_000
 const LEAGUE_TAB_MS = 6 * 3_600_000
+const LEAGUE_LIST_MS = 24 * 3_600_000
 const MAX_TEAMS = 10
+const MAX_TABLES = 2
 const MAX_LOGOS = 200
 
 async function getJson(url: string, timeoutMs: number): Promise<unknown> {
@@ -98,6 +103,9 @@ export class FootballService {
   private catalogState: FootballCatalog = { teams: [], updatedAt: null, loading: false, error: null }
   private catalogAt = 0
   private catalogInFlight: Promise<FootballCatalog> | null = null
+  private leagueState: FootballLeagueCatalog = { leagues: [], updatedAt: null, loading: false, error: null }
+  private leagueAt = 0
+  private leagueInFlight: Promise<FootballLeagueCatalog> | null = null
   private tableCache = new Map<string, { at: number; table: FootballTable }>()
   private tableHrefs = new Map<string, { at: number; href: string }>()
   private tablesInFlight: Promise<FootballTables> | null = null
@@ -116,6 +124,7 @@ export class FootballService {
     this.view = {
       enabled: settings.enabled,
       teams: settings.teams,
+      leagues: settings.leagues,
       matches: [],
       live: false,
       updatedAt: null,
@@ -216,7 +225,65 @@ export class FootballService {
     return this.deps.settings().football
   }
 
-  /** The table of every followed league; asked for only while the table tab is open. */
+  /** The league whose table is picked, added or removed — at most two are kept. */
+  async toggleLeague(id: unknown): Promise<FootballSettings> {
+    const leagueId = typeof id === 'string' ? id.trim().slice(0, 32) : ''
+    const football = this.deps.settings().football
+    if (!leagueId) return football
+    const existing = football.leagues.find((league) => league.id === leagueId)
+    if (existing) {
+      this.deps.patchFootball({ leagues: football.leagues.filter((league) => league.id !== leagueId) })
+      return this.deps.settings().football
+    }
+    if (football.leagues.length >= MAX_TABLES) return football
+    const list = this.leagueState.leagues.length > 0 ? this.leagueState : await this.leagues()
+    const found = list.leagues.find((league) => league.id === leagueId)
+    if (!found) return football
+    this.deps.patchFootball({
+      leagues: [...this.deps.settings().football.leagues, { id: found.id, name: found.name }].slice(
+        0,
+        MAX_TABLES
+      )
+    })
+    return this.deps.settings().football
+  }
+
+  /** Leagues Varzesh3 keeps a table for; the picker in settings is built from this. */
+  leagues(force = false): Promise<FootballLeagueCatalog> {
+    if (!force && this.leagueState.leagues.length > 0 && Date.now() - this.leagueAt < LEAGUE_LIST_MS) {
+      return Promise.resolve(this.leagueState)
+    }
+    if (this.leagueInFlight) return this.leagueInFlight
+    this.leagueState = { ...this.leagueState, loading: true, error: null }
+    this.leagueInFlight = this.fetchLeagues().finally(() => {
+      this.leagueInFlight = null
+    })
+    return this.leagueInFlight
+  }
+
+  private async fetchLeagues(): Promise<FootballLeagueCatalog> {
+    try {
+      const raw = await getJson(`${BASE}/football/leagues`, 15_000)
+      const leagues = parseLeagues(raw)
+      this.leagueAt = Date.now()
+      this.leagueState = {
+        leagues,
+        updatedAt: leagues.length > 0 ? this.leagueAt : this.leagueState.updatedAt,
+        loading: false,
+        error: leagues.length === 0 ? 'ورزش۳ فهرست لیگ‌ها را نداد.' : null
+      }
+    } catch {
+      this.leagueState = {
+        leagues: this.leagueState.leagues,
+        updatedAt: this.leagueState.updatedAt,
+        loading: false,
+        error: 'فهرست لیگ‌ها از ورزش۳ دریافت نشد.'
+      }
+    }
+    return this.leagueState
+  }
+
+  /** The picked leagues' tables; asked for only while the table tab is open. */
   tables(force = false): Promise<FootballTables> {
     if (!this.tablesInFlight) {
       this.tablesInFlight = this.fetchTables(force).finally(() => {
@@ -229,8 +296,16 @@ export class FootballService {
   private async fetchTables(force: boolean): Promise<FootballTables> {
     const settings = this.deps.settings().football
     const teams = settings.enabled ? settings.teams : []
-    if (teams.length === 0) return { tables: [], updatedAt: null, logosPending: 0, unplaced: 0 }
-    const { leagues, unplaced } = await this.resolveLeagues(teams)
+    if (!settings.enabled) return { tables: [], updatedAt: null, logosPending: 0, unplaced: 0 }
+    let leagues: FootballLeague[] = settings.leagues
+    let unplaced = 0
+    // Nothing picked yet: the followed teams decide which tables are worth showing.
+    if (leagues.length === 0) {
+      if (teams.length === 0) return { tables: [], updatedAt: null, logosPending: 0, unplaced: 0 }
+      const resolved = await this.resolveLeagues(teams)
+      leagues = resolved.leagues
+      unplaced = resolved.unplaced
+    }
     if (leagues.length === 0) return { tables: [], updatedAt: null, logosPending: 0, unplaced }
     const followedIds = new Set(teams.map((team) => team.id))
     const now = Date.now()
@@ -487,6 +562,7 @@ export class FootballService {
     this.view = {
       enabled: settings.enabled,
       teams: settings.teams,
+      leagues: settings.leagues,
       matches,
       live: matches.some((match) => match.status === 'live'),
       updatedAt: this.updatedAt,

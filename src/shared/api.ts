@@ -9,6 +9,7 @@ import type {
   CoffeeState,
   FocusState,
   FootballCatalog,
+  FootballLeagueCatalog,
   FootballSettings,
   FootballTables,
   FootballView,
@@ -80,6 +81,8 @@ export interface QioApi {
     addText(): Promise<boolean>
     copy(id: string): Promise<boolean>
     remove(id: string): Promise<void>
+    /** Move the files behind these ids to the Recycle Bin; returns how many went. */
+    trash(ids: string[]): Promise<number>
     clear(): Promise<void>
     open(id: string): Promise<boolean>
     reveal(id: string): Promise<boolean>
@@ -138,9 +141,12 @@ export interface QioApi {
     /** Teams playing in the surrounding days, for the settings picker. */
     catalog(force?: boolean): Promise<FootballCatalog>
     toggleTeam(id: string): Promise<FootballSettings>
+    /** Leagues Varzesh3 keeps a table for, for the table picker. */
+    leagueCatalog(force?: boolean): Promise<FootballLeagueCatalog>
+    toggleLeague(id: string): Promise<FootballSettings>
     /** Ask for a fresh slate right now (the retry button in the panel). */
     refresh(): Promise<FootballView>
-    /** The table of each followed league, cached in main for ten minutes. */
+    /** The table of each picked league, cached in main for ten minutes. */
     tables(force?: boolean): Promise<FootballTables>
   }
 

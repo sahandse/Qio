@@ -52,6 +52,7 @@ const api: QioApi = {
     addText: () => ipcRenderer.invoke('shelf:add-text') as Promise<boolean>,
     copy: (id) => ipcRenderer.invoke('shelf:copy', id) as Promise<boolean>,
     remove: (id) => ipcRenderer.invoke('shelf:remove', id) as Promise<void>,
+    trash: (ids) => ipcRenderer.invoke('shelf:trash', ids) as Promise<number>,
     clear: () => ipcRenderer.invoke('shelf:clear') as Promise<void>,
     open: (id) => ipcRenderer.invoke('shelf:open', id) as Promise<boolean>,
     reveal: (id) => ipcRenderer.invoke('shelf:reveal', id) as Promise<boolean>,
@@ -101,6 +102,8 @@ const api: QioApi = {
   football: {
     catalog: (force) => ipcRenderer.invoke('football:catalog', force === true),
     toggleTeam: (id) => ipcRenderer.invoke('football:team', id),
+    leagueCatalog: (force) => ipcRenderer.invoke('football:league-catalog', force === true),
+    toggleLeague: (id) => ipcRenderer.invoke('football:league', id),
     refresh: () => ipcRenderer.invoke('football:refresh'),
     tables: (force) => ipcRenderer.invoke('football:tables', force === true)
   },

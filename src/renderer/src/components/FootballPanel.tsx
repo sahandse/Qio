@@ -126,9 +126,10 @@ function TableRefresh({
   )
 }
 
-/** The league table of every followed league, one league at a time. */
+/** The picked league tables, one league at a time. */
 function TablesTab({
   teamCount,
+  leagueCount,
   tables,
   busy,
   error,
@@ -136,6 +137,7 @@ function TablesTab({
   onOpenSettings
 }: {
   teamCount: number
+  leagueCount: number
   tables: FootballTables | null
   busy: boolean
   error: string | null
@@ -150,15 +152,15 @@ function TablesTab({
     available[0] ??
     null
 
-  if (teamCount === 0) {
+  if (teamCount === 0 && leagueCount === 0) {
     return (
       <div className="fb-body">
         <div className="panel-empty">
           <BallIcon size={ICON.xl} />
-          <strong>تیمی انتخاب نشده</strong>
-          <span>برای دیدن جدول لیگ، در تنظیمات فوتبال چند تیم را دنبال کن.</span>
+          <strong>جدولی انتخاب نشده</strong>
+          <span>در تنظیمات فوتبال تا دو لیگ را برای جدول انتخاب کن؛ یا چند تیم را دنبال کن تا لیگ خودشان بیاید.</span>
           <button type="button" className="pill" onClick={onOpenSettings}>
-            انتخاب تیم
+            انتخاب جدول
           </button>
         </div>
       </div>
@@ -187,7 +189,7 @@ function TablesTab({
             {error ??
               (tables && tables.unplaced > 0
                 ? 'ورزش۳ برای تیم‌های انتخاب‌شده جدولی نداد. یک‌بار تیم‌ها را در تنظیمات دوباره انتخاب کن.'
-                : 'ورزش۳ برای لیگ این تیم‌ها جدولی برنگرداند. کمی بعد دوباره تلاش کن.')}
+                : 'ورزش۳ برای این لیگ‌ها جدولی برنگرداند. کمی بعد دوباره تلاش کن.')}
           </span>
           <button type="button" className="pill" onClick={onRefresh} disabled={busy}>
             <ResetIcon size={ICON.xs} /> تلاش دوباره
@@ -352,6 +354,10 @@ export function FootballPanel({ state }: { state: AppState | null }) {
 
   const events = useMemo(() => (selected ? [...selected.events].reverse() : []), [selected])
   const teamsKey = football?.teams.map((team) => team.id).join(',') ?? ''
+  const leaguesKey = football?.leagues.map((league) => league.id).join(',') ?? ''
+  /** Either list moving means a different set of tables, so both feed the same key. */
+  const tableKey = `${teamsKey}|${leaguesKey}`
+  const hasTables = (football?.teams.length ?? 0) > 0 || (football?.leagues.length ?? 0) > 0
 
   const loadTables = useCallback(async (force: boolean, silent = false) => {
     const seq = ++tablesSeq.current
@@ -370,10 +376,10 @@ export function FootballPanel({ state }: { state: AppState | null }) {
   }, [])
 
   useEffect(() => {
-    if (tab !== 'table' || !football?.enabled || teamsKey === '') return
+    if (tab !== 'table' || !football?.enabled || !hasTables) return
     void loadTables(false)
-    // Teams changing while the table is open must bring their new leagues along.
-  }, [tab, loadTables, teamsKey, football?.enabled])
+    // A new team or a new league, while the table is open, must bring its league along.
+  }, [tab, loadTables, tableKey, hasTables, football?.enabled])
 
   // Crests download in the background; ask once more when the first answer lacked them.
   useEffect(() => {
@@ -419,7 +425,7 @@ export function FootballPanel({ state }: { state: AppState | null }) {
           className={`fb-tab${tab === 'table' ? ' on' : ''}`}
           onClick={() => {
             setTab('table')
-            if (football.enabled && teamsKey !== '') void loadTables(false)
+            if (football.enabled && hasTables) void loadTables(false)
           }}
         >
           جدول
@@ -450,7 +456,7 @@ export function FootballPanel({ state }: { state: AppState | null }) {
                 {football.error ??
                   (football.teams.length === 0
                     ? 'برای دیدن بازی‌ها، در تنظیمات فوتبال چند تیم را دنبال کن.'
-                    : 'برای تیم‌های انتخاب‌شده امروز بازی‌ای در ورزش۳ ثبت نشده است. روز مسابقه این تب خودش برمی‌گردد.')}
+                    : 'برای تیم‌های انتخاب‌شده امروز بازی‌ای در ورزش۳ ثبت نشده است. تب همین‌جا می‌ماند و از سربرگ جدول می‌توانی لیگ‌ها را ببینی.')}
               </span>
               {football.teams.length === 0 ? (
                 <button
@@ -629,6 +635,7 @@ export function FootballPanel({ state }: { state: AppState | null }) {
       {tab === 'table' && (
         <TablesTab
           teamCount={football.teams.length}
+          leagueCount={football.leagues.length}
           tables={tables}
           busy={tablesBusy}
           error={tablesError}

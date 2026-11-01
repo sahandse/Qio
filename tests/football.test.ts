@@ -9,6 +9,7 @@ import {
   followedMatches,
   mergeMatchDetail,
   parseLivescore,
+  parseLeagues,
   parseMatchDetail,
   parseStanding,
   scoreLine,
@@ -461,4 +462,49 @@ test('the first detail response seeds history instead of replaying it', () => {
   assert.equal(withHistory.eventsLoaded, true)
   assert.equal(parsed().eventsLoaded, false)
   assert.equal(parsed({ hasDetails: true }).hasDetails, true)
+})
+
+test('the league list keeps only id-named entries, deduped', () => {
+  const leagues = parseLeagues([
+    { id: 6, name: 'لیگ برتر انگلیس', logo: 'https://cdn/varzesh3/6.png' },
+    { id: 7, title: 'لیگ برتر اسپانیا' },
+    { id: 6, name: 'تکراری' },
+    { id: 8, name: '   ' },
+    { name: 'بی‌شناسه' },
+    'نه شیء',
+    null
+  ])
+  assert.deepEqual(leagues, [
+    { id: '6', name: 'لیگ برتر انگلیس' },
+    { id: '7', name: 'لیگ برتر اسپانیا' }
+  ])
+  assert.deepEqual(parseLeagues({ leagues: [{ id: 1, name: 'لیگ برتر ایران' }] }), [
+    { id: '1', name: 'لیگ برتر ایران' }
+  ])
+  assert.deepEqual(parseLeagues(undefined), [])
+})
+
+test('picked league tables are capped at two and deduped', async () => {
+  const { cleanFootballLeagues } = await import('../src/main/store/defaults.ts')
+  assert.deepEqual(cleanFootballLeagues('no'), [])
+  assert.deepEqual(
+    cleanFootballLeagues([
+      { id: ' 6 ', name: 'لیگ برتر انگلیس' },
+      { id: '6', name: 'تکراری' },
+      { id: '', name: 'بی‌شناسه' },
+      { id: '7', name: '' },
+      { id: '8', name: 'لیگ برتر ایتالیا' },
+      { id: '9', name: 'لیگ برتر آلمان' },
+      null
+    ]),
+    [
+      { id: '6', name: 'لیگ برتر انگلیس' },
+      { id: '8', name: 'لیگ برتر ایتالیا' }
+    ]
+  )
+})
+
+test('a stored profile without league picks still gets the empty table list', async () => {
+  const { mergeSettings } = await import('../src/main/store/defaults.ts')
+  assert.deepEqual(mergeSettings({ football: { enabled: true } }).football.leagues, [])
 })

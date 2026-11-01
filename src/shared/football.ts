@@ -7,6 +7,7 @@ import type {
   FootballCatalogTeam,
   FootballEvent,
   FootballEventKind,
+  FootballLeague,
   FootballMatch,
   FootballSettings,
   FootballSide,
@@ -360,6 +361,22 @@ export function mergeMatchDetail(base: FootballMatch, detail: FootballMatch): Fo
     hasDetails: true,
     eventsLoaded: true
   }
+}
+
+/** Varzesh3's own league list, deduped and id-named only — the picker never sees a logo URL. */
+export function parseLeagues(raw: unknown): FootballLeague[] {
+  const list = Array.isArray(raw) ? raw : isObject(raw) && Array.isArray(raw.leagues) ? raw.leagues : []
+  const seen = new Set<string>()
+  const leagues: FootballLeague[] = []
+  for (const item of list) {
+    if (!isObject(item)) continue
+    const id = idOf(item.id)
+    const name = text(item.name) || text(item.title)
+    if (!id || !name || seen.has(id)) continue
+    seen.add(id)
+    leagues.push({ id, name })
+  }
+  return leagues
 }
 
 /** Unique teams from any number of days, next kickoff and match count included. */

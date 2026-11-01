@@ -102,7 +102,7 @@ export function LayoutSection({
               <span className="layout-name">
                 <meta.Icon size={ICON.sm} />
                 <strong>{meta.title}</strong>
-                {id === 'football' && <small>فقط روز مسابقه</small>}
+                {id === 'football' && <small>با خاموش‌کردن پوشش بازی‌ها می‌رود</small>}
               </span>
               <div className="layout-sizes" role="group" aria-label={`اندازهٔ ${meta.title}`}>
                 {PAGE_SIZES.map((entry) => (

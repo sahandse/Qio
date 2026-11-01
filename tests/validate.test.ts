@@ -40,7 +40,14 @@ test('todo patch trims text and validates dueAt', () => {
   assert.deepEqual(pickTodoPatch({ done: 'yes', notified: 1 }), {})
 })
 
-test('football toggles pass the whitelist but the team list does not', () => {
+test('football toggles pass the whitelist but the team and league lists do not', async () => {
+  const { mergeSettings } = await import('../src/main/store/defaults.ts')
+  const stored = mergeSettings({
+    football: {
+      teams: [{ id: '18', name: 'تراکتور', logo: '', league: 'لیگ برتر ایران' }],
+      leagues: [{ id: '6', name: 'لیگ برتر انگلیس' }]
+    }
+  })
   const patch = pickSettingsPatch({
     football: {
       enabled: false,
@@ -48,12 +55,19 @@ test('football toggles pass the whitelist but the team list does not', () => {
       startAlerts: true,
       redAlerts: true,
       finalAlerts: false,
-      teams: [{ id: '18', name: 'تراکتور', logo: '', league: 'لیگ برتر ایران' }]
+      teams: [{ id: '1', name: 'حذف‌شده', logo: '', league: '' }],
+      leagues: [{ id: '99', name: 'جدول دلخواه' }]
     }
   })
   assert.deepEqual(patch, {
     football: { enabled: false, goalAlerts: false, startAlerts: true, redAlerts: true, finalAlerts: false }
   })
+
+  // The switch patch carries no lists: main must re-merge them or the picks vanish.
+  const kept = mergeSettings({ ...stored, football: { ...stored.football, ...patch.football } })
+  assert.equal(kept.football.enabled, false)
+  assert.deepEqual(kept.football.teams.map((team) => team.id), ['18'])
+  assert.deepEqual(kept.football.leagues.map((league) => league.id), ['6'])
 })
 
 test('move settings keep only the five known fields', () => {

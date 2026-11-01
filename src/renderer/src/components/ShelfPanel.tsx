@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AppState, ShelfItem } from '@shared/types'
 import { formatBytes } from '../lib/format'
 import { toPersianDigits } from '../lib/jalali'
-import { ICON, CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
+import { ICON, CloseIcon, CopyIcon, FolderOpenIcon, ShelfIcon, TextCardIcon, TrashIcon } from './Icons'
 import { ClipSection } from './ClipSection'
 import { PanelEmpty } from './PanelEmpty'
 
@@ -72,11 +72,17 @@ function Tile({
 
 function FilesSection({ items }: { items: ShelfItem[] }) {
   const [selected, setSelected] = useState<string[]>([])
+  const [confirmTrash, setConfirmTrash] = useState(false)
   const anchor = useRef<string | null>(null)
 
   useEffect(() => {
     setSelected((current) => current.filter((id) => items.some((item) => item.id === id)))
   }, [items])
+
+  // Any change of selection cancels a pending "really delete this?" step.
+  useEffect(() => {
+    setConfirmTrash(false)
+  }, [selected])
 
   const pick = (item: ShelfItem, event: React.MouseEvent) => {
     const additive = event.ctrlKey || event.metaKey
@@ -110,6 +116,17 @@ function FilesSection({ items }: { items: ShelfItem[] }) {
     setSelected([])
   }
 
+  /** Only real files reach the Recycle Bin — never a folder or a copied text. */
+  const trashable = items.filter(
+    (item) => selected.includes(item.id) && item.kind === 'file' && !item.isDir
+  )
+
+  const trashSelected = async () => {
+    await window.qio.shelf.trash(trashable.map((item) => item.id))
+    setSelected([])
+    setConfirmTrash(false)
+  }
+
   return (
     <div className="shelf-body">
       {items.length === 0 ? (
@@ -136,11 +153,13 @@ function FilesSection({ items }: { items: ShelfItem[] }) {
 
       <div className="shelf-foot">
         <span className="shelf-hint">
-          {selected.length > 0
-            ? `${toPersianDigits(selected.length)} انتخاب`
-            : items.length > 0
-              ? `کلیک انتخاب · دوبار کلیک باز کردن`
-              : 'متن کپی‌شده را هم می‌توانی اضافه کنی'}
+          {confirmTrash
+            ? `${toPersianDigits(trashable.length)} فایل به سطل بازیافت می‌رود — تأیید می‌کنی؟`
+            : selected.length > 0
+              ? `${toPersianDigits(selected.length)} انتخاب`
+              : items.length > 0
+                ? `کلیک انتخاب · دوبار کلیک باز کردن`
+                : 'متن کپی‌شده را هم می‌توانی اضافه کنی'}
         </span>
         <div className="shelf-tools">
           <button
@@ -171,10 +190,38 @@ function FilesSection({ items }: { items: ShelfItem[] }) {
               <FolderOpenIcon size={ICON.xs} />
             </button>
           )}
-          {selected.length > 0 && (
-            <button type="button" className="mini-button danger" title="حذف از قفسه" onClick={removeSelected}>
-              <TrashIcon size={ICON.xs} />
-            </button>
+          {confirmTrash ? (
+            <>
+              <button type="button" className="mini-button danger" onClick={() => void trashSelected()}>
+                <TrashIcon size={ICON.xs} /> تأیید حذف
+              </button>
+              <button type="button" className="mini-button" onClick={() => setConfirmTrash(false)}>
+                بی‌خیال
+              </button>
+            </>
+          ) : (
+            <>
+              {trashable.length > 0 && (
+                <button
+                  type="button"
+                  className="mini-button warn"
+                  title="حذف فایل به سطل بازیافت"
+                  onClick={() => setConfirmTrash(true)}
+                >
+                  <TrashIcon size={ICON.xs} /> فایل
+                </button>
+              )}
+              {selected.length > 0 && (
+                <button
+                  type="button"
+                  className="mini-button danger"
+                  title="حذف از قفسه"
+                  onClick={removeSelected}
+                >
+                  <CloseIcon size={ICON.xs} />
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

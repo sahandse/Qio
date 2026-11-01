@@ -118,10 +118,18 @@ export interface FootballTeam {
   leagueId: string
 }
 
+/** A league whose table the user wants, independent of the followed teams. */
+export interface FootballLeague {
+  id: string
+  name: string
+}
+
 export interface FootballSettings {
   enabled: boolean
   /** At most ten teams are kept. */
   teams: FootballTeam[]
+  /** At most two league tables are kept. */
+  leagues: FootballLeague[]
   goalAlerts: boolean
   startAlerts: boolean
   redAlerts: boolean
@@ -513,6 +521,7 @@ export interface FootballMatch {
 export interface FootballView {
   enabled: boolean
   teams: FootballTeam[]
+  leagues: FootballLeague[]
   /** Today's matches involving a followed team, live first, then by kickoff. */
   matches: FootballMatch[]
   /** True when any of those matches is live right now. */
@@ -540,6 +549,14 @@ export interface FootballCatalogTeam {
 
 export interface FootballCatalog {
   teams: FootballCatalogTeam[]
+  updatedAt: number | null
+  loading: boolean
+  error: string | null
+}
+
+/** The leagues Varzesh3 keeps a table for — the list the table picker is built from. */
+export interface FootballLeagueCatalog {
+  leagues: FootballLeague[]
   updatedAt: number | null
   loading: boolean
   error: string | null
@@ -576,7 +593,7 @@ export interface FootballTable {
   error: string | null
 }
 
-/** The tables of every followed league, fetched only while the table tab is open. */
+/** The picked leagues' tables — or the followed teams' leagues when nothing was picked. */
 export interface FootballTables {
   tables: FootballTable[]
   updatedAt: number | null

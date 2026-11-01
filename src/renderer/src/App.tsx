@@ -48,7 +48,7 @@ const PAGES: PageDef[] = [
   { id: 'ai', width: 560, height: 404, hue: '178, 160, 255' }
 ]
 
-/** Only added to the rail on a match day, right after the water page. */
+/** Kept in the rail right after the water page, match day or not. */
 const FOOTBALL_PAGE: PageDef = {
   id: 'football',
   width: 580,
@@ -96,8 +96,8 @@ export default function App() {
 
   useFocusEngine(state)
 
-  /** The football tab only exists while a followed team has a match today. */
-  const footballTab = Boolean(state?.football.enabled && state.football.matches.length > 0)
+  /** Football stays in the rail whenever the coverage is on; the panel handles a quiet day. */
+  const footballTab = Boolean(state?.football.enabled)
   const layout = state?.settings.layout
   const pages = useMemo(() => {
     const all = footballTab

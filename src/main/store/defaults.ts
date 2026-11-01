@@ -9,6 +9,7 @@ import {
   type CoffeeSettings,
   type CoffeeState,
   type FocusState,
+  type FootballLeague,
   type FootballSettings,
   type FootballTeam,
   type LaunchSettings,
@@ -72,6 +73,7 @@ export const defaultPresence: PresenceSettings = {
 export const defaultFootball: FootballSettings = {
   enabled: true,
   teams: [],
+  leagues: [],
   goalAlerts: true,
   startAlerts: true,
   redAlerts: true,
@@ -164,6 +166,7 @@ export function cleanCoffeeState(raw: unknown): CoffeeState {
 }
 
 const MAX_TEAMS = 10
+const MAX_TABLES = 2
 const MAX_CREST_CHARS = 400_000
 
 /** Crests are tiny PNG data URLs; anything else is discarded rather than rendered. */
@@ -194,6 +197,23 @@ export function cleanFootballTeams(raw: unknown): FootballTeam[] {
     if (teams.length >= MAX_TEAMS) break
   }
   return teams
+}
+
+export function cleanFootballLeagues(raw: unknown): FootballLeague[] {
+  if (!Array.isArray(raw)) return []
+  const leagues: FootballLeague[] = []
+  const seen = new Set<string>()
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    const league = item as Partial<FootballLeague>
+    const id = typeof league.id === 'string' ? league.id.trim().slice(0, 32) : ''
+    const name = cleanText(league.name, 80)
+    if (!id || !name || seen.has(id)) continue
+    seen.add(id)
+    leagues.push({ id, name })
+    if (leagues.length >= MAX_TABLES) break
+  }
+  return leagues
 }
 
 export const defaultAiSettings: AiSettings = {
@@ -402,6 +422,7 @@ export function mergeSettings(raw: unknown): Settings {
     football: {
       enabled: Boolean(football.enabled ?? defaultFootball.enabled),
       teams: cleanFootballTeams(football.teams),
+      leagues: cleanFootballLeagues(football.leagues),
       goalAlerts: Boolean(football.goalAlerts ?? defaultFootball.goalAlerts),
       startAlerts: Boolean(football.startAlerts ?? defaultFootball.startAlerts),
       redAlerts: Boolean(football.redAlerts ?? defaultFootball.redAlerts),
